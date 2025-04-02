@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "quick-check",
-    "slug": "quick-check",
+    "name": "quick-chat",
+    "slug": "quick-chat",
     "version": "1.0.0",
     
     
-      "scheme": "quick-check",
+      "scheme": "quick-chat",
       "web": {
         "bundler": "metro",
         "output": "static",
