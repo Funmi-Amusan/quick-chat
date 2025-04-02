@@ -1,6 +1,5 @@
+import SignUp from 'components/authentication/signup/SignUp';
 import React from 'react';
-
-import SignUp from '~/components/authentication/signup/SignUp';
 
 const SignUpScreen = () => {
   return <SignUp />;

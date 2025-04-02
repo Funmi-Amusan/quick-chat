@@ -1,9 +1,8 @@
+import ChatRoom from 'components/chats/chatroom/ChatRoom';
 import React from 'react';
 
-import SignUp from '~/components/authentication/signup/SignUp';
-
 const ChatScreen = () => {
-  return <SignUp />;
+  return <ChatRoom />;
 };
 
 export default ChatScreen;

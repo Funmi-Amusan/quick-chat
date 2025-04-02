@@ -1,12 +1,13 @@
-// Learn more https://docs.expo.io/guides/customizing-metro
-const { getDefaultConfig } = require('expo/metro-config');
+const { getDefaultConfig } = require('@expo/metro-config');
+const { withNativeWind } = require('nativewind/metro');
 
-  const { withNativeWind } = require("nativewind/metro");
-
-
-/** @type {import('expo/metro-config').MetroConfig} */
-// eslint-disable-next-line no-undef
 const config = getDefaultConfig(__dirname);
 
+// Add resolution for Firebase subpath exports
+config.resolver.sourceExts = [...config.resolver.sourceExts, 'mjs', 'cjs'];
+config.resolver.extraNodeModules = {
+  ...config.resolver.extraNodeModules,
+};
 
-  module.exports = withNativeWind(config, { input: "./global.css" });
+// Export with NativeWind configuration
+module.exports = withNativeWind(config, { input: './global.css' });

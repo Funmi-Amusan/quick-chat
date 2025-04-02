@@ -1,9 +1,8 @@
+import ChatsList from 'components/chats/chatslist/ChatsList';
 import React from 'react';
 
-import Onboarding from '~/components/authentication/onboarding/Onboarding';
-
 const ChatsScreen = () => {
-  return <Onboarding />;
+  return <ChatsList />;
 };
 
 export default ChatsScreen;
