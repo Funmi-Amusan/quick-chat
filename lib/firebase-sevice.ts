@@ -15,10 +15,13 @@ import {
     get,
     serverTimestamp,
     Unsubscribe,
+    onDisconnect,
+    set,
 } from 'firebase/database';
-import { ChatData, FormattedUser, UserData } from '~/lib/types';
 
 import { auth } from './firebase-config';
+
+import { ChatData, FormattedUser, UserData } from '~/lib/types';
 
 export interface FirebaseUserResponse {
     user: User;
@@ -187,4 +190,45 @@ export const createChat = async (currentUserId: string, otherUserId: string): Pr
         console.error('Error creating chat in service:', error);
         throw new Error(error.message || 'Failed to create chat.');
     }
+};
+
+export const updateUserPresence = (userId: string) => {
+    if (!userId) return;
+
+    const userStatusRef = ref(db, `/status/${userId}`);
+    const connectedRef = ref(db, '.info/connected');
+
+    onValue(connectedRef, (snap) => {
+        if (snap.val() === true) {
+            set(userStatusRef, {
+                online: true,
+                last_seen: serverTimestamp(),
+            });
+            onDisconnect(userStatusRef).set({
+                online: false,
+                last_seen: serverTimestamp(),
+            });
+        }
+    });
+};
+
+export const listenToUserStatus = (
+    userId: string,
+    callback: (status: { online: boolean; last_seen: number } | null) => void
+): Unsubscribe => {
+    const userStatusRef = ref(db, `/status/${userId}`);
+    return onValue(
+        userStatusRef,
+        (snapshot) => {
+            if (snapshot.exists()) {
+                callback(snapshot.val() as { online: boolean; last_seen: number });
+            } else {
+                callback(null);
+            }
+        },
+        (error) => {
+            console.error(`Error listening to status for user ${userId}:`, error);
+            callback(null);
+        }
+    );
 };
