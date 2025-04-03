@@ -1,8 +1,7 @@
+import { SessionProvider } from 'context/authContext';
 import { Slot } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-
 import '../global.css';
-import { SessionProvider } from 'context/authContext';
 
 export default function Root() {
   return (

@@ -1,3 +1,3 @@
 export const ImageAssets = {
-    activity: require("./images/tabicons/activity.png"),
+    avatar: require('./images/Girl.png'),
 };

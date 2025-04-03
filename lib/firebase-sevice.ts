@@ -1,9 +1,3 @@
-/**
- * Firebase authentication service module.
- * Provides methods for user authentication and session management.
- * @module
- */
-
 import {
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
@@ -12,31 +6,24 @@ import {
     User,
     UserCredential,
 } from 'firebase/auth';
+import {
+    getDatabase,
+    ref,
+    onValue,
+    push,
+    update,
+    get,
+    serverTimestamp,
+    Unsubscribe,
+} from 'firebase/database';
+import { ChatData, FormattedUser, UserData } from '~/lib/types';
+
 import { auth } from './firebase-config';
 
-
-// ============================================================================
-// Types & Interfaces
-// ============================================================================
-
-/**
- * User response structure from Firebase Authentication
- * @interface
- */
 export interface FirebaseUserResponse {
     user: User;
 }
 
-// ============================================================================
-// Authentication Services
-// ============================================================================
-
-/**
- * Retrieves the current authenticated user and their session
- * Utilizes Firebase's onAuthStateChanged to provide real-time auth state
- * @returns {Promise<{ user: User | null }>} Current user object or null
- * @throws {Error} If there's an error accessing Firebase Auth
- */
 export const getCurrentUser = async () => {
     try {
         return new Promise((resolve) => {
@@ -51,13 +38,6 @@ export const getCurrentUser = async () => {
     }
 };
 
-/**
- * Authenticates a user with email and password
- * @param {string} email - User's email address
- * @param {string} password - User's password
- * @returns {Promise<FirebaseUserResponse | undefined>} Authenticated user data
- * @throws {Error} If authentication fails
- */
 export async function login(
     email: string,
     password: string
@@ -71,11 +51,6 @@ export async function login(
     }
 }
 
-/**
- * Logs out the current user by terminating their session
- * @returns {Promise<void>}
- * @throws {Error} If logout fails
- */
 export async function logout(): Promise<void> {
     try {
         await signOut(auth);
@@ -85,14 +60,6 @@ export async function logout(): Promise<void> {
     }
 }
 
-/**
- * Creates a new user account and optionally sets their display name
- * @param {string} email - User's email address
- * @param {string} password - User's password
- * @param {string} [name] - Optional user's display name
- * @returns {Promise<FirebaseUserResponse | undefined>} Created user data
- * @throws {Error} If registration fails
- */
 export async function register(
     email: string,
     password: string,
@@ -109,3 +76,115 @@ export async function register(
         throw e;
     }
 }
+
+const db = getDatabase();
+const formatFirebaseUser = (userId: string, userData: UserData): FormattedUser => {
+    return {
+        id: userId,
+        email: userData.email,
+        username: userData.username,
+    };
+};
+
+export const listenToUserChats = (
+    userId: string,
+    callback: (chats: ChatData[], error?: Error) => void
+): Unsubscribe => {
+    const userChatsRef = ref(db, `users/${userId}/chats`);
+
+    const unsubscribe = onValue(
+        userChatsRef,
+        async (snapshot) => {
+            const chatIdsData = snapshot.val();
+            if (chatIdsData) {
+                const chatIds = Object.keys(chatIdsData);
+                // Fetch details for each chat concurrently
+                const chatPromises = chatIds.map(async (chatId) => {
+                    try {
+                        const chatRef = ref(db, `chats/${chatId}`);
+                        const chatSnapshot = await get(chatRef);
+                        if (chatSnapshot.exists()) {
+                            const chatData = chatSnapshot.val();
+                            return { id: chatId, ...chatData };
+                        }
+                        console.warn(`Chat data for ID ${chatId} not found.`);
+                        return null;
+                    } catch (err: any) {
+                        console.error(`Error fetching chat ${chatId}:`, err);
+                        return null;
+                    }
+                });
+
+                try {
+                    const chats = await Promise.all(chatPromises);
+                    const validChats = chats.filter((chat): chat is ChatData => chat !== null);
+                    callback(validChats);
+                } catch (err: any) {
+                    console.error('Error processing chat promises:', err);
+                    callback([], err);
+                }
+            } else {
+                callback([]);
+            }
+        },
+        (error: Error) => {
+            console.error('Error listening to user chats:', error);
+            callback([], error);
+        }
+    );
+
+    return unsubscribe;
+};
+
+export const fetchAllUsers = async (currentUserId: string): Promise<FormattedUser[]> => {
+    const usersRef = ref(db, 'users');
+    try {
+        const snapshot = await get(usersRef);
+        if (snapshot.exists()) {
+            const usersData = snapshot.val() as Record<string, UserData>;
+            const formattedUsers = Object.entries(usersData)
+                .map(([userId, userData]) => formatFirebaseUser(userId, userData))
+                .filter((user) => user.id !== currentUserId);
+            return formattedUsers;
+        } else {
+            return [];
+        }
+    } catch (err: any) {
+        console.error('Error fetching all users:', err);
+        throw new Error(err.message || 'Failed to fetch users.');
+    }
+};
+
+export const createChat = async (currentUserId: string, otherUserId: string): Promise<string> => {
+    const chatRef = push(ref(db, 'chats'));
+    const chatId = chatRef.key;
+
+    if (!chatId) {
+        throw new Error('Could not generate chat ID');
+    }
+
+    const participantsData = {
+        [currentUserId]: true,
+        [otherUserId]: true,
+    };
+
+    const newChatData = {
+        participants: participantsData,
+        createdAt: serverTimestamp(),
+        lastMessage: null,
+    };
+
+    const updates: { [key: string]: any } = {};
+    updates[`/chats/${chatId}`] = newChatData;
+    updates[`/users/${currentUserId}/chats/${chatId}`] = true;
+    updates[`/users/${otherUserId}/chats/${chatId}`] = true;
+
+    try {
+        await update(ref(db), updates);
+        console.log('Chat created successfully in service with ID:', chatId);
+        return chatId;
+    } catch (error: any) {
+        console.error('Error creating chat in service:', error);
+        throw new Error(error.message || 'Failed to create chat.');
+    }
+};

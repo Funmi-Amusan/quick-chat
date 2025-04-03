@@ -30,13 +30,24 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.funmiamusan.quickchat",
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
+      },
+      "package": "com.funmiamusan.quickchat"
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "4ace676a-61c8-43d7-98a0-22803a8edc7b"
       }
-    }
+    },
+    "owner": "funmi-amusan"
   }
 }

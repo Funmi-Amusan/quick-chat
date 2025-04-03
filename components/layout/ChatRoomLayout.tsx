@@ -1,11 +1,11 @@
 import Constants from 'expo-constants';
 import { StyleSheet, SafeAreaView, ViewStyle } from 'react-native';
 
-type AppLayoutProp = {
+type ChatRoomLayoutProp = {
   children: React.ReactNode;
   style?: ViewStyle;
 };
-const AppLayout: React.FC<AppLayoutProp> = ({ children, style, ...rest }) => {
+const ChatRoomLayout: React.FC<ChatRoomLayoutProp> = ({ children, style, ...rest }) => {
   return (
     <SafeAreaView style={[styles.container, style]} {...rest}>
       {children}
@@ -17,12 +17,11 @@ const styles = StyleSheet.create({
   container: {
     paddingTop: Constants.statusBarHeight,
     flex: 1,
-    backgroundColor: '#fff',
-    marginHorizontal: 16,
+    backgroundColor: '#f7f2e4',
   },
   view: {
     flex: 1,
   },
 });
 
-export default AppLayout;
+export default ChatRoomLayout;
