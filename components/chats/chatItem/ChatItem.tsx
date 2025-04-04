@@ -2,10 +2,12 @@ import { ImageAssets } from 'assets';
 import { router } from 'expo-router';
 import React from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { formatTimestamp } from '~/lib/helpers';
 
 import { ChatData } from '~/lib/types';
 
-const ChatItem = ({ createdAt, id, participants }: ChatData) => {
+const ChatItem = ({ createdAt, id, partner }: ChatData) => {
+  console.log('ChatItem', { createdAt, id, partner });
   return (
     <TouchableOpacity
       onPress={() => {
@@ -15,8 +17,8 @@ const ChatItem = ({ createdAt, id, participants }: ChatData) => {
         <Image source={ImageAssets.avatar} className="h-12 w-12 rounded-full" />
         <View className=" flex-grow gap-2 border-t-[0.5px] border-gray-300 py-2">
           <View className="flex-row items-center justify-between">
-            <Text className=" text-lg font-bold">{id}</Text>
-            <Text>{createdAt}</Text>
+            <Text className=" text-lg font-bold">{partner}</Text>
+            <Text>{formatTimestamp(createdAt)}</Text>
           </View>
           <View className="flex-row items-center justify-between">
             <Text />

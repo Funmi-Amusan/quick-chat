@@ -2,14 +2,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AppLayout from 'components/layout/AppLayout';
 import { Unsubscribe } from 'firebase/database';
 import { useState, useEffect, useRef } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  FlatList,
-  StyleSheet,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
 
 import ChatItem from '../chatItem/ChatItem';
 import UserListModal from '../modals/UserListModals';
@@ -108,7 +101,6 @@ const ChatsList = () => {
       </AppLayout>
     );
   }
-
   return (
     <AppLayout>
       <View className=" flex-row items-center justify-between border-b border-gray-300 px-4 py-3 ">
@@ -138,7 +130,7 @@ const ChatsList = () => {
         userChats={userChats}
         loading={modalLoading}
         error={modalError}
-        currentUserId={currentUser?.uid || ''}
+        currentUser={currentUser}
       />
     </AppLayout>
   );

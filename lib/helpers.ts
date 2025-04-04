@@ -17,18 +17,30 @@ export const formatUserData = (userData: UserData[]): FormattedUser[] => {
     return formattedData;
 };
 
-// export const formatChatData = (chatData: ChatData[]): FormattedChat[] => {
-//     const formattedData = [];
+export const formatTimestamp = (timestamp: string) => {
+    const date = new Date(+timestamp);
+    let hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'pm' : 'am';
 
-//     for (const id in chatData) {
-//         if (chatData.hasOwnProperty(id)) {
-//             const id = chatData[id];
-//             formattedData.push({
-//                 id: id,
-//                 participants:
-//             });
-//         }
-//     }
+    hours = hours % 12 || 12;
+    const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
 
-//     return formattedData;
-// };
+    return `${hours}:${formattedMinutes}${ampm}`;
+};
+
+export const formatMomentAgo = (timestamp: number | null) => {
+    if (!timestamp) return '';
+
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+
+    if (diffMinutes < 1) return 'just now';
+    if (diffMinutes < 60) return `${diffMinutes}m ago`;
+
+    const diffHours = Math.floor(diffMinutes / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+
+    return date.toLocaleDateString();
+};

@@ -16,12 +16,13 @@ import {
     serverTimestamp,
     Unsubscribe,
     onDisconnect,
-    set,
+    query,
+    orderByChild,
 } from 'firebase/database';
 
 import { auth } from './firebase-config';
 
-import { ChatData, FormattedUser, UserData } from '~/lib/types';
+import { ChatData, ChatPartner, FirebaseMessage, FormattedUser, UserData } from '~/lib/types';
 
 export interface FirebaseUserResponse {
     user: User;
@@ -101,14 +102,32 @@ export const listenToUserChats = (
             const chatIdsData = snapshot.val();
             if (chatIdsData) {
                 const chatIds = Object.keys(chatIdsData);
-                // Fetch details for each chat concurrently
                 const chatPromises = chatIds.map(async (chatId) => {
                     try {
                         const chatRef = ref(db, `chats/${chatId}`);
                         const chatSnapshot = await get(chatRef);
                         if (chatSnapshot.exists()) {
                             const chatData = chatSnapshot.val();
-                            return { id: chatId, ...chatData };
+
+                            const participants = chatData.participants || {};
+                            const participantKeys = Object.keys(participants);
+                            const partnerKey = participantKeys.find(
+                                (key) => key !== userId && key.includes(userId + '_')
+                            );
+
+                            let partnerName = 'Anonymous';
+                            if (partnerKey) {
+                                if (partnerKey.includes('_')) {
+                                    const parts = partnerKey.split('_');
+                                    partnerName = parts[1];
+                                }
+                            }
+
+                            return {
+                                id: chatId,
+                                ...chatData,
+                                partner: partnerName,
+                            };
                         }
                         console.warn(`Chat data for ID ${chatId} not found.`);
                         return null;
@@ -121,6 +140,7 @@ export const listenToUserChats = (
                 try {
                     const chats = await Promise.all(chatPromises);
                     const validChats = chats.filter((chat): chat is ChatData => chat !== null);
+                    console.log('Fetched chats:', validChats);
                     callback(validChats);
                 } catch (err: any) {
                     console.error('Error processing chat promises:', err);
@@ -158,17 +178,25 @@ export const fetchAllUsers = async (currentUserId: string): Promise<FormattedUse
     }
 };
 
-export const createChat = async (currentUserId: string, otherUserId: string): Promise<string> => {
-    const chatRef = push(ref(db, 'chats'));
-    const chatId = chatRef.key;
+export const createChat = async (
+    currentUserId: string,
+    currentUserName: string,
+    otherUserId: string,
+    otherUserName: string
+): Promise<string> => {
+    const userIds = [currentUserId, otherUserId].sort();
+    const chatId = userIds.join('_');
+    const chatRef = ref(db, `chats/${chatId}`);
 
-    if (!chatId) {
-        throw new Error('Could not generate chat ID');
+    const existingChat = await get(chatRef);
+    if (existingChat.exists()) {
+        console.log('Chat already exists, returning existing chat ID:', chatId);
+        return chatId;
     }
 
     const participantsData = {
-        [currentUserId]: true,
-        [otherUserId]: true,
+        [`${currentUserId}_${currentUserName}`]: true,
+        [`${otherUserId}_${otherUserName}`]: true,
     };
 
     const newChatData = {
@@ -192,26 +220,6 @@ export const createChat = async (currentUserId: string, otherUserId: string): Pr
     }
 };
 
-export const updateUserPresence = (userId: string) => {
-    if (!userId) return;
-
-    const userStatusRef = ref(db, `/status/${userId}`);
-    const connectedRef = ref(db, '.info/connected');
-
-    onValue(connectedRef, (snap) => {
-        if (snap.val() === true) {
-            set(userStatusRef, {
-                online: true,
-                last_seen: serverTimestamp(),
-            });
-            onDisconnect(userStatusRef).set({
-                online: false,
-                last_seen: serverTimestamp(),
-            });
-        }
-    });
-};
-
 export const listenToUserStatus = (
     userId: string,
     callback: (status: { online: boolean; last_seen: number } | null) => void
@@ -231,4 +239,174 @@ export const listenToUserStatus = (
             callback(null);
         }
     );
+};
+
+export const updateUserPresence = (userId: string, chatId: string, isActive: boolean) => {
+    const userStatusRef = ref(db, `userStatus/${userId}`);
+    const userChatStatusRef = ref(db, `chats/${chatId}/participants/${userId}`);
+    const status = {
+        isActive,
+        lastActive: serverTimestamp(),
+    };
+    update(userStatusRef, status);
+    update(userChatStatusRef, status);
+};
+
+export const setupPresenceDisconnectHandlers = (userId: string, chatId: string) => {
+    const userStatusRef = ref(db, `userStatus/${userId}`);
+    const userChatStatusRef = ref(db, `chats/${chatId}/participants/${userId}`);
+    onDisconnect(userStatusRef).update({
+        isActive: false,
+        lastActive: serverTimestamp(),
+    });
+    onDisconnect(userChatStatusRef).update({
+        isActive: false,
+        lastActive: serverTimestamp(),
+    });
+};
+
+export const setTypingStatus = (userId: string, chatId: string, isTyping: boolean) => {
+    const typingRef = ref(db, `chats/${chatId}/participants/${userId}/isTyping`);
+    update(typingRef, { isTyping });
+};
+
+export const markMessagesAsRead = (
+    chatId: string,
+    currentUserId: string,
+    messages: FirebaseMessage[]
+) => {
+    const unreadMessages = messages.filter((msg) => msg.senderId !== currentUserId && !msg.read);
+    if (unreadMessages.length) {
+        const updates: Record<string, boolean> = {};
+        unreadMessages.forEach((msg) => {
+            updates[`chats/${chatId}/messages/${msg.id}/read`] = true;
+        });
+        update(ref(db), updates);
+    }
+};
+
+export const fetchChatPartnerInfo = (
+    chatId: string,
+    currentUserId: string,
+    setChatPartner: React.Dispatch<React.SetStateAction<ChatPartner | null>>,
+    setLoading: React.Dispatch<React.SetStateAction<boolean>>,
+    setError: React.Dispatch<React.SetStateAction<string | null>>
+): (() => void) => {
+    const chatMetaRef = ref(db, `chats/${chatId}`);
+    let unsubscribeFn: (() => void) | null = null;
+
+    get(chatMetaRef)
+        .then((snapshot) => {
+            if (snapshot.exists()) {
+                const chatData = snapshot.val();
+                const participantIds = Object.keys(chatData.participants || {});
+                const partnerId = participantIds.find((pId) => pId !== currentUserId);
+                if (partnerId) {
+                    const partnerStatusRef = ref(db, `chats/${chatId}/participants/${partnerId}`);
+                    unsubscribeFn = onValue(partnerStatusRef, (statusSnapshot) => {
+                        const statusData = statusSnapshot.val() || {};
+                        const userRef = ref(db, `users/${partnerId}`);
+                        get(userRef).then((userSnapshot) => {
+                            if (userSnapshot && userSnapshot.exists()) {
+                                const userData = userSnapshot.val();
+                                const chatPartnerInfo = {
+                                    id: partnerId,
+                                    username: userData.username,
+                                    isActive: statusData.isActive || false,
+                                    isTyping: statusData.isTyping || false,
+                                    lastActive: statusData.lastActive || null,
+                                };
+                                console.log('chatPartnerInfo', chatPartnerInfo);
+                                setChatPartner(chatPartnerInfo);
+                            }
+                            setLoading(false);
+                        });
+                    });
+                } else {
+                    throw new Error('Chat partner not found in participants.');
+                }
+            } else {
+                throw new Error('Chat metadata not found.');
+            }
+        })
+        .catch((err: any) => {
+            console.error('Error fetching chat/partner info:', err);
+            setError(err.message || 'Failed to load chat details.');
+            setLoading(false);
+        });
+
+    return () => {
+        if (unsubscribeFn) {
+            unsubscribeFn();
+        }
+    };
+};
+
+export const listenForMessages = (
+    chatId: string,
+    setMessages: React.Dispatch<React.SetStateAction<FirebaseMessage[]>>,
+    setLoading: React.Dispatch<React.SetStateAction<boolean>>,
+    setError: React.Dispatch<React.SetStateAction<string | null>>
+) => {
+    const messagesRef = ref(db, `chats/${chatId}/messages`);
+    const messagesQuery = query(messagesRef, orderByChild('timestamp'));
+    setLoading(true);
+    setError(null);
+    const unsubscribe = onValue(
+        messagesQuery,
+        (snapshot) => {
+            const messagesData = snapshot.val();
+            if (messagesData) {
+                const messagesList: FirebaseMessage[] = Object.entries(messagesData).map(
+                    ([key, value]: [string, any]) => ({
+                        id: key,
+                        content: value.content,
+                        senderId: value.senderId,
+                        timestamp: value.timestamp,
+                        read: value.read || false,
+                    })
+                );
+                setMessages(messagesList);
+            } else {
+                setMessages([]);
+            }
+            setLoading(false);
+        },
+        (err: any) => {
+            console.error('Error listening to messages:', err);
+            setError(err.message || 'Failed to load messages.');
+            setLoading(false);
+        }
+    );
+    return unsubscribe;
+};
+
+export const sendMessage = async (chatId: string, userId: string, content: string) => {
+    const messagesRef = ref(db, `chats/${chatId}/messages`);
+    const chatMetaRef = ref(db, `chats/${chatId}`);
+    const newMessageData = {
+        content: content.trim(),
+        senderId: userId,
+        timestamp: serverTimestamp(),
+        read: false,
+    };
+    try {
+        await push(messagesRef, newMessageData);
+        const lastMessageUpdate = {
+            lastMessage: {
+                content: content.trim(),
+                timestamp: serverTimestamp(),
+                senderId: userId,
+            },
+        };
+        await update(chatMetaRef, lastMessageUpdate);
+    } catch (err: any) {
+        console.error('Error sending message:', err);
+        throw new Error('Failed to send message.');
+    }
+};
+
+export const resetTypingStatus = (userId: string, chatId: string) => {
+    const typingRef = ref(db, `chats/${chatId}/participants/${userId}/isTyping`);
+    update(typingRef, { isTyping: false });
 };

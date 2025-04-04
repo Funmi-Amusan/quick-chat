@@ -19,6 +19,7 @@ export interface ChatData {
     createdAt: string;
     id: string;
     participants: string[];
+    partner: string;
 }
 
 export interface UserData {
@@ -38,4 +39,20 @@ export interface FormattedChat {
     id: string;
     email: string;
     username: string;
+}
+
+export interface FirebaseMessage {
+    id: string;
+    content: string;
+    senderId: string;
+    timestamp: number;
+    read: boolean;
+}
+
+export interface ChatPartner {
+    id: string;
+    username: string;
+    isActive: boolean;
+    isTyping: boolean;
+    lastActive: number | null;
 }

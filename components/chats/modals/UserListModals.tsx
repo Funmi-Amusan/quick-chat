@@ -19,7 +19,7 @@ interface UserListModalProps {
   userChats: ChatData[];
   loading: boolean;
   error: string | null;
-  currentUserId: string;
+  currentUser?: FormattedUser;
 }
 
 const UserListModal = ({
@@ -29,31 +29,32 @@ const UserListModal = ({
   userChats,
   loading,
   error,
-  currentUserId,
+  currentUser,
 }: UserListModalProps) => {
   const createChatWithUser = async (otherUser: FormattedUser) => {
-    if (!currentUserId) {
+    if (!currentUser) {
       console.error('Create chat failed: User not authenticated.');
       onClose();
       return;
     }
-
-    const existingChat = userChats.find(
-      (chat) =>
-        chat.participants && chat.participants[otherUser.id] && chat.participants[currentUserId]
-    );
+    const userIds = [currentUser.uid, otherUser.id].sort();
+    const chatId = userIds.join('_');
+    const existingChat = userChats.find((chat) => {
+      return chat.id === chatId;
+    });
 
     if (existingChat) {
-      console.log(`Chat with ${otherUser.username || otherUser.id} already exists.`);
-      onClose();
+      console.log('Chat already exists, navigating to existing chat.');
       router.push(`/chats/${existingChat.id}`);
-      return existingChat.id;
     }
 
-    console.log(`Attempting to create chat with: ${otherUser.username || otherUser.id}`);
-
     try {
-      const chatId = await createChat(currentUserId, otherUser.id);
+      const chatId = await createChat(
+        currentUser.uid,
+        currentUser.displayName,
+        otherUser.id,
+        otherUser.username
+      );
       console.log('Chat creation initiated via service, new chat ID:', chatId);
       router.push(`/chats/${chatId}`);
       onClose();
