@@ -1,7 +1,8 @@
 import { router, Link } from 'expo-router';
-import { Text, TextInput, View, Pressable } from 'react-native';
+import { Text, TextInput, View, Pressable, Alert } from 'react-native';
 import { useState } from 'react';
 import { useSession } from 'context/authContext';
+import Toast from 'react-native-toast-message';
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
@@ -13,17 +14,23 @@ export default function SignIn() {
       return await signIn(email, password);
     } catch (err) {
       console.log('[handleLogin] ==>', err);
-      return null;
+      return err;
     }
   };
 
   const handleSignInPress = async () => {
     const resp = await handleLogin();
-    router.replace('/(tabs)/chats');
+    if (resp) {
+      router.replace('/(tabs)/chats');
+    } else {
+      Alert.alert('Error', 'Invalid credentials', [
+        { text: 'OK', onPress: () => console.log('OK Pressed') },
+      ]);
+    }
   };
 
   return (
-    <View className="flex-1 items-center justify-center p-4">
+    <View className="flex-1 items-center justify-center bg-slate-200 p-4">
       <View className="mb-8 items-center">
         <Text className="mb-2 text-2xl font-bold text-gray-800">Welcome Back</Text>
         <Text className="text-sm text-gray-500">Please sign in to continue</Text>
@@ -58,7 +65,7 @@ export default function SignIn() {
 
       <Pressable
         onPress={handleSignInPress}
-        className="w-full max-w-[300px] rounded-lg bg-blue-600 py-3 active:bg-blue-700">
+        className="w-full max-w-[300px] rounded-lg bg-violet-600 py-3 active:bg-violet-700">
         <Text className="text-center text-base font-semibold text-white">Sign In</Text>
       </Pressable>
 
@@ -66,7 +73,7 @@ export default function SignIn() {
         <Text className="text-gray-600">Don't have an account?</Text>
         <Link href="/sign-up" asChild>
           <Pressable className="ml-2">
-            <Text className="font-semibold text-blue-600">Sign Up</Text>
+            <Text className="font-semibold text-violet-600">Sign Up</Text>
           </Pressable>
         </Link>
       </View>

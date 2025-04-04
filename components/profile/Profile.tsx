@@ -13,7 +13,7 @@ const ProfileScreen = () => {
   };
   return (
     <View className="flex-1 items-center justify-center p-4">
-      <TouchableOpacity className=" rounded-xl bg-orange-700 p-4" onPress={() => handleSignOut()}>
+      <TouchableOpacity className=" rounded-xl bg-violet-700 p-4" onPress={() => handleSignOut()}>
         <Text className="text-white">Logout</Text>
       </TouchableOpacity>
     </View>

@@ -17,7 +17,7 @@ export const formatUserData = (userData: UserData[]): FormattedUser[] => {
     return formattedData;
 };
 
-export const formatTimestamp = (timestamp: string) => {
+export const formatTimestamp = (timestamp: number) => {
     const date = new Date(+timestamp);
     let hours = date.getHours();
     const minutes = date.getMinutes();

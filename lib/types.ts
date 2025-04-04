@@ -16,10 +16,16 @@ export type ChatType = {
 };
 
 export interface ChatData {
-    createdAt: string;
     id: string;
-    participants: string[];
     partner: string;
+    lastMessage: LastMessageData;
+    partnerId: string;
+}
+
+export interface LastMessageData {
+    content: string;
+    senderId: string;
+    timestamp: number;
 }
 
 export interface UserData {
@@ -53,6 +59,11 @@ export interface ChatPartner {
     id: string;
     username: string;
     isActive: boolean;
-    isTyping: boolean;
+    isTyping: isTyping;
+    isLoggedIn: boolean;
     lastActive: number | null;
+}
+
+export interface isTyping {
+    isTyping: boolean;
 }

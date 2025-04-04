@@ -19,6 +19,9 @@ import {
     query,
     orderByChild,
 } from 'firebase/database';
+import React from 'react';
+import { Alert } from 'react-native';
+import Toast from 'react-native-toast-message';
 
 import { auth } from './firebase-config';
 
@@ -50,7 +53,11 @@ export async function login(
         const userCredential: UserCredential = await signInWithEmailAndPassword(auth, email, password);
         return { user: userCredential.user };
     } catch (e) {
-        console.error('[error logging in] ==>', e);
+        Toast.show({
+            type: 'error',
+            text1: 'Login failed',
+            text2: 'Invalid email or password',
+        });
         throw e;
     }
 }
@@ -108,25 +115,25 @@ export const listenToUserChats = (
                         const chatSnapshot = await get(chatRef);
                         if (chatSnapshot.exists()) {
                             const chatData = chatSnapshot.val();
-
                             const participants = chatData.participants || {};
                             const participantKeys = Object.keys(participants);
                             const partnerKey = participantKeys.find(
-                                (key) => key !== userId && key.includes(userId + '_')
+                                (key) => !key.includes(userId) && key.includes('_')
                             );
-
                             let partnerName = 'Anonymous';
+                            let partnerId = '';
                             if (partnerKey) {
                                 if (partnerKey.includes('_')) {
                                     const parts = partnerKey.split('_');
                                     partnerName = parts[1];
+                                    partnerId = parts[0];
                                 }
                             }
-
                             return {
                                 id: chatId,
-                                ...chatData,
+                                lastMessage: chatData.lastMessage,
                                 partner: partnerName,
+                                partnerId,
                             };
                         }
                         console.warn(`Chat data for ID ${chatId} not found.`);
@@ -140,7 +147,6 @@ export const listenToUserChats = (
                 try {
                     const chats = await Promise.all(chatPromises);
                     const validChats = chats.filter((chat): chat is ChatData => chat !== null);
-                    console.log('Fetched chats:', validChats);
                     callback(validChats);
                 } catch (err: any) {
                     console.error('Error processing chat promises:', err);
@@ -190,7 +196,7 @@ export const createChat = async (
 
     const existingChat = await get(chatRef);
     if (existingChat.exists()) {
-        console.log('Chat already exists, returning existing chat ID:', chatId);
+        Alert.alert('Chat already exists, returning existing chat ID:');
         return chatId;
     }
 
@@ -212,7 +218,6 @@ export const createChat = async (
 
     try {
         await update(ref(db), updates);
-        console.log('Chat created successfully in service with ID:', chatId);
         return chatId;
     } catch (error: any) {
         console.error('Error creating chat in service:', error);
@@ -300,7 +305,13 @@ export const fetchChatPartnerInfo = (
             if (snapshot.exists()) {
                 const chatData = snapshot.val();
                 const participantIds = Object.keys(chatData.participants || {});
-                const partnerId = participantIds.find((pId) => pId !== currentUserId);
+                const partnerIdWithName = participantIds.find((pId) => !pId.includes(currentUserId));
+                let partnerId;
+                if (partnerIdWithName?.includes('_')) {
+                    partnerId = partnerIdWithName?.split('_')[0];
+                } else {
+                    partnerId = partnerIdWithName;
+                }
                 if (partnerId) {
                     const partnerStatusRef = ref(db, `chats/${chatId}/participants/${partnerId}`);
                     unsubscribeFn = onValue(partnerStatusRef, (statusSnapshot) => {
@@ -315,8 +326,8 @@ export const fetchChatPartnerInfo = (
                                     isActive: statusData.isActive || false,
                                     isTyping: statusData.isTyping || false,
                                     lastActive: statusData.lastActive || null,
+                                    isLoggedIn: userData.isLoggedIn || false,
                                 };
-                                console.log('chatPartnerInfo', chatPartnerInfo);
                                 setChatPartner(chatPartnerInfo);
                             }
                             setLoading(false);
@@ -344,14 +355,18 @@ export const fetchChatPartnerInfo = (
 
 export const listenForMessages = (
     chatId: string,
+    currentUserId: string,
     setMessages: React.Dispatch<React.SetStateAction<FirebaseMessage[]>>,
     setLoading: React.Dispatch<React.SetStateAction<boolean>>,
-    setError: React.Dispatch<React.SetStateAction<string | null>>
+    setError: React.Dispatch<React.SetStateAction<string | null>>,
+    sendNotification: (message: FirebaseMessage) => void
 ) => {
     const messagesRef = ref(db, `chats/${chatId}/messages`);
     const messagesQuery = query(messagesRef, orderByChild('timestamp'));
     setLoading(true);
     setError(null);
+    let initialLoad = true;
+
     const unsubscribe = onValue(
         messagesQuery,
         (snapshot) => {
@@ -367,10 +382,18 @@ export const listenForMessages = (
                     })
                 );
                 setMessages(messagesList);
+
+                if (!initialLoad && messagesList.length > 0) {
+                    const latestMessage = messagesList[messagesList.length - 1];
+                    if (latestMessage.senderId !== currentUserId) {
+                        sendNotification(latestMessage);
+                    }
+                }
             } else {
                 setMessages([]);
             }
             setLoading(false);
+            initialLoad = false;
         },
         (err: any) => {
             console.error('Error listening to messages:', err);
@@ -397,6 +420,7 @@ export const sendMessage = async (chatId: string, userId: string, content: strin
                 content: content.trim(),
                 timestamp: serverTimestamp(),
                 senderId: userId,
+                read: false,
             },
         };
         await update(chatMetaRef, lastMessageUpdate);

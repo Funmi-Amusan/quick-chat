@@ -21,7 +21,7 @@ const ChatTextInput = ({
 
   return (
     <View
-      className={` flex-row justify-between gap-4 border-t border-gray-300 bg-yellow-200 p-2 ${isFocused ? 'border-b border-gray-500' : ''}`}>
+      className={` bg-slate-300-200 flex-row justify-between gap-4 border-t border-gray-300 p-4`}>
       <TextInput
         className=" max-h-28 min-h-10 flex-grow rounded-full bg-white px-3 py-2 color-slate-700"
         value={value}

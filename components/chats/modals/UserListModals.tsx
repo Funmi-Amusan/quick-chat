@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { User } from 'firebase/auth';
 import {
   View,
   Text,
@@ -7,7 +8,9 @@ import {
   ActivityIndicator,
   Button,
   TouchableOpacity,
+  Image,
 } from 'react-native';
+import { ImageAssets } from '~/assets';
 
 import { createChat } from '~/lib/firebase-sevice';
 import { FormattedUser, ChatData } from '~/lib/types';
@@ -19,7 +22,7 @@ interface UserListModalProps {
   userChats: ChatData[];
   loading: boolean;
   error: string | null;
-  currentUser?: FormattedUser;
+  currentUser: User | null;
 }
 
 const UserListModal = ({
@@ -31,32 +34,24 @@ const UserListModal = ({
   error,
   currentUser,
 }: UserListModalProps) => {
+  const chatsToList = allUsers.filter(
+    (user) => user.id !== currentUser?.uid && !userChats.some((chat) => chat.partnerId === user.id)
+  );
+
   const createChatWithUser = async (otherUser: FormattedUser) => {
     if (!currentUser) {
       console.error('Create chat failed: User not authenticated.');
       onClose();
       return;
     }
-    const userIds = [currentUser.uid, otherUser.id].sort();
-    const chatId = userIds.join('_');
-    const existingChat = userChats.find((chat) => {
-      return chat.id === chatId;
-    });
-
-    if (existingChat) {
-      console.log('Chat already exists, navigating to existing chat.');
-      router.push(`/chats/${existingChat.id}`);
-    }
-
     try {
       const chatId = await createChat(
         currentUser.uid,
-        currentUser.displayName,
+        currentUser.displayName || 'Anonymous',
         otherUser.id,
         otherUser.username
       );
-      console.log('Chat creation initiated via service, new chat ID:', chatId);
-      router.push(`/chats/${chatId}`);
+      router.push(`/chatroom/${chatId}`);
       onClose();
       return chatId;
     } catch (error: any) {
@@ -87,19 +82,22 @@ const UserListModal = ({
 
         {!loading && !error && (
           <FlatList
-            data={allUsers}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
+            data={chatsToList}
+            keyExtractor={(item: FormattedUser) => item.id}
+            renderItem={({ item }: { item: FormattedUser }) => (
               <TouchableOpacity
                 className=" border-b border-gray-300 px-4 py-2 "
                 onPress={() => createChatWithUser(item)}>
-                <Text className=" text-lg ">{item.username}</Text>
+                <View className=" flex-row items-center gap-2 ">
+                  <Image source={ImageAssets.avatar} className=" h-8 w-8 " />
+                  <Text className=" text-xl font-medium">{item.username}</Text>
+                </View>
                 {/* Add more user details later */}
               </TouchableOpacity>
             )}
             ListEmptyComponent={() => (
               <View className=" flex-1 items-center justify-center p-5 ">
-                <Text>No other users found.</Text>
+                <Text className=" text-xl font-medium">No other users found.</Text>
               </View>
             )}
           />

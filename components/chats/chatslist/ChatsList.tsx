@@ -47,12 +47,7 @@ const ChatsList = () => {
         setLoading(false);
       }
     );
-    return () => {
-      if (unsubscribeRef.current) {
-        console.log('Unsubscribing from chat listener');
-        unsubscribeRef.current();
-      }
-    };
+    return () => {};
   }, [currentUser]);
 
   const openUserListModal = async () => {
@@ -103,11 +98,14 @@ const ChatsList = () => {
   }
   return (
     <AppLayout>
-      <View className=" flex-row items-center justify-between border-b border-gray-300 px-4 py-3 ">
-        <Text className=" text-3xl font-bold ">Chats</Text>
+      <View>
+        <Text className=" text-xl font-bold ">Welcome {currentUser?.displayName}</Text>
+      </View>
+      <View className=" flex-row items-center justify-between border-b border-gray-300 pb-3 ">
+        <Text className=" text-3xl font-bold "> Chats</Text>
         <TouchableOpacity onPress={openUserListModal} className="flex-row items-center gap-2 p-2">
           <Text className=" text-base text-gray-700 ">Add Chat</Text>
-          <FontAwesome name="plus-circle" size={24} color="#007AFF" />
+          <FontAwesome name="plus-circle" size={30} color="#6d28d9" />
         </TouchableOpacity>
       </View>
 

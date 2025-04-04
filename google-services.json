@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "899825238091",
+    "firebase_url": "https://quickchat-e74e2-default-rtdb.firebaseio.com",
     "project_id": "quickchat-e74e2",
     "storage_bucket": "quickchat-e74e2.firebasestorage.app"
   },

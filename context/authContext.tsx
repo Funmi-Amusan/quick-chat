@@ -1,14 +1,16 @@
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { getDatabase, ref, set } from 'firebase/database';
+import { getDatabase, ref, set, update } from 'firebase/database';
 import { auth } from 'lib/firebase-config';
 import { login, logout, register } from 'lib/firebase-sevice';
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import Toast from 'react-native-toast-message';
 
 interface AuthContextType {
   signIn: (email: string, password: string) => Promise<User | undefined>;
   signUp: (email: string, password: string, name?: string) => Promise<User | undefined>;
   signOut: () => void;
   user: User | null;
+  isAuthenticated: boolean;
   isLoading: boolean;
 }
 
@@ -28,16 +30,27 @@ export function useSession(): AuthContextType {
 
 export function SessionProvider(props: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  const db = getDatabase();
+  const userRef = ref(db, `users/${user?.uid}`);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user);
+        const status = {
+          isLoggedIn: true,
+        };
+        update(userRef, status);
         setIsLoading(false);
       } else {
         setUser(null);
+        const status = {
+          isLoggedIn: true,
+        };
+        update(userRef, status);
         setIsLoading(false);
       }
     });
@@ -48,9 +61,27 @@ export function SessionProvider(props: { children: React.ReactNode }) {
   const handleSignIn = async (email: string, password: string) => {
     try {
       const response = await login(email, password);
+      if (response?.user) {
+        Toast.show({
+          type: 'success',
+          text1: 'Sign in successful',
+          text2: 'You have successfully signed in.',
+        });
+        setIsAuthenticated(true);
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Sign in failed',
+          text2: 'Please check your email and password and try again.',
+        });
+      }
       return response?.user;
     } catch (error) {
-      console.error('[handleSignIn error] ==>', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Sign in failed',
+        text2: error instanceof Error ? error.message : 'An unknown error occurred',
+      });
       return undefined;
     }
   };
@@ -59,35 +90,29 @@ export function SessionProvider(props: { children: React.ReactNode }) {
     try {
       const response = await register(email, password, name);
       if (response?.user) {
-        console.log('User created successfully, UID:', response.user.uid); // Add log
         const db = getDatabase();
         const userRef = ref(db, 'users/' + response.user.uid);
-        console.log('Attempting to write to RTDB path:', userRef.toString()); // Add log
-        console.log('Data to write:', { username: name, email }); // Add log
-
         set(userRef, {
           username: name,
           email,
         })
-          .then(() => {
-            console.log('Data successfully written to RTDB!'); // Add success log
-          })
+          .then(() => {})
           .catch((error) => {
-            console.error('Error writing data to RTDB:', error); // Add specific DB error log
+            console.log('error', error);
           });
       } else {
-        console.log('Registration response did not contain a user object.'); // Add log
+        console.log('Registration response did not contain a user object.');
       }
       return response?.user;
     } catch (error) {
-      console.error('[handleSignUp error] ==>', error);
-      return undefined;
+      return error;
     }
   };
 
   const handleSignOut = async () => {
     try {
       await logout();
+      setIsAuthenticated(false);
       setUser(null);
     } catch (error) {
       console.error('[handleSignOut error] ==>', error);
@@ -101,6 +126,7 @@ export function SessionProvider(props: { children: React.ReactNode }) {
         signUp: handleSignUp,
         signOut: handleSignOut,
         user,
+        isAuthenticated,
         isLoading,
       }}>
       {props.children}
