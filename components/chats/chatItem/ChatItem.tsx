@@ -18,7 +18,7 @@ const ChatItem = ({ lastMessage, id, partner }: ChatData) => {
             {lastMessage && <Text>{formatTimestamp(lastMessage?.timestamp)}</Text>}
           </View>
           <View className="flex-row items-center justify-between">
-            <Text>{lastMessageContent}</Text>
+            <Text className=" line-clamp-1 ">{lastMessageContent}</Text>
           </View>
         </View>
       </View>

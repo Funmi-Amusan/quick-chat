@@ -18,6 +18,7 @@ import {
     onDisconnect,
     query,
     orderByChild,
+    set,
 } from 'firebase/database';
 import React from 'react';
 import { Alert } from 'react-native';
@@ -379,6 +380,7 @@ export const listenForMessages = (
                         senderId: value.senderId,
                         timestamp: value.timestamp,
                         read: value.read || false,
+                        reaction: value.reactions || undefined,
                     })
                 );
                 setMessages(messagesList);
@@ -433,4 +435,14 @@ export const sendMessage = async (chatId: string, userId: string, content: strin
 export const resetTypingStatus = (userId: string, chatId: string) => {
     const typingRef = ref(db, `chats/${chatId}/participants/${userId}/isTyping`);
     update(typingRef, { isTyping: false });
+};
+
+export const reactToMessage = async (
+    messageId: string,
+    emoji: string,
+    chatId: string,
+    // currentUserId: string .... if i want to do a group chat, this will be important
+) => {
+    const reactionRef = ref(db, `chats/${chatId}/messages/${messageId}/reactions`);
+    await set(reactionRef, emoji);
 };

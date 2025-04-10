@@ -94,10 +94,10 @@ const ChatRoom = () => {
     ({ item }: { item: FirebaseMessage }) => (
       <View className="my-1">
         <MessageBubble
-          content={item.content}
+          chatId={chatId}
           isFromSelf={item.senderId === currentUser?.uid}
-          isRead={item.read}
-          timestamp={item.timestamp}
+          {...item}
+          item={item}
         />
       </View>
     ),
