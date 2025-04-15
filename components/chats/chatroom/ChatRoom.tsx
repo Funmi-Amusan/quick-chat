@@ -27,6 +27,7 @@ import { auth } from '~/lib/firebase-config';
 import * as Database from '~/lib/firebase-sevice';
 import { formatMomentAgo } from '~/lib/helpers';
 import { ChatPartner, FirebaseMessage } from '~/lib/types';
+import ChatHeader from './chatHeader/ChatHeader';
 
 const ChatRoom = () => {
   const { id: chatId } = useLocalSearchParams<{ id: string }>();
@@ -105,33 +106,12 @@ const ChatRoom = () => {
   return (
     <ChatRoomLayout>
       <View className=" border-b border-gray-300 bg-white px-4 py-2">
-        {chatPartner ? (
-          <View className="flex-row items-center">
-            <TouchableOpacity className="pr-2" onPress={() => router.back()}>
-              <FontAwesome name="chevron-left" size={14} color="#000" />
-            </TouchableOpacity>
-            <Image source={ImageAssets.avatar} className="mr-3 h-10 w-10 rounded-full" />
-            <View>
-              <Text className="text-lg font-semibold">{chatPartner.username}</Text>
-              <View className="mt-0.5 flex-row items-center">
-                {chatPartner.isActive ? (
-                  <>
-                    <View className="mr-1 h-2 w-2 rounded-full bg-green-500" />
-                    <Text className="text-xs text-gray-600">Active now</Text>
-                  </>
-                ) : (
-                  <Text className="text-xs text-gray-600">
-                    {chatPartner.lastActive
-                      ? `Left Chatroom ${formatMomentAgo(chatPartner.lastActive)}`
-                      : 'Offline'}
-                  </Text>
-                )}
-              </View>
-            </View>
-          </View>
-        ) : (
-          !loading && <Text className="text-lg font-semibold">Chat</Text>
-        )}
+        <View className="flex-row items-center">
+          <TouchableOpacity className="px-2" onPress={() => router.back()}>
+            <FontAwesome name="chevron-left" size={14} color="#000" />
+          </TouchableOpacity>
+          <ChatHeader chatPartner={chatPartner} />
+        </View>
       </View>
 
       {loading && !messages.length ? (
