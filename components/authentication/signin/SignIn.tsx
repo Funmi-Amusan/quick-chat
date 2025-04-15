@@ -1,7 +1,7 @@
-import { router, Link } from 'expo-router';
-import { Text, TextInput, View, Pressable, Alert } from 'react-native';
-import { useState } from 'react';
 import { useSession } from 'context/authContext';
+import { router, Link } from 'expo-router';
+import { useState } from 'react';
+import { Text, TextInput, View, Pressable, Alert } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 export default function SignIn() {
@@ -30,7 +30,7 @@ export default function SignIn() {
   };
 
   return (
-    <View className="flex-1 items-center justify-center bg-slate-200 p-4">
+    <View className="bg-body flex-1 items-center justify-center p-4">
       <View className="mb-8 items-center">
         <Text className="mb-2 text-2xl font-bold text-gray-800">Welcome Back</Text>
         <Text className="text-sm text-gray-500">Please sign in to continue</Text>
