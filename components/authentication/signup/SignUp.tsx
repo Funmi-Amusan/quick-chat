@@ -27,7 +27,7 @@ export default function SignUp() {
   };
 
   return (
-    <View className="flex-1 items-center justify-center bg-slate-200 p-4">
+    <View className="bg-body flex-1 items-center justify-center p-4">
       <View className="mb-8 items-center">
         <Text className="mb-2 text-2xl font-bold text-gray-800">Create Account</Text>
         <Text className="text-sm text-gray-500">Sign up to get started</Text>
