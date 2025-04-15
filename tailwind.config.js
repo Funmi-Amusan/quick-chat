@@ -8,6 +8,7 @@ module.exports = {
       colors: {
         // Add your custom colors here
         primary: '#FFB0FE',
+        lighterPrimary: '#FFDBFF',
         body: '#FFFFFF',
         grey: '#8A8CA9',
         mint: '#7ED3B2'

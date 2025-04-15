@@ -2,11 +2,12 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AppLayout from 'components/layout/AppLayout';
 import { Unsubscribe } from 'firebase/database';
 import { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, Image } from 'react-native';
 
 import ChatItem from '../chatItem/ChatItem';
 import UserListModal from '../modals/UserListModals';
 
+import { ImageAssets } from '~/assets';
 import { auth } from '~/lib/firebase-config';
 import { fetchAllUsers, listenToUserChats } from '~/lib/firebase-sevice';
 import { ChatData, FormattedUser } from '~/lib/types';
@@ -98,14 +99,14 @@ const ChatsList = () => {
   }
   return (
     <AppLayout>
-      <View>
+      <View className="flex-row items-center gap-2">
+        <Image source={ImageAssets.shaz} className="h-12 w-12 rounded-full" />
         <Text className=" text-xl font-bold ">Welcome {currentUser?.displayName}</Text>
       </View>
-      <View className=" flex-row items-center justify-between border-b border-gray-300 pb-3 ">
+      <View className=" flex-row items-center justify-between pb-3 ">
         <Text className=" text-3xl font-bold "> Chats</Text>
         <TouchableOpacity onPress={openUserListModal} className="flex-row items-center gap-2 p-2">
-          <Text className=" text-base text-gray-700 ">Add Chat</Text>
-          <FontAwesome name="plus-circle" size={30} color="#6d28d9" />
+          <FontAwesome name="plus-circle" size={30} color="primary" />
         </TouchableOpacity>
       </View>
 

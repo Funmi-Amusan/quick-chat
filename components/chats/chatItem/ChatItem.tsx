@@ -3,22 +3,26 @@ import { Link } from 'expo-router';
 import React from 'react';
 import { View, Text, Image } from 'react-native';
 
-import { formatTimestamp } from '~/lib/helpers';
+import { formatMomentAgoTimestamp } from '~/lib/helpers';
 import { ChatData } from '~/lib/types';
 
 const ChatItem = ({ lastMessage, id, partner }: ChatData) => {
-  const lastMessageContent = lastMessage?.content ?? 'Be the first to say hello';
+  const previewMessageContent = lastMessage?.content ?? 'Be the first to say hello';
   return (
     <Link href={`/chatroom/${id}`}>
-      <View className="flex-row items-center justify-between gap-4 px-4 py-2 text-black">
-        <Image source={ImageAssets.avatar} className="h-12 w-12 rounded-full" />
-        <View className=" flex-grow gap-1 border-b-[0.5px] border-gray-300 py-2">
-          <View className="flex-row items-center justify-between">
-            <Text className=" text-lg font-bold">{partner}</Text>
-            {lastMessage && <Text>{formatTimestamp(lastMessage?.timestamp)}</Text>}
+      <View className="flex-row items-center justify-between gap-4 p-2 text-black">
+        <Image source={ImageAssets.colleen} className="h-14 w-14 rounded-full" />
+        <View className=" flex-grow gap-1 py-2">
+          <View className="flex-row items-center justify-between ">
+            <Text className=" text-xl font-bold capitalize">{partner}</Text>
+            <Text className=" bg-mint h-5 w-5 items-center rounded-full text-center text-sm text-white ">
+              5
+            </Text>
+           
           </View>
           <View className="flex-row items-center justify-between">
-            <Text className=" line-clamp-1 ">{lastMessageContent}</Text>
+            <Text className=" text-grey line-clamp-1 font-medium ">{previewMessageContent}</Text>
+            {lastMessage && <Text>{formatMomentAgoTimestamp(lastMessage?.timestamp)}</Text>}
           </View>
         </View>
       </View>

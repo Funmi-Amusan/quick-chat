@@ -1,4 +1,5 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+// import { FlashList } from '@shopify/flash-list'; // use flash list later or legend list
 import { ImageAssets } from 'assets';
 import ChatRoomLayout from 'components/layout/ChatRoomLayout';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -93,12 +94,7 @@ const ChatRoom = () => {
   const renderMessage = useCallback(
     ({ item }: { item: FirebaseMessage }) => (
       <View className="my-1">
-        <MessageBubble
-          chatId={chatId}
-          isFromSelf={item.senderId === currentUser?.uid}
-          {...item}
-          item={item}
-        />
+        <MessageBubble chatId={chatId} isFromSelf={item.senderId === currentUser?.uid} {...item} />
       </View>
     ),
     [currentUser?.uid]
@@ -108,7 +104,7 @@ const ChatRoom = () => {
 
   return (
     <ChatRoomLayout>
-      <View className="border-b border-gray-300 bg-white px-4 py-2">
+      <View className=" border-b border-gray-300 bg-white px-4 py-2">
         {chatPartner ? (
           <View className="flex-row items-center">
             <TouchableOpacity className="pr-2" onPress={() => router.back()}>
@@ -139,7 +135,7 @@ const ChatRoom = () => {
       </View>
 
       {loading && !messages.length ? (
-        <View className="flex-1 items-center justify-center p-4">
+        <View className="flex-1 items-center justify-center bg-slate-200 p-4">
           <ActivityIndicator size="large" color="#007AFF" />
           <Text className="mt-2 text-gray-600">Loading chat...</Text>
         </View>
@@ -148,10 +144,10 @@ const ChatRoom = () => {
           <Text className="mt-2 text-center text-red-500">{error}</Text>
         </View>
       ) : (
-        <KeyboardAvoidingView className="flex-grow" behavior="padding">
+        <KeyboardAvoidingView className="relative flex-grow" behavior="padding">
           <FlatList
             ref={flatListRef}
-            className="flex-1 bg-white"
+            className="flex-1 bg-slate-100"
             contentContainerStyle={{ paddingVertical: 10, paddingHorizontal: 8 }}
             data={messages}
             renderItem={renderMessage}
@@ -164,7 +160,7 @@ const ChatRoom = () => {
             value={inputText}
             onChangeText={setInputText}
             onSendPress={handleSendMessage}
-            placeholder="Message..."
+            placeholder="Type something..."
           />
         </KeyboardAvoidingView>
       )}

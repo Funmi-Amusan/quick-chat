@@ -53,6 +53,7 @@ export interface FirebaseMessage {
     senderId: string;
     timestamp: number;
     read: boolean;
+    reaction: string;
 }
 
 export interface ChatPartner {

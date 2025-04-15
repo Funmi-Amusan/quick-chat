@@ -80,7 +80,6 @@ export const formatMomentAgoTimestamp = (timestamp: number) => {
 
 export const formatMomentAgo = (timestamp: number | null) => {
     if (!timestamp) return '';
-    console.log('timestamp', timestamp);
 
     const date = new Date(timestamp);
     const now = new Date();
