@@ -391,7 +391,6 @@ export const listenForMessages = (
             replyMessage: value.replyMessage || null,
           })
         );
-        console.log('Fetched messages:', messagesList);
         setMessages(messagesList);
 
         if (!initialLoad && messagesList.length > 0) {
