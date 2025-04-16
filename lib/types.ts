@@ -68,3 +68,9 @@ export interface ChatPartner {
 export interface isTyping {
     isTyping: boolean;
 }
+
+export interface ReplyMessageInfo {
+  id: string;
+  content: string;
+  senderId: string;
+}

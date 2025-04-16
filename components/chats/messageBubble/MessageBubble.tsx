@@ -1,16 +1,30 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { BlurView } from 'expo-blur';
 import React, { useState, useRef, useCallback } from 'react';
-import { View, Text, TouchableOpacity, Modal, UIManager, Platform, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Modal,
+  UIManager,
+  Platform,
+  ScrollView,
+  StyleSheet,
+} from 'react-native';
+import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import Animated from 'react-native-reanimated';
 
 import { reactToMessage } from '~/lib/firebase-sevice';
 import { formatTimestamp } from '~/lib/helpers';
+import { ReplyMessageInfo } from '~/lib/types';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
 const EMOJI_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '😡', '🥳', '😍', '🥶', '🤯'];
+
 
 const MessageBubble = ({
   content,
@@ -20,7 +34,9 @@ const MessageBubble = ({
   id,
   chatId,
   reaction,
+  updateRef,
   senderId,
+  onReply,
 }: {
   content: string;
   isFromSelf: boolean;
@@ -30,16 +46,17 @@ const MessageBubble = ({
   chatId: string;
   reaction: string | null;
   senderId: string;
+  updateRef: React.RefObject<any>;
+  onReply: (replyInfo: ReplyMessageInfo) => void;
 }) => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [pickerPosition, setPickerPosition] = useState<{ top: number; left: number } | null>(null);
- 
   const bubbleRef = useRef<TouchableOpacity>(null);
+  const swipeableRef = useRef<Swipeable>(null);
 
   const handleLongPress = useCallback(() => {
     if (id && bubbleRef.current) {
       const currentBubbleRef = bubbleRef.current;
-
       currentBubbleRef.measure(
         (fx: any, fy: any, width: any, height: any, px: number, py: number) => {
           if (isNaN(px) || isNaN(py) || !px || !py) {
@@ -65,7 +82,7 @@ const MessageBubble = ({
         `[HandleLongPress] Skipped measure for ID: ${id}. Ref Missing: ${!bubbleRef.current}`
       );
     }
-  }, [id, chatId]);
+  }, [id]);
 
   const handleCloseModal = () => {
     setShowEmojiPicker(false);
@@ -114,16 +131,18 @@ const MessageBubble = ({
     );
   };
 
-  const messsageContent = () => {
+  const messageContent = () => {
     return (
       <View
         className={`
             min-w-20 max-w-[75%] rounded-2xl px-3 py-2 shadow-sm
             ${
               isFromSelf
-                ? 'bg-lighterPrimary mr-2 self-end rounded-br-sm'
+                ? 'mr-2 self-end rounded-br-sm bg-lighterPrimary'
                 : 'ml-2 self-start rounded-bl-sm bg-white'
             }
+            ${reaction ? 'mb-5' : ''}
+            
           `}>
         <Text className="text-base leading-snug text-gray-800">{content}</Text>
         <View className="mt-1 flex-row items-center self-end">
@@ -140,17 +159,65 @@ const MessageBubble = ({
     );
   };
 
+  const handleSwipeOpen = () => {
+    if (onReply) {
+      onReply({ id, content, senderId });
+    }
+    setTimeout(() => {
+      swipeableRef.current?.close();
+    }, 1000);
+  };
+
+  const renderLeftActions = (progress: any, dragX: any) => {
+    return (
+      <Animated.View style={[styles.leftAction]}>
+        <View className="flex h-full items-center justify-center bg-transparent pr-2">
+          <MaterialCommunityIcons name="reply" size={24} color="grey" />
+        </View>
+      </Animated.View>
+    );
+  };
+
+  const renderRightActions = (progress: any, dragX: any) => {
+    return (
+      <Animated.View style={[styles.rightAction]}>
+        <View className="flex h-full items-center justify-center bg-transparent pl-2">
+          <MaterialCommunityIcons name="reply" size={24} color="grey" />
+        </View>
+      </Animated.View>
+    );
+  };
+
+  const handleSwipeableWillOpen = () => {
+    if (updateRef?.current && updateRef.current !== swipeableRef.current) {
+      updateRef.current.close();
+    }
+    if (updateRef) {
+      updateRef.current = swipeableRef.current;
+    }
+  };
+
   return (
     <>
-      <TouchableOpacity
-        ref={bubbleRef}
-        onLongPress={handleLongPress}
-        activeOpacity={0.8}
-        className={` ${reaction ? 'mb-5' : 'mb-1'}`}>
-        {messsageContent()}
-      </TouchableOpacity>
+      <Swipeable
+        ref={swipeableRef}
+        friction={2}
+        leftThreshold={40}
+        rightThreshold={40}
+        renderLeftActions={!isFromSelf ? renderLeftActions : undefined}
+        renderRightActions={isFromSelf ? renderRightActions : undefined}
+        onSwipeableOpen={handleSwipeOpen}
+        onSwipeableWillOpen={handleSwipeableWillOpen}
+        overshootLeft={false}
+        overshootRight={false}
+        containerStyle={[
+          styles.swipeableContainer
+        ]}>
+        <TouchableOpacity ref={bubbleRef} onLongPress={handleLongPress} activeOpacity={0.9}>
+          {messageContent()}
+        </TouchableOpacity>
+      </Swipeable>
 
-      {/* Modal */}
       <Modal
         animationType="fade"
         transparent
@@ -175,7 +242,12 @@ const MessageBubble = ({
                   : { display: 'none' }
               }>
               {renderEmojiPicker()}
-              <View>{messsageContent()}</View>
+              <View
+                style={{
+                  marginLeft: pickerPosition.left < 50 ? 0 : -pickerPosition.left + 10,
+                }}>
+                {messageContent()}
+              </View>
             </View>
           )}
         </TouchableOpacity>
@@ -183,5 +255,17 @@ const MessageBubble = ({
     </>
   );
 };
+
+const styles = StyleSheet.create({
+  swipeableContainer: {},
+  leftAction: {
+    width: 80,
+    // backgroundColor: 'lightblue',
+  },
+  rightAction: {
+    width: 80,
+    // backgroundColor: 'lightcoral',
+  },
+});
 
 export default MessageBubble;
