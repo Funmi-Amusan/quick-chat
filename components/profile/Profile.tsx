@@ -1,6 +1,12 @@
 import { router } from 'expo-router';
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
+import Animated, {
+  useSharedValue,
+  withTiming,
+  useAnimatedStyle,
+  Easing,
+} from 'react-native-reanimated';
 
 import { useSession } from '~/context/authContext';
 
@@ -16,6 +22,13 @@ const ProfileScreen = () => {
       <TouchableOpacity className=" rounded-xl bg-violet-700 p-4" onPress={() => handleSignOut()}>
         <Text className="text-white">Logout</Text>
       </TouchableOpacity>
+      <Animated.View
+      style={{
+        width: 100,
+        height: 100,
+        backgroundColor: 'violet',
+      }}
+    />
     </View>
   );
 };
