@@ -36,6 +36,7 @@ const MessageBubble = ({
   updateRef,
   senderId,
   onReply,
+  replyMessage,
 }: {
   content: string;
   isFromSelf: boolean;
@@ -47,6 +48,7 @@ const MessageBubble = ({
   senderId: string;
   updateRef: React.RefObject<any>;
   onReply: (replyInfo: ReplyMessageInfo) => void;
+  replyMessage?: ReplyMessageInfo | null;
 }) => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [pickerPosition, setPickerPosition] = useState<{ top: number; left: number } | null>(null);
@@ -143,6 +145,7 @@ const MessageBubble = ({
             ${reaction ? 'mb-5' : ''}
             
           `}>
+        {replyMessageContent()}
         <Text className="text-base leading-snug text-gray-800">{content}</Text>
         <View className="mt-1 flex-row items-center self-end">
           <Text className="text-xs text-gray-500">{formatTimestamp(timestamp ?? 0)}</Text>
@@ -194,6 +197,14 @@ const MessageBubble = ({
     if (updateRef) {
       updateRef.current = swipeableRef.current;
     }
+  };
+
+  const replyMessageContent = () => {
+    return replyMessage !== null ? (
+      <View className="h-fit flex-row items-center rounded-md border-l-4 border-mint bg-white/50">
+        <Text className="line-clamp-3 px-2 py-4">{replyMessage?.content}</Text>
+      </View>
+    ) : null;
   };
 
   return (

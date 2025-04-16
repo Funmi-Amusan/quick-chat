@@ -89,7 +89,8 @@ const ChatRoom = () => {
     const messageToSend = trimmedInput;
     setInputText('');
     try {
-      await Database.sendMessage(chatId, currentUser.uid, messageToSend);
+      await Database.sendMessage(chatId, currentUser.uid, messageToSend, replyMessage);
+      setReplyMessage(null);
       scrollToBottom();
     } catch (err: any) {
       console.error('Error sending message:', err);
@@ -97,9 +98,7 @@ const ChatRoom = () => {
     }
   }, [inputText, currentUser, chatId, scrollToBottom]);
 
-  const handleInputFocus = () => {
-
-  }
+  const handleInputFocus = () => {};
 
   const renderMessage = useCallback(
     ({ item }: { item: FirebaseMessage }) => (
@@ -168,9 +167,8 @@ const ChatRoom = () => {
           />
           <View>
             {replyMessage && (
-              <View className="h-12 flex-row items-center gap-2 bg-black/20 ">
-                <View className=" h-full w-1 bg-cyan-500" />
-                <Text className="line-clamp-1 flex-grow text-sm text-gray-700">
+              <View className="h-12 flex-row items-center gap-2 border-l-4 border-mint bg-black/20 ">
+                <Text className="line-clamp-1 flex-grow px-2 text-sm text-gray-700">
                   {replyMessage.content}
                 </Text>
                 <Ionicons

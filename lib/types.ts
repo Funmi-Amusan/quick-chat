@@ -54,6 +54,7 @@ export interface FirebaseMessage {
     timestamp: number;
     read: boolean;
     reaction: string;
+    replyMessage: ReplyMessageInfo | null;
 }
 
 export interface ChatPartner {
