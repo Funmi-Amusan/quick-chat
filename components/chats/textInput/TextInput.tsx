@@ -1,5 +1,5 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { TouchableOpacity, View, TextInput } from 'react-native';
 
 interface ChatTextInputProps {
@@ -7,6 +7,9 @@ interface ChatTextInputProps {
   onChangeText: (text: string) => void;
   onSendPress: () => void;
   placeholder?: string;
+  setFocus?: () => void;
+  onBlur?: () => void;
+  onFocus?: () => void;
 }
 
 const ChatTextInput = ({
@@ -14,10 +17,38 @@ const ChatTextInput = ({
   onChangeText,
   onSendPress,
   placeholder = 'Reply',
+  setFocus,
+  onFocus: parentOnFocus,
+  onBlur,
 }: ChatTextInputProps) => {
   const [isFocused, setIsFocused] = useState(false);
+  const textInputRef = useRef<TextInput>(null);
+
+  // TODO : FORCE KEYBOARD TO SHOW
 
   const canSend = value.trim() !== '';
+
+  useEffect(() => {
+    if (setFocus) {
+      setFocus();
+      textInputRef.current?.focus();
+      handleOnFocus();
+    }
+  }, [setFocus]);
+
+  const handleOnFocus = () => {
+    setIsFocused(true);
+    if (parentOnFocus) {
+      parentOnFocus(); 
+    }
+  };
+
+  const handleOnBlur = () => {
+    setIsFocused(false);
+    if (onBlur) {
+      onBlur();
+    }
+  }
 
   return (
     <View className={` flex-row items-end justify-between gap-4 p-4`}>
@@ -28,7 +59,7 @@ const ChatTextInput = ({
         placeholder={placeholder}
         placeholderTextColor="#9a9a9a"
         multiline
-        onFocus={() => setIsFocused(true)}
+        onFocus={handleOnFocus}
         onBlur={() => setIsFocused(false)}
         underlineColorAndroid="transparent"
       />

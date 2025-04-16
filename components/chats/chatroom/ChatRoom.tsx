@@ -38,6 +38,7 @@ const ChatRoom = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [inputText, setInputText] = useState('');
+  const [inputFocus, setInputFocus] = useState(false);
   const [replyMessage, setReplyMessage] = useState<ReplyMessageInfo | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const flatListRef = useRef<FlatList>(null);
@@ -96,6 +97,10 @@ const ChatRoom = () => {
     }
   }, [inputText, currentUser, chatId, scrollToBottom]);
 
+  const handleInputFocus = () => {
+
+  }
+
   const renderMessage = useCallback(
     ({ item }: { item: FirebaseMessage }) => (
       <View className="my-1">
@@ -121,6 +126,7 @@ const ChatRoom = () => {
   const handleReply = useCallback(
     (message: ReplyMessageInfo) => {
       setReplyMessage(message);
+      setInputFocus(true);
     },
     [setReplyMessage]
   );
@@ -181,6 +187,8 @@ const ChatRoom = () => {
               onChangeText={setInputText}
               onSendPress={handleSendMessage}
               placeholder="Type something..."
+              setFocus={() => setInputFocus(true)}
+              onFocus={handleInputFocus}
             />
           </View>
         </KeyboardAvoidingView>

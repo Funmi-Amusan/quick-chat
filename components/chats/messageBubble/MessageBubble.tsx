@@ -25,7 +25,6 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 
 const EMOJI_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '😡', '🥳', '😍', '🥶', '🤯'];
 
-
 const MessageBubble = ({
   content,
   isFromSelf,
@@ -210,9 +209,7 @@ const MessageBubble = ({
         onSwipeableWillOpen={handleSwipeableWillOpen}
         overshootLeft={false}
         overshootRight={false}
-        containerStyle={[
-          styles.swipeableContainer
-        ]}>
+        containerStyle={[styles.swipeableContainer]}>
         <TouchableOpacity ref={bubbleRef} onLongPress={handleLongPress} activeOpacity={0.9}>
           {messageContent()}
         </TouchableOpacity>
