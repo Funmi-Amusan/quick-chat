@@ -1,5 +1,6 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { BlurView } from 'expo-blur';
 import React, { useState, useRef, useCallback } from 'react';
 import {
@@ -54,6 +55,7 @@ const MessageBubble = ({
   imageUrl?: string | null;
 }) => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [pickerPosition, setPickerPosition] = useState<{ top: number; left: number } | null>(null);
   const bubbleRef = useRef<TouchableOpacity>(null);
   const swipeableRef = useRef<Swipeable>(null);
@@ -150,13 +152,13 @@ const MessageBubble = ({
           `}>
         {replyMessageContent()}
         {imageUrl && (
-          <View className="mb-2 overflow-hidden rounded-2xl">
+          <TouchableOpacity
+            onPress={() => setPreviewImage(imageUrl)}
+            className="mb-2 overflow-hidden rounded-2xl">
             <Image source={{ uri: imageUrl }} className="h-48 w-48" resizeMode="cover" />
-          </View>
+          </TouchableOpacity>
         )}
-        {content && (
-          <Text className="text-base leading-snug text-gray-800 mb-1">{content}</Text>
-        )}
+        {content && <Text className="mb-1 text-base leading-snug text-gray-800">{content}</Text>}
         <View className=" flex-row items-center self-end">
           <Text className="text-xs text-gray-500">{formatTimestamp(timestamp ?? 0)}</Text>
           {renderReadStatus()}
@@ -269,6 +271,23 @@ const MessageBubble = ({
             </View>
           )}
         </TouchableOpacity>
+      </Modal>
+
+      <Modal
+        animationType="fade"
+        transparent
+        visible={previewImage !== null}
+        onRequestClose={handleCloseModal}>
+        {previewImage && (
+          <>
+            <Image source={{ uri: previewImage }} className="h-full w-full" resizeMode="cover" />
+            <TouchableOpacity
+              className="absolute left-5 top-10 z-50 m-4"
+              onPress={() => setPreviewImage(null)}>
+              <MaterialIcons name="arrow-back-ios-new" size={24} color="black" />
+            </TouchableOpacity>
+          </>
+        )}
       </Modal>
     </>
   );
