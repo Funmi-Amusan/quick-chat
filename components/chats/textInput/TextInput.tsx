@@ -1,5 +1,6 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import React, { useEffect, useRef, useState } from 'react';
 import { TouchableOpacity, View, TextInput } from 'react-native';
 
@@ -72,7 +73,7 @@ const ChatTextInput = ({
       />
       {showCameraIcon && (
         <TouchableOpacity className="" onPress={onImagePress} disabled={isUploading}>
-          <Ionicons name="image-outline" size={24} color="#007AFF" />
+          <MaterialCommunityIcons name="camera" size={20} color="grey" />
         </TouchableOpacity>
       )}
       <TouchableOpacity
