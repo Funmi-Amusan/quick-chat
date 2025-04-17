@@ -1,5 +1,6 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { BlurView } from 'expo-blur';
 import React, { useState, useRef, useCallback } from 'react';
 import {
@@ -11,6 +12,7 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  Image,
 } from 'react-native';
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Animated from 'react-native-reanimated';
@@ -37,6 +39,7 @@ const MessageBubble = ({
   senderId,
   onReply,
   replyMessage,
+  imageUrl,
 }: {
   content: string;
   isFromSelf: boolean;
@@ -49,11 +52,13 @@ const MessageBubble = ({
   updateRef: React.RefObject<any>;
   onReply: (replyInfo: ReplyMessageInfo) => void;
   replyMessage?: ReplyMessageInfo | null;
+  imageUrl?: string | null;
 }) => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [pickerPosition, setPickerPosition] = useState<{ top: number; left: number } | null>(null);
-  const bubbleRef = useRef<TouchableOpacity>(null);
-  const swipeableRef = useRef<Swipeable>(null);
+  const bubbleRef = useRef<React.RefObject<typeof TouchableOpacity>>(null);
+  const swipeableRef = useRef<typeof Swipeable>(null);
 
   const handleLongPress = useCallback(() => {
     if (id && bubbleRef.current) {
@@ -136,18 +141,25 @@ const MessageBubble = ({
     return (
       <View
         className={`
-            min-w-20 max-w-[75%] rounded-2xl px-3 py-2 shadow-sm
+            min-w-20 max-w-[75%] rounded-2xl shadow-sm
             ${
               isFromSelf
                 ? 'mr-2 self-end rounded-br-sm bg-lighterPrimary'
                 : 'ml-2 self-start rounded-bl-sm bg-white'
             }
             ${reaction ? 'mb-5' : ''}
-            
+            ${imageUrl ? 'p-1' : 'px-3 py-2'}
           `}>
         {replyMessageContent()}
-        <Text className="text-base leading-snug text-gray-800">{content}</Text>
-        <View className="mt-1 flex-row items-center self-end">
+        {imageUrl && (
+          <TouchableOpacity
+            onPress={() => setPreviewImage(imageUrl)}
+            className="mb-2 overflow-hidden rounded-2xl">
+            <Image source={{ uri: imageUrl }} className="h-48 w-48" resizeMode="cover" />
+          </TouchableOpacity>
+        )}
+        {content && <Text className="mb-1 text-base leading-snug text-gray-800">{content}</Text>}
+        <View className=" flex-row items-center self-end">
           <Text className="text-xs text-gray-500">{formatTimestamp(timestamp ?? 0)}</Text>
           {renderReadStatus()}
         </View>
@@ -259,6 +271,23 @@ const MessageBubble = ({
             </View>
           )}
         </TouchableOpacity>
+      </Modal>
+
+      <Modal
+        animationType="fade"
+        transparent
+        visible={previewImage !== null}
+        onRequestClose={handleCloseModal}>
+        {previewImage && (
+          <>
+            <Image source={{ uri: previewImage }} className="h-full w-full" resizeMode="cover" />
+            <TouchableOpacity
+              className="absolute left-5 top-10 z-50 m-4"
+              onPress={() => setPreviewImage(null)}>
+              <MaterialIcons name="arrow-back-ios-new" size={24} color="black" />
+            </TouchableOpacity>
+          </>
+        )}
       </Modal>
     </>
   );

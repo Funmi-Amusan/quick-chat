@@ -55,6 +55,7 @@ export interface FirebaseMessage {
     read: boolean;
     reaction: string;
     replyMessage: ReplyMessageInfo | null;
+    imageUrl?: string | null;
 }
 
 export interface ChatPartner {

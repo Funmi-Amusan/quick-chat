@@ -20,6 +20,12 @@ import {
   orderByChild,
   set,
 } from 'firebase/database';
+import {
+  getStorage,
+  ref as storageRef,
+  uploadBytesResumable,
+  getDownloadURL,
+} from 'firebase/storage';
 import React from 'react';
 import { Alert } from 'react-native';
 import Toast from 'react-native-toast-message';
@@ -384,6 +390,7 @@ export const listenForMessages = (
           ([key, value]: [string, any]) => ({
             id: key,
             content: value.content,
+            imageUrl: value.imageUrl || null,
             senderId: value.senderId,
             timestamp: value.timestamp,
             read: value.read || false,
@@ -420,6 +427,7 @@ export const sendMessage = async (
   content: string,
   replyMessage: ReplyMessageInfo | null = null
 ) => {
+
   const messagesRef = ref(db, `chats/${chatId}/messages`);
   const chatMetaRef = ref(db, `chats/${chatId}`);
   const newMessageData = {
@@ -443,6 +451,93 @@ export const sendMessage = async (
   } catch (err: any) {
     console.error('Error sending message:', err);
     throw new Error('Failed to send message.');
+  }
+};
+
+export const sendImageMessage = async (
+  chatId: string,
+  senderId: string,
+  imageUri: string,
+  text: string = '',
+  replyTo: ReplyMessageInfo | null = null
+) => {
+  try {
+    // Get the storage instance and create a reference
+    const storage = getStorage();
+    const filename = imageUri.substring(imageUri.lastIndexOf('/') + 1);
+    const storageReference = storageRef(storage, `chat_images/${chatId}/${Date.now()}_${filename}`);
+
+    // Convert image to blob
+    const response = await fetch(imageUri);
+    const blob = await response.blob();
+    // const blob = await new Promise<Blob>((resolve, reject) => {
+    //   const xhr = new XMLHttpRequest();
+    //   xhr.onload = () => {
+    //     resolve(xhr.response);
+    //   };
+    //   xhr.onerror = (e) => {
+    //     console.error('Network request failed:', e);
+    //     reject(new Error('Network request failed'));
+    //   };
+    //   xhr.responseType = 'blob';
+    //   xhr.open('GET', imageUri, true);
+    //   xhr.send(null);
+    // });
+
+    // Upload to Firebase storage
+    const uploadTask = uploadBytesResumable(storageReference, blob);
+
+    await new Promise((resolve, reject) => {
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          // You can track progress here if needed
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log('Upload is ' + progress + '% done');
+        },
+        (error) => {
+          // Handle unsuccessful uploads
+          reject(error);
+        },
+        () => {
+          // Upload completed successfully
+          resolve(null);
+        }
+      );
+    });
+
+    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+
+    const messagesRef = ref(db, `chats/${chatId}/messages`);
+    await push(messagesRef, {
+      content: text,
+      imageUrl: downloadURL,
+      senderId,
+      timestamp: serverTimestamp(),
+      read: {},
+      replyTo: replyTo
+        ? {
+            id: replyTo.id,
+            content: replyTo.content,
+            senderId: replyTo.senderId,
+          }
+        : null,
+    });
+
+    const chatMetaRef = ref(db, `chats/${chatId}`);
+    await push(chatMetaRef, {
+      lastMessage: {
+        content: text ? text : '[Image]',
+        senderId,
+        timestamp: serverTimestamp(),
+        hasImage: true,
+      },
+      updatedAt: serverTimestamp(),
+    });
+    return true;
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    throw error;
   }
 };
 

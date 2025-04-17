@@ -1,4 +1,5 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import React, { useEffect, useRef, useState } from 'react';
 import { TouchableOpacity, View, TextInput } from 'react-native';
 
@@ -10,6 +11,9 @@ interface ChatTextInputProps {
   setFocus?: () => void;
   onBlur?: () => void;
   onFocus?: () => void;
+  onImagePress?: () => void;
+  showCameraIcon?: boolean;
+  isUploading?: boolean;
 }
 
 const ChatTextInput = ({
@@ -20,6 +24,9 @@ const ChatTextInput = ({
   setFocus,
   onFocus: parentOnFocus,
   onBlur,
+  onImagePress,
+  isUploading = false,
+  showCameraIcon = true,
 }: ChatTextInputProps) => {
   const [isFocused, setIsFocused] = useState(false);
   const textInputRef = useRef<TextInput>(null);
@@ -39,7 +46,7 @@ const ChatTextInput = ({
   const handleOnFocus = () => {
     setIsFocused(true);
     if (parentOnFocus) {
-      parentOnFocus(); 
+      parentOnFocus();
     }
   };
 
@@ -48,7 +55,7 @@ const ChatTextInput = ({
     if (onBlur) {
       onBlur();
     }
-  }
+  };
 
   return (
     <View className={` flex-row items-end justify-between gap-4 p-4`}>
@@ -63,11 +70,21 @@ const ChatTextInput = ({
         onBlur={() => setIsFocused(false)}
         underlineColorAndroid="transparent"
       />
+      {showCameraIcon && (
+        <TouchableOpacity className="" onPress={onImagePress} disabled={isUploading}>
+          <Ionicons name="image-outline" size={24} color="#007AFF" />
+        </TouchableOpacity>
+      )}
       <TouchableOpacity
         className=" aspect-square h-9 w-10 items-center justify-center p-2  "
         onPress={onSendPress}
-        disabled={!canSend}>
-        <FontAwesome name="send" size={20} color={canSend ? '#007AFF' : '#b0b0b0'} />
+        // disabled={!canSend}
+      >
+        <FontAwesome
+          name="send"
+          size={20}
+          //  color={canSend ? '#007AFF' : '#b0b0b0'}
+        />
       </TouchableOpacity>
     </View>
   );
