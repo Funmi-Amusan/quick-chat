@@ -1,6 +1,7 @@
 import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { ImageAssets } from 'assets';
 import ChatRoomLayout from 'components/layout/ChatRoomLayout';
 import { BlurView } from 'expo-blur';
@@ -213,16 +214,32 @@ const ChatRoom = () => {
           <View>
             {replyMessage && (
               <View className="h-12 flex-row items-center gap-2 border-l-4 border-mint bg-black/20 ">
-                <Text className="line-clamp-1 flex-grow px-2 text-sm text-gray-700">
-                  {replyMessage.content}
-                </Text>
-                <Ionicons
-                  name="close-circle-outline"
-                  size={24}
-                  color="white"
-                  className="mx-2"
-                  onPress={() => setReplyMessage(null)}
-                />
+                <View className="flex-grow flex-row items-center gap-2 px-2">
+                  {replyMessage.imageUrl && (
+                    <MaterialCommunityIcons name="camera" size={20} color="grey" />
+                  )}
+                  <Text className="text-grey-700 line-clamp-1 text-sm">
+                    {replyMessage.content
+                      ? replyMessage.content
+                      : replyMessage.imageUrl
+                        ? 'Photo'
+                        : ''}
+                  </Text>
+                </View>
+                <View className=" my-1 flex-row items-center justify-center">
+                  <Image
+                    source={{ uri: replyMessage.imageUrl || '' }}
+                    className="aspect-square h-full rounded-md"
+                    resizeMode="cover"
+                  />
+                  <Ionicons
+                    name="close-circle-outline"
+                    size={24}
+                    color="white"
+                    className="mx-2"
+                    onPress={() => setReplyMessage(null)}
+                  />
+                </View>
               </View>
             )}
 
@@ -267,9 +284,8 @@ const ChatRoom = () => {
               bottom: 0,
               right: 0,
             }}
-            tint="dark" // You can experiment with different blur types like 'light', 'xlight', 'regular', 'prominent'
-            intensity={90} // Adjust the blur intensity as needed
-            //reducedTransparencyFallbackColor="black" // Fallback for platforms that don't support blur
+            tint="dark"
+            intensity={90}
           />
 
           <TouchableOpacity className="absolute left-10 top-12 z-20" onPress={handleCloseModal}>

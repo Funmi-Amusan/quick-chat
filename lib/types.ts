@@ -75,4 +75,5 @@ export interface ReplyMessageInfo {
   id: string;
   content: string;
   senderId: string;
+  imageUrl: string | null;
 }
