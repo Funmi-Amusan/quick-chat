@@ -57,8 +57,8 @@ const MessageBubble = ({
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [pickerPosition, setPickerPosition] = useState<{ top: number; left: number } | null>(null);
-  const bubbleRef = useRef<TouchableOpacity>(null);
-  const swipeableRef = useRef<Swipeable>(null);
+  const bubbleRef = useRef<React.RefObject<typeof TouchableOpacity>>(null);
+  const swipeableRef = useRef<typeof Swipeable>(null);
 
   const handleLongPress = useCallback(() => {
     if (id && bubbleRef.current) {
