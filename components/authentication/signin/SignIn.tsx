@@ -30,7 +30,7 @@ export default function SignIn() {
   };
 
   return (
-    <View className="bg-body flex-1 items-center justify-center p-4">
+    <View className="flex-1 items-center justify-center bg-body p-4">
       <View className="mb-8 items-center">
         <Text className="mb-2 text-2xl font-bold text-gray-800">Welcome Back</Text>
         <Text className="text-sm text-gray-500">Please sign in to continue</Text>

@@ -26,18 +26,17 @@ import ChatTextInput from '../textInput/TextInput';
 import ChatHeader from './chatHeader/ChatHeader';
 
 import useChatPresence from '~/hooks/useChatRoomPresence';
-import useFetchChatPartner from '~/hooks/useFetchChatPartnerInfo';
 import useListenForChatMessages from '~/hooks/useListenForMessages';
 import useMarkMessagesAsRead from '~/hooks/useMarkMessagesAsRead';
 import useTypingStatus from '~/hooks/useTypingStatus';
 import { auth } from '~/lib/firebase-config';
 import * as Database from '~/lib/firebase-sevice';
 import { ChatPartner, FirebaseMessage, ReplyMessageInfo } from '~/lib/types';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 const ChatRoom = () => {
   const { id: chatId } = useLocalSearchParams<{ id: string }>();
   const [messages, setMessages] = useState<FirebaseMessage[]>([]);
-  const [chatPartner, setChatPartner] = useState<ChatPartner | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [inputText, setInputText] = useState('');
@@ -48,12 +47,80 @@ const ChatRoom = () => {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const flatListRef = useRef<FlatList>(null);
   const currentUser = auth.currentUser;
+  const currentUserId = currentUser?.uid;
   const swipeableRowRef = useRef<Animated.View>(null);
+
+  const {
+    data: chatPartner,
+    isLoading: chatPartnerLoading,
+    error: chatPartnerError,
+  } = useQuery<ChatPartner, Error>({
+    queryKey: ['chatPartner', chatId, currentUserId],
+    queryFn: async () => {
+      if (!chatId || !currentUserId) {
+        throw new Error('Chat ID or User ID is missing.');
+      }
+      const partnerInfo = await Database.fetchChatPartnerInfo(chatId, currentUserId);
+      console.log('Chat partner info:', partnerInfo);
+      if (!partnerInfo) {
+        throw new Error('Chat partner not found.');
+      }
+      return partnerInfo;
+    },
+    enabled: !!chatId && !!currentUserId,
+    staleTime: 5 * 60 * 1000,
+    // cacheTime: 30 * 60 * 1000,
+  });
+
+  const {
+    mutate: sendMessageMutate,
+    // isLoading: isSendingMessage,
+    isPending: isSendingMessage,
+    error: sendMessageError,
+  } = useMutation({
+    mutationFn: async (params: { text: string; imageUriToSend: string | null }) => {
+      const { text, imageUriToSend } = params;
+      if (!currentUser || !chatId) {
+        throw new Error('User or Chat ID missing.');
+      }
+
+      if (imageUriToSend) {
+        await Database.sendImageMessage(
+          chatId,
+          currentUser.uid,
+          imageUriToSend,
+          text,
+          replyMessage
+        );
+      } else if (text) {
+        await Database.sendMessage(chatId, currentUser.uid, text, replyMessage);
+      } else {
+        throw new Error('Cannot send empty message.');
+      }
+    },
+    onSuccess: (data, variables) => {
+      console.log('Message sent successfully');
+      setInputText('');
+      setReplyMessage(null);
+      setImageUri(null);
+      scrollToBottom();
+
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+      if (currentUser && chatId) {
+        Database.resetTypingStatus(currentUser.uid, chatId);
+      }
+    },
+    onError: (error: any) => {
+      console.error('Error sending message:', error);
+    },
+  });
 
   useChatPresence(currentUser, chatId);
   useTypingStatus(currentUser, chatId, inputText);
   useMarkMessagesAsRead(currentUser, chatId, messages);
-  useFetchChatPartner(chatId, currentUser, setChatPartner, setLoading, setError);
   useListenForChatMessages({
     chatId,
     currentUser,
@@ -62,6 +129,7 @@ const ChatRoom = () => {
     setError,
     chatPartner,
   });
+
 
   const scrollToBottom = useCallback(() => {
     if (flatListRef.current) {
@@ -104,7 +172,6 @@ const ChatRoom = () => {
   };
 
   const handleSendMessage = useCallback(async () => {
-    console.log('imageUri is:', imageUri);
     const trimmedInput = inputText.trim();
     if ((!trimmedInput && !imageUri) || !currentUser || !chatId) {
       return;
@@ -138,7 +205,8 @@ const ChatRoom = () => {
     } finally {
       setUploading(false);
     }
-  }, [inputText, imageUri, currentUser, chatId, replyMessage, scrollToBottom]);
+    sendMessageMutate({ text: trimmedInput, imageUriToSend: imageUri });
+  }, [inputText, imageUri, currentUser, chatId, replyMessage, sendMessageMutate, scrollToBottom]);
 
   const handleInputFocus = () => {};
 
@@ -185,7 +253,7 @@ const ChatRoom = () => {
           <TouchableOpacity className="px-2" onPress={() => router.back()}>
             <FontAwesome name="chevron-left" size={14} color="#000" />
           </TouchableOpacity>
-          <ChatHeader chatPartner={chatPartner} />
+          <ChatHeader chatPartner={chatPartner} isLoading={chatPartnerLoading} />
         </View>
       </View>
 
@@ -214,7 +282,7 @@ const ChatRoom = () => {
           <View>
             {replyMessage && (
               <View className="h-12 flex-row items-center gap-2 border-l-4 border-mint bg-black/20 ">
-                <View className="flex-grow flex-row items-center gap-2 px-2">
+                <View className="flex-grow flex-row items-start gap-2 px-2">
                   {replyMessage.imageUrl && (
                     <MaterialCommunityIcons name="camera" size={20} color="grey" />
                   )}

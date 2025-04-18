@@ -15,13 +15,12 @@ const ChatItem = ({ lastMessage, id, partner }: ChatData) => {
         <View className=" flex-grow gap-1 py-2">
           <View className="flex-row items-center justify-between ">
             <Text className=" text-xl font-bold capitalize">{partner}</Text>
-            <Text className=" bg-mint h-5 w-5 items-center rounded-full text-center text-sm text-white ">
+            <Text className=" h-5 w-5 items-center rounded-full bg-mint text-center text-sm text-white ">
               5
             </Text>
-           
           </View>
           <View className="flex-row items-center justify-between">
-            <Text className=" text-grey line-clamp-1 font-medium ">{previewMessageContent}</Text>
+            <Text className=" line-clamp-1 font-medium text-grey ">{previewMessageContent}</Text>
             {lastMessage && <Text>{formatMomentAgoTimestamp(lastMessage?.timestamp)}</Text>}
           </View>
         </View>

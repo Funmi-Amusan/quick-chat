@@ -10,8 +10,8 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-import { ImageAssets } from '~/assets';
 
+import { ImageAssets } from '~/assets';
 import { createChat } from '~/lib/firebase-sevice';
 import { FormattedUser, ChatData } from '~/lib/types';
 
@@ -21,8 +21,10 @@ interface UserListModalProps {
   allUsers: FormattedUser[];
   userChats: ChatData[];
   loading: boolean;
-  error: string | null;
+  error: Error | null;
   currentUser: User | null;
+  refreshAllUsers: () => void;
+
 }
 
 const UserListModal = ({
@@ -33,6 +35,7 @@ const UserListModal = ({
   loading,
   error,
   currentUser,
+  refreshAllUsers,
 }: UserListModalProps) => {
   const chatsToList = allUsers.filter(
     (user) => user.id !== currentUser?.uid && !userChats.some((chat) => chat.partnerId === user.id)
@@ -66,22 +69,21 @@ const UserListModal = ({
           <Text className=" text-xl font-bold ">Start New Chat</Text>
           <Button title="Close" onPress={onClose} />
         </View>
-
         {loading && (
           <View className=" flex-1 items-center justify-center p-5 ">
             <ActivityIndicator size="large" />
             <Text>Loading users...</Text>
           </View>
         )}
-
         {error && (
           <View className=" flex-1 items-center justify-center p-5 ">
-            <Text className=" mb-2 text-center text-red-500 ">Error: {error}</Text>
+            <Text className=" mb-2 text-center text-red-500 ">Error: {error.message}</Text>
           </View>
         )}
-
         {!loading && !error && (
           <FlatList
+          onRefresh={refreshAllUsers}
+            refreshing={loading}
             data={chatsToList}
             keyExtractor={(item: FormattedUser) => item.id}
             renderItem={({ item }: { item: FormattedUser }) => (
