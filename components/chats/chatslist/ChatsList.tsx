@@ -100,6 +100,7 @@ const ChatsList = () => {
       </AppLayout>
     );
   }
+
   return (
     <AppLayout>
       <View className="flex-row items-center gap-2">
@@ -122,6 +123,7 @@ const ChatsList = () => {
           data={userChats}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <ChatItem {...item} />}
+          showsVerticalScrollIndicator={false}
         />
       )}
 

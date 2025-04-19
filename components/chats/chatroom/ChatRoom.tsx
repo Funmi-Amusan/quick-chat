@@ -178,35 +178,9 @@ const ChatRoom = () => {
       clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = null;
     }
-
     Database.resetTypingStatus(currentUser.uid, chatId);
-    try {
-      setUploading(true);
-      if (imageUri) {
-        await Database.sendImageMessage(
-          chatId,
-          currentUser.uid,
-          imageUri,
-          trimmedInput,
-          replyMessage
-        );
-        setImageUri(null);
-      } else if (trimmedInput) {
-        await Database.sendMessage(chatId, currentUser.uid, trimmedInput, replyMessage);
-      }
-      setInputText('');
-      setReplyMessage(null);
-      scrollToBottom();
-    } catch (err: any) {
-      console.error('Error sending message:', err);
-      setError('Failed to send message.');
-    } finally {
-      setUploading(false);
-    }
     sendMessageMutate({ text: trimmedInput, imageUriToSend: imageUri });
   }, [inputText, imageUri, currentUser, chatId, replyMessage, sendMessageMutate, scrollToBottom]);
-
-  const handleInputFocus = () => {};
 
   const renderMessage = useCallback(
     ({ item }: { item: FirebaseMessage }) => (
@@ -308,28 +282,16 @@ const ChatRoom = () => {
                 </View>
               </View>
             )}
-
-            {/* {imageUri && (
-              <View className="bg-gray-100 p-2">
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-sm font-medium text-gray-700">Image selected</Text>
-                  <TouchableOpacity onPress={cancelImageUpload}>
-                    <Ionicons name="close-circle" size={24} color="#FF3B30" />
-                  </TouchableOpacity>
-                </View>
-                <View className="mt-2 overflow-hidden rounded-md">
-                  <Image source={{ uri: imageUri }} className="h-40 w-40" resizeMode="cover" />
-                </View>
-              </View>
-            )} */}
-
             <ChatTextInput
               value={inputText}
               onChangeText={setInputText}
               onSendPress={handleSendMessage}
               placeholder="Type something..."
               setFocus={() => setInputFocus(true)}
-              onFocus={handleInputFocus}
+              onFocus={() => {
+                console.log('Input focused');
+                setInputFocus(true);
+              }}
               onImagePress={pickImage}
               isUploading={uploading}
             />

@@ -19,6 +19,7 @@ import {
   query,
   orderByChild,
   set,
+  limitToLast,
 } from 'firebase/database';
 import {
   getStorage,
@@ -371,7 +372,7 @@ export const listenForMessages = (
   sendNotification: (message: FirebaseMessage) => void
 ) => {
   const messagesRef = ref(db, `chats/${chatId}/messages`);
-  const messagesQuery = query(messagesRef, orderByChild('timestamp'));
+  const messagesQuery = query(messagesRef, orderByChild('timestamp'), limitToLast(50));
   setLoading(true);
   setError(null);
   let initialLoad = true;
@@ -422,6 +423,7 @@ export const sendMessage = async (
   content: string,
   replyMessage: ReplyMessageInfo | null = null
 ) => {
+  console.log("send messae")
   const messagesRef = ref(db, `chats/${chatId}/messages`);
   const chatMetaRef = ref(db, `chats/${chatId}`);
   const chatSummaryRef = ref(db, `chatsSummary/${chatId}`);
@@ -459,31 +461,13 @@ export const sendImageMessage = async (
   replyTo: ReplyMessageInfo | null = null
 ) => {
   try {
-    // Get the storage instance and create a reference
     const storage = getStorage();
     const filename = imageUri.substring(imageUri.lastIndexOf('/') + 1);
     const storageReference = storageRef(storage, `chat_images/${chatId}/${Date.now()}_${filename}`);
 
-    // Convert image to blob
     const response = await fetch(imageUri);
     const blob = await response.blob();
-    // const blob = await new Promise<Blob>((resolve, reject) => {
-    //   const xhr = new XMLHttpRequest();
-    //   xhr.onload = () => {
-    //     resolve(xhr.response);
-    //   };
-    //   xhr.onerror = (e) => {
-    //     console.error('Network request failed:', e);
-    //     reject(new Error('Network request failed'));
-    //   };
-    //   xhr.responseType = 'blob';
-    //   xhr.open('GET', imageUri, true);
-    //   xhr.send(null);
-    // });
-
-    // Upload to Firebase storage
     const uploadTask = uploadBytesResumable(storageReference, blob);
-
     await new Promise((resolve, reject) => {
       uploadTask.on(
         'state_changed',
@@ -502,9 +486,7 @@ export const sendImageMessage = async (
         }
       );
     });
-
     const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-
     const messagesRef = ref(db, `chats/${chatId}/messages`);
     await push(messagesRef, {
       content: text,
@@ -520,7 +502,6 @@ export const sendImageMessage = async (
           }
         : null,
     });
-
     const chatMetaRef = ref(db, `chats/${chatId}`);
     await push(chatMetaRef, {
       lastMessage: {

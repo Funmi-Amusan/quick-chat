@@ -1,3 +1,4 @@
+import AntDesign from '@expo/vector-icons/AntDesign';
 import { router } from 'expo-router';
 import { User } from 'firebase/auth';
 import {
@@ -9,6 +10,7 @@ import {
   Button,
   TouchableOpacity,
   Image,
+  Pressable,
 } from 'react-native';
 
 import { ImageAssets } from '~/assets';
@@ -38,7 +40,7 @@ const UserListModal = ({
   refreshAllUsers,
 }: UserListModalProps) => {
   const chatsToList = allUsers.filter(
-    (user) => user.id !== currentUser?.uid && !userChats.some((chat) => chat.partnerId === user.id)
+    (user) => user.id !== 'undefined' && !userChats.some((chat) => chat.id.includes(user.id))
   );
 
   const createChatWithUser = async (otherUser: FormattedUser) => {
@@ -67,7 +69,9 @@ const UserListModal = ({
       <View className=" mt-12 flex-1 ">
         <View className=" flex-row items-center justify-between border-b border-gray-300 p-4">
           <Text className=" text-xl font-bold ">Start New Chat</Text>
-          <Button title="Close" onPress={onClose} />
+          <Pressable onPress={onClose}>
+          <AntDesign name="closecircle" size={24} color="black" />
+          </Pressable>
         </View>
         {loading && (
           <View className=" flex-1 items-center justify-center p-5 ">
