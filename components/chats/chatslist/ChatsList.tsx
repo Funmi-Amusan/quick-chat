@@ -27,9 +27,9 @@ const ChatsList = () => {
     data: allUsers = [],
     isLoading: modalLoading,
     error: modalError,
-    refetch: refetchAllUsers, 
+    refetch: refetchAllUsers,
   } = useQuery({
-    queryKey: ['allUsers', currentUserId], 
+    queryKey: ['allUsers', currentUserId],
     queryFn: () => {
       if (!currentUserId) {
         throw new Error('User not authenticated for fetching users.');
@@ -80,7 +80,6 @@ const ChatsList = () => {
     setIsModalVisible(false);
   };
 
-
   if (loading) {
     return (
       <AppLayout>
@@ -122,7 +121,6 @@ const ChatsList = () => {
         <FlatList
           data={userChats}
           keyExtractor={(item) => item.id}
-          
           renderItem={({ item }) => <ChatItem {...item} />}
         />
       )}

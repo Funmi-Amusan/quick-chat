@@ -58,7 +58,6 @@ export async function login(
       text1: 'Login failed',
       text2: 'Invalid email or password',
     });
-    console.error('[error logging in] ==>', e);
     throw e;
   }
 }
@@ -78,6 +77,7 @@ export async function register(
   name?: string
 ): Promise<FirebaseUserResponse | undefined> {
   try {
+    console.log('[register] ==>', email);
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     if (name) {
       await updateProfile(userCredential.user, { displayName: name });
@@ -102,7 +102,7 @@ export const listenToUserChats = (
   userId: string,
   callback: (chats: ChatData[], error?: Error) => void
 ): Unsubscribe => {
-  const userChatsRef = ref(db, `users/${userId}/chats`);
+  const userChatsRef = ref(db, `users/${userId}/chatsSummary`);
   const unsubscribe = onValue(
     userChatsRef,
     async (snapshot) => {
@@ -111,23 +111,17 @@ export const listenToUserChats = (
         const chatIds = Object.keys(chatIdsData);
         const chatPromises = chatIds.map(async (chatId) => {
           try {
-            const chatRef = ref(db, `chats/${chatId}`);
-            const chatSnapshot = await get(chatRef);
-            if (chatSnapshot.exists()) {
-              const chatData = chatSnapshot.val();
-              const participants = chatData.participants || {};
+            const chatSummaryRef = ref(db, `chatsSummary/${chatId}`);
+            const chatSummarySnapshot = await get(chatSummaryRef);
+            if (chatSummarySnapshot.exists()) {
+              const chatData = chatSummarySnapshot.val();
+              const participants = chatData.participantNames || {};
               const participantKeys = Object.keys(participants);
-              const partnerKey = participantKeys.find(
-                (key) => !key.includes(userId) && key.includes('_')
-              );
+              const partnerKey = participantKeys.find((key) => key !== userId);
               let partnerName = 'Anonymous';
-              let partnerId = '';
+              const partnerId = '';
               if (partnerKey) {
-                if (partnerKey.includes('_')) {
-                  const parts = partnerKey.split('_');
-                  partnerName = parts[1];
-                  partnerId = parts[0];
-                }
+                partnerName = participants[partnerKey];
               }
               return {
                 id: chatId,
@@ -194,6 +188,7 @@ export const createChat = async (
   const userIds = [currentUserId, otherUserId].sort();
   const chatId = userIds.join('_');
   const chatRef = ref(db, `chats/${chatId}`);
+  const chatSummaryRef = ref(db, `chatsSummary/${chatId}`);
 
   const existingChat = await get(chatRef);
   if (existingChat.exists()) {
@@ -201,9 +196,24 @@ export const createChat = async (
     return chatId;
   }
 
+  const existingChatSummary = await get(chatSummaryRef);
+  if (existingChatSummary.exists()) {
+    console.error('Chat summary already exists, returning existing chat ID:');
+    return chatId;
+  }
+
   const participantsData = {
-    [`${currentUserId}_${currentUserName}`]: true,
-    [`${otherUserId}_${otherUserName}`]: true,
+    [`${currentUserId}_${currentUserName}`]: {
+      updatedAt: serverTimestamp(),
+    },
+    [`${otherUserId}_${otherUserName}`]: {
+      updatedAt: serverTimestamp(),
+    },
+  };
+
+  const participantNames = {
+    [currentUserId]: currentUserName,
+    [otherUserId]: otherUserName,
   };
 
   const newChatData = {
@@ -211,12 +221,18 @@ export const createChat = async (
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     lastMessage: null,
+    participantNames,
   };
 
   const updates: { [key: string]: any } = {};
   updates[`/chats/${chatId}`] = newChatData;
-  updates[`/users/${currentUserId}/chats/${chatId}`] = true;
-  updates[`/users/${otherUserId}/chats/${chatId}`] = true;
+  updates[`/chatsSummary/${chatId}`] = {
+    updatedAt: serverTimestamp(),
+    lastMessage: null,
+    participantNames,
+  };
+  updates[`/users/${currentUserId}/chatsSummary/${chatId}`] = true;
+  updates[`/users/${otherUserId}/chatsSummary/${chatId}`] = true;
 
   try {
     await update(ref(db), updates);
@@ -408,6 +424,7 @@ export const sendMessage = async (
 ) => {
   const messagesRef = ref(db, `chats/${chatId}/messages`);
   const chatMetaRef = ref(db, `chats/${chatId}`);
+  const chatSummaryRef = ref(db, `chatsSummary/${chatId}`);
   const newMessageData = {
     content: content.trim(),
     senderId: userId,
@@ -426,6 +443,7 @@ export const sendMessage = async (
       },
       updatedAt: serverTimestamp(),
     };
+    await update(chatSummaryRef, lastMessageUpdate);
     await update(chatMetaRef, lastMessageUpdate);
   } catch (err: any) {
     console.error('Error sending message:', err);

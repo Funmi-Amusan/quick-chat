@@ -20,6 +20,7 @@ export interface ChatData {
     partner: string;
     lastMessage: LastMessageData;
     partnerId: string;
+    updatedAt: number;
 }
 
 export interface LastMessageData {

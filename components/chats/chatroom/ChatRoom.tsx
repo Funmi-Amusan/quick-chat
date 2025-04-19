@@ -2,6 +2,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { ImageAssets } from 'assets';
 import ChatRoomLayout from 'components/layout/ChatRoomLayout';
 import { BlurView } from 'expo-blur';
@@ -32,7 +33,6 @@ import useTypingStatus from '~/hooks/useTypingStatus';
 import { auth } from '~/lib/firebase-config';
 import * as Database from '~/lib/firebase-sevice';
 import { ChatPartner, FirebaseMessage, ReplyMessageInfo } from '~/lib/types';
-import { useMutation, useQuery } from '@tanstack/react-query';
 
 const ChatRoom = () => {
   const { id: chatId } = useLocalSearchParams<{ id: string }>();
@@ -58,23 +58,24 @@ const ChatRoom = () => {
     queryKey: ['chatPartner', chatId, currentUserId],
     queryFn: async () => {
       if (!chatId || !currentUserId) {
+        router.back();
         throw new Error('Chat ID or User ID is missing.');
       }
       const partnerInfo = await Database.fetchChatPartnerInfo(chatId, currentUserId);
       console.log('Chat partner info:', partnerInfo);
       if (!partnerInfo) {
+        router.back();
         throw new Error('Chat partner not found.');
       }
       return partnerInfo;
     },
     enabled: !!chatId && !!currentUserId,
-    staleTime: 5 * 60 * 1000,
-    // cacheTime: 30 * 60 * 1000,
+    staleTime: Infinity,
+    refetchInterval: 1000 * 60 * 12,
   });
 
   const {
     mutate: sendMessageMutate,
-    // isLoading: isSendingMessage,
     isPending: isSendingMessage,
     error: sendMessageError,
   } = useMutation({
@@ -83,7 +84,6 @@ const ChatRoom = () => {
       if (!currentUser || !chatId) {
         throw new Error('User or Chat ID missing.');
       }
-
       if (imageUriToSend) {
         await Database.sendImageMessage(
           chatId,
@@ -104,7 +104,6 @@ const ChatRoom = () => {
       setReplyMessage(null);
       setImageUri(null);
       scrollToBottom();
-
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
         typingTimeoutRef.current = null;
@@ -129,7 +128,6 @@ const ChatRoom = () => {
     setError,
     chatPartner,
   });
-
 
   const scrollToBottom = useCallback(() => {
     if (flatListRef.current) {
