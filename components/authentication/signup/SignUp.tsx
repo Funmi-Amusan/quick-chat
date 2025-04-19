@@ -1,7 +1,9 @@
+import { useMutation } from '@tanstack/react-query';
 import { useSession } from 'context/authContext';
 import { router, Link } from 'expo-router';
 import { useState } from 'react';
 import { Text, TextInput, View, Pressable } from 'react-native';
+import Toast from 'react-native-toast-message';
 
 export default function SignUp() {
   const [email, setEmail] = useState('');
@@ -9,25 +11,43 @@ export default function SignUp() {
   const [name, setName] = useState('');
   const { signUp } = useSession();
 
-  const handleRegister = async () => {
+  const register = async () => {
     try {
-      return await signUp(email, password, name);
+      const response = await signUp(email, password, name);
+      return response;
     } catch (err) {
-      console.log('[handleRegister] ==>', err);
-      return null;
+      throw err;
     }
   };
 
-  const handleSignUpPress = async () => {
-    const resp = await handleRegister();
-    console.log('e', resp);
-    if (resp) {
-      router.replace('/chats');
-    }
+  const { mutate: handleRegister, isPending } = useMutation({
+    mutationFn: register,
+    onSuccess: () => {
+      router.replace('/sign-in');
+    },
+    onError: (error) => {
+      if (error instanceof Error) {
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: error.message,
+        });
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: 'Something went wrong',
+        });
+      }
+    },
+  });
+
+  const handleRegisterPress = () => {
+    handleRegister();
   };
 
   return (
-    <View className="bg-body flex-1 items-center justify-center p-4">
+    <View className="flex-1 items-center justify-center bg-body p-4">
       <View className="mb-8 items-center">
         <Text className="mb-2 text-2xl font-bold text-gray-800">Create Account</Text>
         <Text className="text-sm text-gray-500">Sign up to get started</Text>
@@ -73,16 +93,18 @@ export default function SignUp() {
       </View>
 
       <Pressable
-        onPress={handleSignUpPress}
-        className="w-full max-w-[300px] rounded-lg bg-violet-600 py-3 active:bg-violet-700">
-        <Text className="text-center text-base font-semibold text-white">Sign Up</Text>
+        onPress={handleRegisterPress}
+        className="w-full max-w-[300px] rounded-lg bg-primary py-3 active:bg-lighterPrimary">
+        <Text className="text-center text-base font-semibold text-white">
+          {isPending ? 'Processing' : 'Sign up'}
+        </Text>
       </Pressable>
 
       <View className="mt-6 flex-row items-center">
         <Text className="text-gray-600">Already have an account?</Text>
         <Link href="/sign-in" asChild>
           <Pressable className="ml-2">
-            <Text className="font-semibold text-violet-600">Sign In</Text>
+            <Text className="font-semibold text-primary">Sign In</Text>
           </Pressable>
         </Link>
       </View>

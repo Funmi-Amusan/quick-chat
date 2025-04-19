@@ -19,6 +19,7 @@ import {
   query,
   orderByChild,
   set,
+  limitToLast,
 } from 'firebase/database';
 import {
   getStorage,
@@ -44,20 +45,6 @@ import {
 export interface FirebaseUserResponse {
   user: User;
 }
-
-export const getCurrentUser = async () => {
-  try {
-    return new Promise((resolve) => {
-      const unsubscribe = auth.onAuthStateChanged((user) => {
-        unsubscribe();
-        resolve(user ? { user } : null);
-      });
-    });
-  } catch (error) {
-    console.error('[error getting user] ==>', error);
-    return null;
-  }
-};
 
 export async function login(
   email: string,
@@ -91,6 +78,7 @@ export async function register(
   name?: string
 ): Promise<FirebaseUserResponse | undefined> {
   try {
+    console.log('[register] ==>', email);
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     if (name) {
       await updateProfile(userCredential.user, { displayName: name });
@@ -115,8 +103,7 @@ export const listenToUserChats = (
   userId: string,
   callback: (chats: ChatData[], error?: Error) => void
 ): Unsubscribe => {
-  const userChatsRef = ref(db, `users/${userId}/chats`);
-
+  const userChatsRef = ref(db, `users/${userId}/chatsSummary`);
   const unsubscribe = onValue(
     userChatsRef,
     async (snapshot) => {
@@ -125,29 +112,24 @@ export const listenToUserChats = (
         const chatIds = Object.keys(chatIdsData);
         const chatPromises = chatIds.map(async (chatId) => {
           try {
-            const chatRef = ref(db, `chats/${chatId}`);
-            const chatSnapshot = await get(chatRef);
-            if (chatSnapshot.exists()) {
-              const chatData = chatSnapshot.val();
-              const participants = chatData.participants || {};
+            const chatSummaryRef = ref(db, `chatsSummary/${chatId}`);
+            const chatSummarySnapshot = await get(chatSummaryRef);
+            if (chatSummarySnapshot.exists()) {
+              const chatData = chatSummarySnapshot.val();
+              const participants = chatData.participantNames || {};
               const participantKeys = Object.keys(participants);
-              const partnerKey = participantKeys.find(
-                (key) => !key.includes(userId) && key.includes('_')
-              );
+              const partnerKey = participantKeys.find((key) => key !== userId);
               let partnerName = 'Anonymous';
-              let partnerId = '';
+              const partnerId = '';
               if (partnerKey) {
-                if (partnerKey.includes('_')) {
-                  const parts = partnerKey.split('_');
-                  partnerName = parts[1];
-                  partnerId = parts[0];
-                }
+                partnerName = participants[partnerKey];
               }
               return {
                 id: chatId,
                 lastMessage: chatData.lastMessage,
                 partner: partnerName,
                 partnerId,
+                updatedAt: chatData.updatedAt,
               };
             }
             console.warn(`Chat data for ID ${chatId} not found.`);
@@ -207,6 +189,7 @@ export const createChat = async (
   const userIds = [currentUserId, otherUserId].sort();
   const chatId = userIds.join('_');
   const chatRef = ref(db, `chats/${chatId}`);
+  const chatSummaryRef = ref(db, `chatsSummary/${chatId}`);
 
   const existingChat = await get(chatRef);
   if (existingChat.exists()) {
@@ -214,21 +197,43 @@ export const createChat = async (
     return chatId;
   }
 
+  const existingChatSummary = await get(chatSummaryRef);
+  if (existingChatSummary.exists()) {
+    console.error('Chat summary already exists, returning existing chat ID:');
+    return chatId;
+  }
+
   const participantsData = {
-    [`${currentUserId}_${currentUserName}`]: true,
-    [`${otherUserId}_${otherUserName}`]: true,
+    [`${currentUserId}_${currentUserName}`]: {
+      updatedAt: serverTimestamp(),
+    },
+    [`${otherUserId}_${otherUserName}`]: {
+      updatedAt: serverTimestamp(),
+    },
+  };
+
+  const participantNames = {
+    [currentUserId]: currentUserName,
+    [otherUserId]: otherUserName,
   };
 
   const newChatData = {
     participants: participantsData,
     createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
     lastMessage: null,
+    participantNames,
   };
 
   const updates: { [key: string]: any } = {};
   updates[`/chats/${chatId}`] = newChatData;
-  updates[`/users/${currentUserId}/chats/${chatId}`] = true;
-  updates[`/users/${otherUserId}/chats/${chatId}`] = true;
+  updates[`/chatsSummary/${chatId}`] = {
+    updatedAt: serverTimestamp(),
+    lastMessage: null,
+    participantNames,
+  };
+  updates[`/users/${currentUserId}/chatsSummary/${chatId}`] = true;
+  updates[`/users/${otherUserId}/chatsSummary/${chatId}`] = true;
 
   try {
     await update(ref(db), updates);
@@ -304,67 +309,58 @@ export const markMessagesAsRead = (
   }
 };
 
-export const fetchChatPartnerInfo = (
+export const fetchChatPartnerInfo = async (
   chatId: string,
-  currentUserId: string,
-  setChatPartner: React.Dispatch<React.SetStateAction<ChatPartner | null>>,
-  setLoading: React.Dispatch<React.SetStateAction<boolean>>,
-  setError: React.Dispatch<React.SetStateAction<string | null>>
-): (() => void) => {
+  currentUserId: string
+): Promise<ChatPartner> => {
   const chatMetaRef = ref(db, `chats/${chatId}`);
-  let unsubscribeFn: (() => void) | null = null;
 
-  get(chatMetaRef)
-    .then((snapshot) => {
-      if (snapshot.exists()) {
-        const chatData = snapshot.val();
-        const participantIds = Object.keys(chatData.participants || {});
-        const partnerIdWithName = participantIds.find((pId) => !pId.includes(currentUserId));
-        let partnerId;
-        if (partnerIdWithName?.includes('_')) {
-          partnerId = partnerIdWithName?.split('_')[0];
-        } else {
-          partnerId = partnerIdWithName;
-        }
-        if (partnerId) {
-          const partnerStatusRef = ref(db, `chats/${chatId}/participants/${partnerId}`);
-          unsubscribeFn = onValue(partnerStatusRef, (statusSnapshot) => {
-            const statusData = statusSnapshot.val() || {};
-            const userRef = ref(db, `users/${partnerId}`);
-            get(userRef).then((userSnapshot) => {
-              if (userSnapshot && userSnapshot.exists()) {
-                const userData = userSnapshot.val();
-                const chatPartnerInfo = {
-                  id: partnerId,
-                  username: userData.username,
-                  isActive: statusData.isActive || false,
-                  isTyping: statusData.isTyping || false,
-                  lastActive: statusData.lastActive || null,
-                  isLoggedIn: userData.isLoggedIn || false,
-                };
-                setChatPartner(chatPartnerInfo);
-              }
-              setLoading(false);
-            });
-          });
-        } else {
-          throw new Error('Chat partner not found in participants.');
-        }
-      } else {
-        throw new Error('Chat metadata not found.');
-      }
-    })
-    .catch((err: any) => {
-      console.error('Error fetching chat/partner info:', err);
-      setError(err.message || 'Failed to load chat details.');
-      setLoading(false);
-    });
-
-  return () => {
-    if (unsubscribeFn) {
-      unsubscribeFn();
+  try {
+    const snapshot = await get(chatMetaRef);
+    if (!snapshot.exists()) {
+      throw new Error('Chat metadata not found.');
     }
-  };
+
+    const chatData = snapshot.val();
+    const participantIds = Object.keys(chatData.participants || {});
+    const partnerIdWithName = participantIds.find((pId) => !pId.includes(currentUserId));
+
+    let partnerId: string | undefined;
+    if (partnerIdWithName?.includes('_')) {
+      partnerId = partnerIdWithName?.split('_')[0];
+    } else {
+      partnerId = partnerIdWithName;
+    }
+
+    if (!partnerId) {
+      throw new Error('Chat partner not found in participants.');
+    }
+
+    const userRef = ref(db, `users/${partnerId}`);
+    const userSnapshot = await get(userRef);
+    if (!userSnapshot || !userSnapshot.exists()) {
+      throw new Error('Chat partner user data not found.');
+    }
+    const userData = userSnapshot.val();
+
+    const statusRef = ref(db, `chats/${chatId}/participants/${partnerId}`);
+    const statusSnapshot = await get(statusRef);
+    const statusData = statusSnapshot.val() || {};
+
+    const chatPartnerInfo: ChatPartner = {
+      id: partnerId,
+      username: userData.username,
+      isActive: statusData.isActive || false,
+      isTyping: statusData.isTyping || false,
+      lastActive: statusData.lastActive || null,
+      isLoggedIn: userData.isLoggedIn || false,
+    };
+
+    return chatPartnerInfo;
+  } catch (error: any) {
+    console.error('Error fetching chat partner info:', error);
+    throw error;
+  }
 };
 
 export const listenForMessages = (
@@ -376,7 +372,7 @@ export const listenForMessages = (
   sendNotification: (message: FirebaseMessage) => void
 ) => {
   const messagesRef = ref(db, `chats/${chatId}/messages`);
-  const messagesQuery = query(messagesRef, orderByChild('timestamp'));
+  const messagesQuery = query(messagesRef, orderByChild('timestamp'), limitToLast(50));
   setLoading(true);
   setError(null);
   let initialLoad = true;
@@ -427,9 +423,10 @@ export const sendMessage = async (
   content: string,
   replyMessage: ReplyMessageInfo | null = null
 ) => {
-
+  console.log("send messae")
   const messagesRef = ref(db, `chats/${chatId}/messages`);
   const chatMetaRef = ref(db, `chats/${chatId}`);
+  const chatSummaryRef = ref(db, `chatsSummary/${chatId}`);
   const newMessageData = {
     content: content.trim(),
     senderId: userId,
@@ -446,7 +443,9 @@ export const sendMessage = async (
         senderId: userId,
         read: false,
       },
+      updatedAt: serverTimestamp(),
     };
+    await update(chatSummaryRef, lastMessageUpdate);
     await update(chatMetaRef, lastMessageUpdate);
   } catch (err: any) {
     console.error('Error sending message:', err);
@@ -462,31 +461,13 @@ export const sendImageMessage = async (
   replyTo: ReplyMessageInfo | null = null
 ) => {
   try {
-    // Get the storage instance and create a reference
     const storage = getStorage();
     const filename = imageUri.substring(imageUri.lastIndexOf('/') + 1);
     const storageReference = storageRef(storage, `chat_images/${chatId}/${Date.now()}_${filename}`);
 
-    // Convert image to blob
     const response = await fetch(imageUri);
     const blob = await response.blob();
-    // const blob = await new Promise<Blob>((resolve, reject) => {
-    //   const xhr = new XMLHttpRequest();
-    //   xhr.onload = () => {
-    //     resolve(xhr.response);
-    //   };
-    //   xhr.onerror = (e) => {
-    //     console.error('Network request failed:', e);
-    //     reject(new Error('Network request failed'));
-    //   };
-    //   xhr.responseType = 'blob';
-    //   xhr.open('GET', imageUri, true);
-    //   xhr.send(null);
-    // });
-
-    // Upload to Firebase storage
     const uploadTask = uploadBytesResumable(storageReference, blob);
-
     await new Promise((resolve, reject) => {
       uploadTask.on(
         'state_changed',
@@ -505,9 +486,7 @@ export const sendImageMessage = async (
         }
       );
     });
-
     const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-
     const messagesRef = ref(db, `chats/${chatId}/messages`);
     await push(messagesRef, {
       content: text,
@@ -523,11 +502,10 @@ export const sendImageMessage = async (
           }
         : null,
     });
-
     const chatMetaRef = ref(db, `chats/${chatId}`);
     await push(chatMetaRef, {
       lastMessage: {
-        content: text ? text : '[Image]',
+        content: text ? text : imageUri,
         senderId,
         timestamp: serverTimestamp(),
         hasImage: true,

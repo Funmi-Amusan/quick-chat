@@ -1,3 +1,4 @@
+import AntDesign from '@expo/vector-icons/AntDesign';
 import { router } from 'expo-router';
 import { User } from 'firebase/auth';
 import {
@@ -9,9 +10,10 @@ import {
   Button,
   TouchableOpacity,
   Image,
+  Pressable,
 } from 'react-native';
-import { ImageAssets } from '~/assets';
 
+import { ImageAssets } from '~/assets';
 import { createChat } from '~/lib/firebase-sevice';
 import { FormattedUser, ChatData } from '~/lib/types';
 
@@ -21,8 +23,10 @@ interface UserListModalProps {
   allUsers: FormattedUser[];
   userChats: ChatData[];
   loading: boolean;
-  error: string | null;
+  error: Error | null;
   currentUser: User | null;
+  refreshAllUsers: () => void;
+
 }
 
 const UserListModal = ({
@@ -33,9 +37,10 @@ const UserListModal = ({
   loading,
   error,
   currentUser,
+  refreshAllUsers,
 }: UserListModalProps) => {
   const chatsToList = allUsers.filter(
-    (user) => user.id !== currentUser?.uid && !userChats.some((chat) => chat.partnerId === user.id)
+    (user) => user.id !== 'undefined' && !userChats.some((chat) => chat.id.includes(user.id))
   );
 
   const createChatWithUser = async (otherUser: FormattedUser) => {
@@ -64,24 +69,25 @@ const UserListModal = ({
       <View className=" mt-12 flex-1 ">
         <View className=" flex-row items-center justify-between border-b border-gray-300 p-4">
           <Text className=" text-xl font-bold ">Start New Chat</Text>
-          <Button title="Close" onPress={onClose} />
+          <Pressable onPress={onClose}>
+          <AntDesign name="closecircle" size={24} color="black" />
+          </Pressable>
         </View>
-
         {loading && (
           <View className=" flex-1 items-center justify-center p-5 ">
             <ActivityIndicator size="large" />
             <Text>Loading users...</Text>
           </View>
         )}
-
         {error && (
           <View className=" flex-1 items-center justify-center p-5 ">
-            <Text className=" mb-2 text-center text-red-500 ">Error: {error}</Text>
+            <Text className=" mb-2 text-center text-red-500 ">Error: {error.message}</Text>
           </View>
         )}
-
         {!loading && !error && (
           <FlatList
+          onRefresh={refreshAllUsers}
+            refreshing={loading}
             data={chatsToList}
             keyExtractor={(item: FormattedUser) => item.id}
             renderItem={({ item }: { item: FormattedUser }) => (

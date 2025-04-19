@@ -1,4 +1,4 @@
-import { User, onAuthStateChanged } from 'firebase/auth';
+import { User, onAuthStateChanged,  } from 'firebase/auth';
 import { getDatabase, ref, set, update } from 'firebase/database';
 import { auth } from 'lib/firebase-config';
 import { login, logout, register } from 'lib/firebase-sevice';
@@ -82,7 +82,7 @@ export function SessionProvider(props: { children: React.ReactNode }) {
         text1: 'Sign in failed',
         text2: error instanceof Error ? error.message : 'An unknown error occurred',
       });
-      return undefined;
+      throw error;
     }
   };
 
@@ -99,13 +99,15 @@ export function SessionProvider(props: { children: React.ReactNode }) {
           .then(() => {})
           .catch((error) => {
             console.log('error', error);
+            throw new Error('Error saving user data to database: ' + error);
           });
       } else {
         console.log('Registration response did not contain a user object.');
+        throw new Error('Registration failed. Please try again.');
       }
-      return response?.user;
+      return response?.user as User | undefined;
     } catch (error) {
-      return error;
+      throw error;
     }
   };
 

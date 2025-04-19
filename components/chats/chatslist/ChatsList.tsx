@@ -1,4 +1,5 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { useQuery } from '@tanstack/react-query';
 import AppLayout from 'components/layout/AppLayout';
 import { Unsubscribe } from 'firebase/database';
 import { useState, useEffect, useRef } from 'react';
@@ -10,19 +11,34 @@ import UserListModal from '../modals/UserListModals';
 import { ImageAssets } from '~/assets';
 import { auth } from '~/lib/firebase-config';
 import { fetchAllUsers, listenToUserChats } from '~/lib/firebase-sevice';
-import { ChatData, FormattedUser } from '~/lib/types';
+import { ChatData } from '~/lib/types';
 
 const ChatsList = () => {
   const [userChats, setUserChats] = useState<ChatData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [allUsers, setAllUsers] = useState<FormattedUser[]>([]);
-  const [modalLoading, setModalLoading] = useState(false);
-  const [modalError, setModalError] = useState<string | null>(null);
 
   const currentUser = auth.currentUser;
+  const currentUserId = currentUser?.uid;
   const unsubscribeRef = useRef<Unsubscribe | null>(null);
+
+  const {
+    data: allUsers = [],
+    isLoading: modalLoading,
+    error: modalError,
+    refetch: refetchAllUsers,
+  } = useQuery({
+    queryKey: ['allUsers', currentUserId],
+    queryFn: () => {
+      if (!currentUserId) {
+        throw new Error('User not authenticated for fetching users.');
+      }
+      return fetchAllUsers(currentUserId);
+    },
+    enabled: isModalVisible && !!currentUserId, 
+    staleTime: 5 * 60 * 1000,
+  });
 
   useEffect(() => {
     if (!currentUser) {
@@ -42,7 +58,12 @@ const ChatsList = () => {
           setError(serviceError.message || 'Failed to load chats.');
           setUserChats([]);
         } else {
-          setUserChats(chatsFromService);
+          const sortedChats = chatsFromService.sort((a, b) => {
+            const dateA = new Date(a.lastMessage?.timestamp || 0);
+            const dateB = new Date(b.lastMessage?.timestamp || 0);
+            return dateB.getTime() - dateA.getTime();
+          });
+          setUserChats(sortedChats);
           setError(null);
         }
         setLoading(false);
@@ -52,29 +73,11 @@ const ChatsList = () => {
   }, [currentUser]);
 
   const openUserListModal = async () => {
-    if (!currentUser) {
-      setModalError('User not authenticated.');
-      return;
-    }
-
-    setModalLoading(true);
-    setModalError(null);
-    setAllUsers([]);
     setIsModalVisible(true);
-
-    try {
-      const fetchedUsers = await fetchAllUsers(currentUser.uid);
-      setAllUsers(fetchedUsers);
-    } catch (err: any) {
-      setModalError(err.message);
-    } finally {
-      setModalLoading(false);
-    }
   };
 
   const closeModal = () => {
     setIsModalVisible(false);
-    setModalError(null);
   };
 
   if (loading) {
@@ -97,6 +100,7 @@ const ChatsList = () => {
       </AppLayout>
     );
   }
+
   return (
     <AppLayout>
       <View className="flex-row items-center gap-2">
@@ -119,6 +123,7 @@ const ChatsList = () => {
           data={userChats}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <ChatItem {...item} />}
+          showsVerticalScrollIndicator={false}
         />
       )}
 
@@ -130,6 +135,7 @@ const ChatsList = () => {
         loading={modalLoading}
         error={modalError}
         currentUser={currentUser}
+        refreshAllUsers={refetchAllUsers}
       />
     </AppLayout>
   );

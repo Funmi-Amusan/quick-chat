@@ -13,7 +13,7 @@ interface UseListenForChatMessagesProps {
   setMessages: React.Dispatch<React.SetStateAction<FirebaseMessage[]>>;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
   setError: React.Dispatch<React.SetStateAction<string | null>>;
-  chatPartner: ChatPartner | null;
+  chatPartner: ChatPartner | undefined;
 }
 
 const useListenForChatMessages = ({

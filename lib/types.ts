@@ -20,6 +20,7 @@ export interface ChatData {
     partner: string;
     lastMessage: LastMessageData;
     partnerId: string;
+    updatedAt: number;
 }
 
 export interface LastMessageData {
@@ -75,4 +76,5 @@ export interface ReplyMessageInfo {
   id: string;
   content: string;
   senderId: string;
+  imageUrl: string | null;
 }

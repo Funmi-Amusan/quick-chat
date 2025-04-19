@@ -1,6 +1,8 @@
 import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { ImageAssets } from 'assets';
 import ChatRoomLayout from 'components/layout/ChatRoomLayout';
 import { BlurView } from 'expo-blur';
@@ -25,7 +27,6 @@ import ChatTextInput from '../textInput/TextInput';
 import ChatHeader from './chatHeader/ChatHeader';
 
 import useChatPresence from '~/hooks/useChatRoomPresence';
-import useFetchChatPartner from '~/hooks/useFetchChatPartnerInfo';
 import useListenForChatMessages from '~/hooks/useListenForMessages';
 import useMarkMessagesAsRead from '~/hooks/useMarkMessagesAsRead';
 import useTypingStatus from '~/hooks/useTypingStatus';
@@ -36,7 +37,6 @@ import { ChatPartner, FirebaseMessage, ReplyMessageInfo } from '~/lib/types';
 const ChatRoom = () => {
   const { id: chatId } = useLocalSearchParams<{ id: string }>();
   const [messages, setMessages] = useState<FirebaseMessage[]>([]);
-  const [chatPartner, setChatPartner] = useState<ChatPartner | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [inputText, setInputText] = useState('');
@@ -47,12 +47,79 @@ const ChatRoom = () => {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const flatListRef = useRef<FlatList>(null);
   const currentUser = auth.currentUser;
+  const currentUserId = currentUser?.uid;
   const swipeableRowRef = useRef<Animated.View>(null);
+
+  const {
+    data: chatPartner,
+    isLoading: chatPartnerLoading,
+    error: chatPartnerError,
+  } = useQuery<ChatPartner, Error>({
+    queryKey: ['chatPartner', chatId, currentUserId],
+    queryFn: async () => {
+      if (!chatId || !currentUserId) {
+        router.back();
+        throw new Error('Chat ID or User ID is missing.');
+      }
+      const partnerInfo = await Database.fetchChatPartnerInfo(chatId, currentUserId);
+      console.log('Chat partner info:', partnerInfo);
+      if (!partnerInfo) {
+        router.back();
+        throw new Error('Chat partner not found.');
+      }
+      return partnerInfo;
+    },
+    enabled: !!chatId && !!currentUserId,
+    staleTime: Infinity,
+    refetchInterval: 1000 * 60 * 12,
+  });
+
+  const {
+    mutate: sendMessageMutate,
+    isPending: isSendingMessage,
+    error: sendMessageError,
+  } = useMutation({
+    mutationFn: async (params: { text: string; imageUriToSend: string | null }) => {
+      const { text, imageUriToSend } = params;
+      if (!currentUser || !chatId) {
+        throw new Error('User or Chat ID missing.');
+      }
+      if (imageUriToSend) {
+        await Database.sendImageMessage(
+          chatId,
+          currentUser.uid,
+          imageUriToSend,
+          text,
+          replyMessage
+        );
+      } else if (text) {
+        await Database.sendMessage(chatId, currentUser.uid, text, replyMessage);
+      } else {
+        throw new Error('Cannot send empty message.');
+      }
+    },
+    onSuccess: (data, variables) => {
+      console.log('Message sent successfully');
+      setInputText('');
+      setReplyMessage(null);
+      setImageUri(null);
+      scrollToBottom();
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+      if (currentUser && chatId) {
+        Database.resetTypingStatus(currentUser.uid, chatId);
+      }
+    },
+    onError: (error: any) => {
+      console.error('Error sending message:', error);
+    },
+  });
 
   useChatPresence(currentUser, chatId);
   useTypingStatus(currentUser, chatId, inputText);
   useMarkMessagesAsRead(currentUser, chatId, messages);
-  useFetchChatPartner(chatId, currentUser, setChatPartner, setLoading, setError);
   useListenForChatMessages({
     chatId,
     currentUser,
@@ -103,7 +170,6 @@ const ChatRoom = () => {
   };
 
   const handleSendMessage = useCallback(async () => {
-    console.log('imageUri is:', imageUri);
     const trimmedInput = inputText.trim();
     if ((!trimmedInput && !imageUri) || !currentUser || !chatId) {
       return;
@@ -112,34 +178,9 @@ const ChatRoom = () => {
       clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = null;
     }
-
     Database.resetTypingStatus(currentUser.uid, chatId);
-    try {
-      setUploading(true);
-      if (imageUri) {
-        await Database.sendImageMessage(
-          chatId,
-          currentUser.uid,
-          imageUri,
-          trimmedInput,
-          replyMessage
-        );
-        setImageUri(null);
-      } else if (trimmedInput) {
-        await Database.sendMessage(chatId, currentUser.uid, trimmedInput, replyMessage);
-      }
-      setInputText('');
-      setReplyMessage(null);
-      scrollToBottom();
-    } catch (err: any) {
-      console.error('Error sending message:', err);
-      setError('Failed to send message.');
-    } finally {
-      setUploading(false);
-    }
-  }, [inputText, imageUri, currentUser, chatId, replyMessage, scrollToBottom]);
-
-  const handleInputFocus = () => {};
+    sendMessageMutate({ text: trimmedInput, imageUriToSend: imageUri });
+  }, [inputText, imageUri, currentUser, chatId, replyMessage, sendMessageMutate, scrollToBottom]);
 
   const renderMessage = useCallback(
     ({ item }: { item: FirebaseMessage }) => (
@@ -184,7 +225,7 @@ const ChatRoom = () => {
           <TouchableOpacity className="px-2" onPress={() => router.back()}>
             <FontAwesome name="chevron-left" size={14} color="#000" />
           </TouchableOpacity>
-          <ChatHeader chatPartner={chatPartner} />
+          <ChatHeader chatPartner={chatPartner} isLoading={chatPartnerLoading} />
         </View>
       </View>
 
@@ -213,40 +254,44 @@ const ChatRoom = () => {
           <View>
             {replyMessage && (
               <View className="h-12 flex-row items-center gap-2 border-l-4 border-mint bg-black/20 ">
-                <Text className="line-clamp-1 flex-grow px-2 text-sm text-gray-700">
-                  {replyMessage.content}
-                </Text>
-                <Ionicons
-                  name="close-circle-outline"
-                  size={24}
-                  color="white"
-                  className="mx-2"
-                  onPress={() => setReplyMessage(null)}
-                />
+                <View className="flex-grow flex-row items-start gap-2 px-2">
+                  {replyMessage.imageUrl && (
+                    <MaterialCommunityIcons name="camera" size={20} color="grey" />
+                  )}
+                  <Text className="text-grey-700 line-clamp-1 text-sm">
+                    {replyMessage.content
+                      ? replyMessage.content
+                      : replyMessage.imageUrl
+                        ? 'Photo'
+                        : ''}
+                  </Text>
+                </View>
+                <View className=" my-1 flex-row items-center justify-center">
+                  <Image
+                    source={{ uri: replyMessage.imageUrl || '' }}
+                    className="aspect-square h-full rounded-md"
+                    resizeMode="cover"
+                  />
+                  <Ionicons
+                    name="close-circle-outline"
+                    size={24}
+                    color="white"
+                    className="mx-2"
+                    onPress={() => setReplyMessage(null)}
+                  />
+                </View>
               </View>
             )}
-
-            {/* {imageUri && (
-              <View className="bg-gray-100 p-2">
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-sm font-medium text-gray-700">Image selected</Text>
-                  <TouchableOpacity onPress={cancelImageUpload}>
-                    <Ionicons name="close-circle" size={24} color="#FF3B30" />
-                  </TouchableOpacity>
-                </View>
-                <View className="mt-2 overflow-hidden rounded-md">
-                  <Image source={{ uri: imageUri }} className="h-40 w-40" resizeMode="cover" />
-                </View>
-              </View>
-            )} */}
-
             <ChatTextInput
               value={inputText}
               onChangeText={setInputText}
               onSendPress={handleSendMessage}
               placeholder="Type something..."
               setFocus={() => setInputFocus(true)}
-              onFocus={handleInputFocus}
+              onFocus={() => {
+                console.log('Input focused');
+                setInputFocus(true);
+              }}
               onImagePress={pickImage}
               isUploading={uploading}
             />
@@ -267,9 +312,8 @@ const ChatRoom = () => {
               bottom: 0,
               right: 0,
             }}
-            tint="dark" // You can experiment with different blur types like 'light', 'xlight', 'regular', 'prominent'
-            intensity={90} // Adjust the blur intensity as needed
-            //reducedTransparencyFallbackColor="black" // Fallback for platforms that don't support blur
+            tint="dark"
+            intensity={90}
           />
 
           <TouchableOpacity className="absolute left-10 top-12 z-20" onPress={handleCloseModal}>

@@ -175,7 +175,7 @@ const MessageBubble = ({
 
   const handleSwipeOpen = () => {
     if (onReply) {
-      onReply({ id, content, senderId });
+      onReply({ id, content, senderId, imageUrl: imageUrl ?? null });
     }
     setTimeout(() => {
       swipeableRef.current?.close();
@@ -214,7 +214,21 @@ const MessageBubble = ({
   const replyMessageContent = () => {
     return replyMessage !== null ? (
       <View className="h-fit flex-row items-center rounded-md border-l-4 border-mint bg-white/50">
-        <Text className="line-clamp-3 px-2 py-4">{replyMessage?.content}</Text>
+        <View className="flex-grow flex-row items-center gap-2 px-2">
+          {replyMessage?.imageUrl && (
+            <MaterialCommunityIcons name="camera" size={20} color="grey" />
+          )}
+          <Text className="text-grey-700 line-clamp-1 text-sm">
+            {replyMessage?.content ? replyMessage.content : replyMessage?.imageUrl ? 'Photo' : ''}
+          </Text>
+        </View>
+        {replyMessage?.imageUrl && (
+          <Image
+            source={{ uri: replyMessage?.imageUrl }}
+            className="h-16 w-16 rounded-r-2xl "
+            resizeMode="cover"
+          />
+        )}
       </View>
     ) : null;
   };

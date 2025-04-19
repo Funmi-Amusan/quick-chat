@@ -22,13 +22,6 @@ const ProfileScreen = () => {
       <TouchableOpacity className=" rounded-xl bg-violet-700 p-4" onPress={() => handleSignOut()}>
         <Text className="text-white">Logout</Text>
       </TouchableOpacity>
-      <Animated.View
-      style={{
-        width: 100,
-        height: 100,
-        backgroundColor: 'violet',
-      }}
-    />
     </View>
   );
 };
