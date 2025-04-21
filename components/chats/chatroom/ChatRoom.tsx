@@ -37,7 +37,7 @@ import { ChatPartner, FirebaseMessage, ReplyMessageInfo } from '~/lib/types';
 const ChatRoom = () => {
   const { id: chatId } = useLocalSearchParams<{ id: string }>();
   const [messages, setMessages] = useState<FirebaseMessage[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [inputText, setInputText] = useState('');
   const [inputFocus, setInputFocus] = useState(false);
@@ -62,7 +62,6 @@ const ChatRoom = () => {
         throw new Error('Chat ID or User ID is missing.');
       }
       const partnerInfo = await Database.fetchChatPartnerInfo(chatId, currentUserId);
-      console.log('Chat partner info:', partnerInfo);
       if (!partnerInfo) {
         router.back();
         throw new Error('Chat partner not found.');
@@ -84,6 +83,7 @@ const ChatRoom = () => {
       if (!currentUser || !chatId) {
         throw new Error('User or Chat ID missing.');
       }
+      setInputText('');
       if (imageUriToSend) {
         await Database.sendImageMessage(
           chatId,
@@ -99,8 +99,6 @@ const ChatRoom = () => {
       }
     },
     onSuccess: (data, variables) => {
-      console.log('Message sent successfully');
-      setInputText('');
       setReplyMessage(null);
       setImageUri(null);
       scrollToBottom();
@@ -120,7 +118,7 @@ const ChatRoom = () => {
   useChatPresence(currentUser, chatId);
   useTypingStatus(currentUser, chatId, inputText);
   useMarkMessagesAsRead(currentUser, chatId, messages);
-  useListenForChatMessages({
+  const { hasMoreMessages, loadOlderMessages, loadingOlder } = useListenForChatMessages({
     chatId,
     currentUser,
     setMessages,
@@ -229,7 +227,7 @@ const ChatRoom = () => {
         </View>
       </View>
 
-      {loading && !messages.length ? (
+      {loading ? (
         <View className="flex-1 items-center justify-center bg-slate-200 p-4">
           <ActivityIndicator size="large" color="#007AFF" />
           <Text className="mt-2 text-gray-600">Loading chat...</Text>
@@ -289,7 +287,6 @@ const ChatRoom = () => {
               placeholder="Type something..."
               setFocus={() => setInputFocus(true)}
               onFocus={() => {
-                console.log('Input focused');
                 setInputFocus(true);
               }}
               onImagePress={pickImage}

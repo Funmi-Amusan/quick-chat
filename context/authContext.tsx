@@ -98,11 +98,9 @@ export function SessionProvider(props: { children: React.ReactNode }) {
         })
           .then(() => {})
           .catch((error) => {
-            console.log('error', error);
             throw new Error('Error saving user data to database: ' + error);
           });
       } else {
-        console.log('Registration response did not contain a user object.');
         throw new Error('Registration failed. Please try again.');
       }
       return response?.user as User | undefined;
