@@ -37,7 +37,7 @@ import { ChatPartner, FirebaseMessage, ReplyMessageInfo } from '~/lib/types';
 const ChatRoom = () => {
   const { id: chatId } = useLocalSearchParams<{ id: string }>();
   const [messages, setMessages] = useState<FirebaseMessage[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [inputText, setInputText] = useState('');
   const [inputFocus, setInputFocus] = useState(false);
@@ -62,7 +62,6 @@ const ChatRoom = () => {
         throw new Error('Chat ID or User ID is missing.');
       }
       const partnerInfo = await Database.fetchChatPartnerInfo(chatId, currentUserId);
-      console.log('Chat partner info:', partnerInfo);
       if (!partnerInfo) {
         router.back();
         throw new Error('Chat partner not found.');
@@ -84,6 +83,7 @@ const ChatRoom = () => {
       if (!currentUser || !chatId) {
         throw new Error('User or Chat ID missing.');
       }
+      setInputText('');
       if (imageUriToSend) {
         await Database.sendImageMessage(
           chatId,
@@ -99,11 +99,8 @@ const ChatRoom = () => {
       }
     },
     onSuccess: (data, variables) => {
-      console.log('Message sent successfully');
-      setInputText('');
       setReplyMessage(null);
       setImageUri(null);
-      scrollToBottom();
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
         typingTimeoutRef.current = null;
@@ -120,7 +117,7 @@ const ChatRoom = () => {
   useChatPresence(currentUser, chatId);
   useTypingStatus(currentUser, chatId, inputText);
   useMarkMessagesAsRead(currentUser, chatId, messages);
-  useListenForChatMessages({
+  const { hasMoreMessages, loadOlderMessages, loadingOlder } = useListenForChatMessages({
     chatId,
     currentUser,
     setMessages,
@@ -128,24 +125,6 @@ const ChatRoom = () => {
     setError,
     chatPartner,
   });
-
-  const scrollToBottom = useCallback(() => {
-    if (flatListRef.current) {
-      flatListRef.current.scrollToEnd({ animated: false });
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!loading && messages.length > 0) {
-      scrollToBottom();
-    }
-  }, [messages, loading, scrollToBottom]);
-
-  useEffect(() => {
-    if (chatPartner?.isTyping.isTyping) {
-      scrollToBottom();
-    }
-  }, [chatPartner?.isTyping.isTyping, scrollToBottom]);
 
   const pickImage = async () => {
     try {
@@ -180,7 +159,7 @@ const ChatRoom = () => {
     }
     Database.resetTypingStatus(currentUser.uid, chatId);
     sendMessageMutate({ text: trimmedInput, imageUriToSend: imageUri });
-  }, [inputText, imageUri, currentUser, chatId, replyMessage, sendMessageMutate, scrollToBottom]);
+  }, [inputText, imageUri, currentUser, chatId, replyMessage, sendMessageMutate]);
 
   const renderMessage = useCallback(
     ({ item }: { item: FirebaseMessage }) => (
@@ -229,7 +208,7 @@ const ChatRoom = () => {
         </View>
       </View>
 
-      {loading && !messages.length ? (
+      {loading ? (
         <View className="flex-1 items-center justify-center bg-slate-200 p-4">
           <ActivityIndicator size="large" color="#007AFF" />
           <Text className="mt-2 text-gray-600">Loading chat...</Text>
@@ -240,6 +219,12 @@ const ChatRoom = () => {
         </View>
       ) : (
         <KeyboardAvoidingView className="relative flex-grow" behavior="padding">
+          {loadingOlder && (
+            <View className="absolute left-0 right-0 top-0 z-10 flex-row items-center justify-center bg-white py-2">
+              <ActivityIndicator size="small" color="#007AFF" />
+              <Text className="ml-2 text-gray-600">Loading older messages...</Text>
+            </View>
+          )}
           <Animated.FlatList
             ref={flatListRef}
             className="flex-1 bg-slate-100"
@@ -248,8 +233,14 @@ const ChatRoom = () => {
             renderItem={renderMessage}
             keyExtractor={keyExtractor}
             ListFooterComponent={chatPartner?.isTyping.isTyping ? <ActiveTypingBubble /> : null}
-            onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
-            onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
+            // onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
+            // onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
+            onStartReached={() => {
+              if (hasMoreMessages) {
+                loadOlderMessages();
+              }
+            }}
+            onStartReachedThreshold={0.3}
           />
           <View>
             {replyMessage && (
@@ -289,7 +280,6 @@ const ChatRoom = () => {
               placeholder="Type something..."
               setFocus={() => setInputFocus(true)}
               onFocus={() => {
-                console.log('Input focused');
                 setInputFocus(true);
               }}
               onImagePress={pickImage}

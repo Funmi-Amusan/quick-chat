@@ -20,6 +20,8 @@ import {
   orderByChild,
   set,
   limitToLast,
+  startAfter,
+  endBefore,
 } from 'firebase/database';
 import {
   getStorage,
@@ -45,6 +47,8 @@ import {
 export interface FirebaseUserResponse {
   user: User;
 }
+
+const db = getDatabase();
 
 export async function login(
   email: string,
@@ -78,7 +82,6 @@ export async function register(
   name?: string
 ): Promise<FirebaseUserResponse | undefined> {
   try {
-    console.log('[register] ==>', email);
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     if (name) {
       await updateProfile(userCredential.user, { displayName: name });
@@ -90,7 +93,6 @@ export async function register(
   }
 }
 
-const db = getDatabase();
 const formatFirebaseUser = (userId: string, userData: UserData): FormattedUser => {
   return {
     id: userId,
@@ -363,26 +365,99 @@ export const fetchChatPartnerInfo = async (
   }
 };
 
-export const listenForMessages = (
+export const fetchInitialMessages = async (
   chatId: string,
-  currentUserId: string,
-  setMessages: React.Dispatch<React.SetStateAction<FirebaseMessage[]>>,
-  setLoading: React.Dispatch<React.SetStateAction<boolean>>,
-  setError: React.Dispatch<React.SetStateAction<string | null>>,
-  sendNotification: (message: FirebaseMessage) => void
+  batchSize: number = 50
+): Promise<FirebaseMessage[]> => {
+  const messagesRef = ref(db, `chats/${chatId}/messages`);
+  const initialMessagesQuery = query(
+    messagesRef,
+    orderByChild('timestamp'),
+    limitToLast(batchSize)
+  );
+  try {
+    const snapshot = await get(initialMessagesQuery);
+    const messagesData = snapshot.val();
+    if (messagesData) {
+      const messagesList: FirebaseMessage[] = Object.entries(messagesData).map(
+        ([key, value]: [string, any]) => ({
+          id: key,
+          content: value.content,
+          imageUrl: value.imageUrl || null,
+          senderId: value.senderId,
+          timestamp: value.timestamp,
+          read: value.read || false,
+          reaction: value.reactions || undefined,
+          replyMessage: value.replyMessage || null,
+        })
+      );
+      return messagesList;
+    } else {
+      return [];
+    }
+  } catch (err) {
+    console.error('Error fetching initial messages:', err);
+    throw err;
+  }
+};
+
+export const fetchOlderMessages = async (
+  chatId: string,
+  oldestTimestamp: number,
+  batchSize: number = 50
+): Promise<FirebaseMessage[]> => {
+  const messagesRef = ref(db, `chats/${chatId}/messages`);
+  const messagesQuery = query(
+    messagesRef,
+    orderByChild('timestamp'),
+    endBefore(oldestTimestamp),
+    limitToLast(batchSize)
+  );
+
+  try {
+    const snapshot = await get(messagesQuery);
+    const messagesData = snapshot.val();
+    if (messagesData) {
+      const messagesList: FirebaseMessage[] = Object.entries(messagesData).map(
+        ([key, value]: [string, any]) => ({
+          id: key,
+          content: value.content,
+          imageUrl: value.imageUrl || null,
+          senderId: value.senderId,
+          timestamp: value.timestamp,
+          read: value.read || false,
+          reaction: value.reactions || undefined,
+          replyMessage: value.replyMessage || null,
+        })
+      );
+      return messagesList;
+    } else {
+      return [];
+    }
+  } catch (err) {
+    console.error('Error fetching older messages:', err);
+    throw err;
+  }
+};
+
+export const listenForNewMessages = (
+  chatId: string,
+  latestTimestamp: number,
+  onNewMessage: (message: FirebaseMessage) => void,
+  onError: (error: string | null) => void 
 ) => {
   const messagesRef = ref(db, `chats/${chatId}/messages`);
-  const messagesQuery = query(messagesRef, orderByChild('timestamp'), limitToLast(50));
-  setLoading(true);
-  setError(null);
-  let initialLoad = true;
-
+  const newMessagesQuery = query(
+    messagesRef,
+    orderByChild('timestamp'),
+    startAfter(latestTimestamp)
+  );
   const unsubscribe = onValue(
-    messagesQuery,
+    newMessagesQuery,
     (snapshot) => {
       const messagesData = snapshot.val();
       if (messagesData) {
-        const messagesList: FirebaseMessage[] = Object.entries(messagesData).map(
+        const newMessagesList: FirebaseMessage[] = Object.entries(messagesData).map(
           ([key, value]: [string, any]) => ({
             id: key,
             content: value.content,
@@ -394,26 +469,18 @@ export const listenForMessages = (
             replyMessage: value.replyMessage || null,
           })
         );
-        setMessages(messagesList);
-
-        if (!initialLoad && messagesList.length > 0) {
-          const latestMessage = messagesList[messagesList.length - 1];
-          if (latestMessage.senderId !== currentUserId) {
-            sendNotification(latestMessage);
-          }
-        }
-      } else {
-        setMessages([]);
+        newMessagesList.sort((a, b) => a.timestamp - b.timestamp);
+        newMessagesList.forEach((message) => {
+          onNewMessage(message);
+        });
       }
-      setLoading(false);
-      initialLoad = false;
     },
     (err: any) => {
-      console.error('Error listening to messages:', err);
-      setError(err.message || 'Failed to load messages.');
-      setLoading(false);
+      console.error('Error listening for new messages:', err);
+      onError(err.message || 'Failed to listen for new messages.');
     }
   );
+
   return unsubscribe;
 };
 
@@ -423,7 +490,6 @@ export const sendMessage = async (
   content: string,
   replyMessage: ReplyMessageInfo | null = null
 ) => {
-  console.log("send messae")
   const messagesRef = ref(db, `chats/${chatId}/messages`);
   const chatMetaRef = ref(db, `chats/${chatId}`);
   const chatSummaryRef = ref(db, `chatsSummary/${chatId}`);
@@ -472,16 +538,13 @@ export const sendImageMessage = async (
       uploadTask.on(
         'state_changed',
         (snapshot) => {
-          // You can track progress here if needed
           const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
           console.log('Upload is ' + progress + '% done');
         },
         (error) => {
-          // Handle unsuccessful uploads
           reject(error);
         },
         () => {
-          // Upload completed successfully
           resolve(null);
         }
       );
