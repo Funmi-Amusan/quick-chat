@@ -81,12 +81,11 @@ const useListenForChatMessages = ({
     setHasMoreMessages(true);
 
     try {
-      const initialMessagesList = await fetchInitialMessages(chatId, batchSize);
+      const initialMessagesList = await fetchInitialMessages(chatId);
       if (initialMessagesList.length > 0) {
         initialMessagesList.sort((a, b) => a.timestamp - b.timestamp);
         setMessages(initialMessagesList);
         setOldestTimestamp(initialMessagesList[0].timestamp);
-
         if (initialMessagesList.length < batchSize) {
           setHasMoreMessages(false);
         }
@@ -108,6 +107,7 @@ const useListenForChatMessages = ({
         );
       } else {
         setMessages([]);
+        console.log('0----');
         setHasMoreMessages(false);
       }
     } catch (err: any) {
@@ -143,6 +143,7 @@ const useListenForChatMessages = ({
         olderMessages.sort((a, b) => a.timestamp - b.timestamp);
         setMessages((prevMessages) => [...olderMessages, ...prevMessages]);
         if (olderMessages.length < batchSize) {
+          console.log('setting hasMoreMessages to false');
           setHasMoreMessages(false);
         }
       } else {

@@ -101,7 +101,6 @@ const ChatRoom = () => {
     onSuccess: (data, variables) => {
       setReplyMessage(null);
       setImageUri(null);
-      scrollToBottom();
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
         typingTimeoutRef.current = null;
@@ -126,24 +125,6 @@ const ChatRoom = () => {
     setError,
     chatPartner,
   });
-
-  const scrollToBottom = useCallback(() => {
-    if (flatListRef.current) {
-      flatListRef.current.scrollToEnd({ animated: false });
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!loading && messages.length > 0) {
-      scrollToBottom();
-    }
-  }, [messages, loading, scrollToBottom]);
-
-  useEffect(() => {
-    if (chatPartner?.isTyping.isTyping) {
-      scrollToBottom();
-    }
-  }, [chatPartner?.isTyping.isTyping, scrollToBottom]);
 
   const pickImage = async () => {
     try {
@@ -178,7 +159,7 @@ const ChatRoom = () => {
     }
     Database.resetTypingStatus(currentUser.uid, chatId);
     sendMessageMutate({ text: trimmedInput, imageUriToSend: imageUri });
-  }, [inputText, imageUri, currentUser, chatId, replyMessage, sendMessageMutate, scrollToBottom]);
+  }, [inputText, imageUri, currentUser, chatId, replyMessage, sendMessageMutate]);
 
   const renderMessage = useCallback(
     ({ item }: { item: FirebaseMessage }) => (
@@ -238,6 +219,12 @@ const ChatRoom = () => {
         </View>
       ) : (
         <KeyboardAvoidingView className="relative flex-grow" behavior="padding">
+          {loadingOlder && (
+            <View className="absolute left-0 right-0 top-0 z-10 flex-row items-center justify-center bg-white py-2">
+              <ActivityIndicator size="small" color="#007AFF" />
+              <Text className="ml-2 text-gray-600">Loading older messages...</Text>
+            </View>
+          )}
           <Animated.FlatList
             ref={flatListRef}
             className="flex-1 bg-slate-100"
@@ -246,8 +233,14 @@ const ChatRoom = () => {
             renderItem={renderMessage}
             keyExtractor={keyExtractor}
             ListFooterComponent={chatPartner?.isTyping.isTyping ? <ActiveTypingBubble /> : null}
-            onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
-            onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
+            // onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
+            // onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
+            onStartReached={() => {
+              if (hasMoreMessages) {
+                loadOlderMessages();
+              }
+            }}
+            onStartReachedThreshold={0.3}
           />
           <View>
             {replyMessage && (
