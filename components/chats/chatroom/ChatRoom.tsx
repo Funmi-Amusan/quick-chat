@@ -8,7 +8,7 @@ import ChatRoomLayout from 'components/layout/ChatRoomLayout';
 import { BlurView } from 'expo-blur';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -26,17 +26,28 @@ import MessageBubble from '../messageBubble/MessageBubble';
 import ChatTextInput from '../textInput/TextInput';
 import ChatHeader from './chatHeader/ChatHeader';
 
+import ImageMessagePreviewModal from '~/components/modals/ImageMessagePreviewModal';
+import DateHeader from '~/components/ui/input/DateHeader';
 import useChatPresence from '~/hooks/useChatRoomPresence';
 import useListenForChatMessages from '~/hooks/useListenForMessages';
 import useMarkMessagesAsRead from '~/hooks/useMarkMessagesAsRead';
 import useTypingStatus from '~/hooks/useTypingStatus';
 import { auth } from '~/lib/firebase-config';
 import * as Database from '~/lib/firebase-sevice';
-import { ChatPartner, FirebaseMessage, ReplyMessageInfo } from '~/lib/types';
+import { formatTimestamp, isSameDay } from '~/lib/helpers';
+import {
+  ActualMessage,
+  ChatPartner,
+  DateHeaderMessage,
+  FirebaseMessage,
+  ProcessedMessage,
+  ReplyMessageInfo,
+} from '~/lib/types';
 
 const ChatRoom = () => {
   const { id: chatId } = useLocalSearchParams<{ id: string }>();
   const [messages, setMessages] = useState<FirebaseMessage[]>([]);
+  const [processedMessages, setProcessedMessages] = useState<ProcessedMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [inputText, setInputText] = useState('');
@@ -161,21 +172,6 @@ const ChatRoom = () => {
     sendMessageMutate({ text: trimmedInput, imageUriToSend: imageUri });
   }, [inputText, imageUri, currentUser, chatId, replyMessage, sendMessageMutate]);
 
-  const renderMessage = useCallback(
-    ({ item }: { item: FirebaseMessage }) => (
-      <View className="my-1">
-        <MessageBubble
-          onReply={(replyInfo) => handleReply(replyInfo)}
-          chatId={chatId}
-          isFromSelf={item.senderId === currentUser?.uid}
-          {...item}
-          updateRef={swipeableRowRef}
-        />
-      </View>
-    ),
-    [currentUser?.uid]
-  );
-
   useEffect(() => {
     if (replyMessage && swipeableRowRef.current) {
       swipeableRowRef.current.close();
@@ -191,11 +187,61 @@ const ChatRoom = () => {
     [setReplyMessage]
   );
 
-  const handleCloseModal = () => {
-    setImageUri(null);
-  };
+  const keyExtractor = useCallback((item: ProcessedMessage) => item.id, []);
 
-  const keyExtractor = useCallback((item: FirebaseMessage) => item.id, []);
+  useMemo(() => {
+    if (!messages || messages.length === 0) {
+      setProcessedMessages([]);
+      return;
+    }
+    const transformedData: ProcessedMessage[] = [];
+    let previousMessageTimestamp: number | null = null;
+    const sortedMessages = [...messages].sort((a, b) => a.timestamp - b.timestamp);
+
+    sortedMessages.forEach((message, index) => {
+      if (index === 0 || !isSameDay(message.timestamp, previousMessageTimestamp)) {
+        const dateHeader: DateHeaderMessage = {
+          type: 'header',
+          date: formatTimestamp(message.timestamp),
+          id: `header_${message.timestamp}_${index}`,
+        };
+        transformedData.push(dateHeader);
+      }
+      const actualMessage: ActualMessage = {
+        ...message,
+        type: 'message',
+        id: message.id,
+      };
+      transformedData.push(actualMessage);
+
+      previousMessageTimestamp = message.timestamp;
+    });
+    setProcessedMessages(transformedData);
+  }, [messages]);
+
+  const renderMessage = useCallback(
+    ({ item }: { item: FirebaseMessage }) => (
+      <View className="my-1">
+        <MessageBubble
+          onReply={(replyInfo) => handleReply(replyInfo)}
+          chatId={chatId}
+          isFromSelf={item.senderId === currentUser?.uid}
+          {...item}
+          updateRef={swipeableRowRef}
+        />
+      </View>
+    ),
+    [currentUser?.uid]
+  );
+
+  const renderItem = ({ item }: { item: ProcessedMessage }) => {
+    if (item.type === 'header') {
+      return <DateHeader date={item.date} />;
+    } else if (item.type === 'message') {
+      return renderMessage({ item: item as ActualMessage });
+    }
+    return null;
+  };
 
   return (
     <ChatRoomLayout>
@@ -229,12 +275,10 @@ const ChatRoom = () => {
             ref={flatListRef}
             className="flex-1 bg-slate-100"
             contentContainerStyle={{ paddingVertical: 10, paddingHorizontal: 8 }}
-            data={messages}
-            renderItem={renderMessage}
+            data={processedMessages}
+            renderItem={renderItem}
             keyExtractor={keyExtractor}
             ListFooterComponent={chatPartner?.isTyping.isTyping ? <ActiveTypingBubble /> : null}
-            // onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
-            // onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
             onStartReached={() => {
               if (hasMoreMessages) {
                 loadOlderMessages();
@@ -288,43 +332,13 @@ const ChatRoom = () => {
           </View>
         </KeyboardAvoidingView>
       )}
-      <Modal
-        animationType="fade"
-        transparent
-        visible={imageUri !== null}
-        onRequestClose={handleCloseModal}>
-        <View className=" h-full w-full bg-transparent">
-          <BlurView
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              bottom: 0,
-              right: 0,
-            }}
-            tint="dark"
-            intensity={90}
-          />
-
-          <TouchableOpacity className="absolute left-10 top-12 z-20" onPress={handleCloseModal}>
-            <AntDesign name="closecircle" size={36} color="grey" />
-          </TouchableOpacity>
-
-          <KeyboardAvoidingView
-            behavior="padding"
-            className="absolute bottom-10 left-0 right-0 z-10 flex-row items-center justify-between">
-            <ChatTextInput
-              value={inputText}
-              onChangeText={(e) => setInputText(e)}
-              onSendPress={handleSendMessage}
-              placeholder="Add a caption..."
-              showCameraIcon={false}
-            />
-          </KeyboardAvoidingView>
-
-          <Image source={{ uri: imageUri || '' }} className="h-full w-full" resizeMode="contain" />
-        </View>
-      </Modal>
+      <ImageMessagePreviewModal
+        setImageUri={(e) => setImageUri(e)}
+        imageUri={imageUri}
+        setInputText={(e) => setInputText(e)}
+        inputText={inputText}
+        handleSendMessage={handleSendMessage}
+      />
     </ChatRoomLayout>
   );
 };

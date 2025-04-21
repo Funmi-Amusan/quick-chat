@@ -1,5 +1,4 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import React, { useEffect, useRef, useState } from 'react';
 import { TouchableOpacity, View, TextInput } from 'react-native';
@@ -77,13 +76,14 @@ const ChatTextInput = ({
         </TouchableOpacity>
       )}
       <TouchableOpacity
-        className=" aspect-square h-9 w-10 items-center justify-center p-2  "
+        className=" items-center justify-center px-2  "
         onPress={onSendPress}
         // disabled={!canSend}
       >
         <FontAwesome
           name="send"
           size={20}
+
           //  color={canSend ? '#007AFF' : '#b0b0b0'}
         />
       </TouchableOpacity>
