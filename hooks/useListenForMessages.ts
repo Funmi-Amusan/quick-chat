@@ -75,7 +75,6 @@ const useListenForChatMessages = ({
       setLoading(false);
       return () => {};
     }
-
     setLoading(true);
     setError(null);
     setHasMoreMessages(true);
@@ -164,14 +163,6 @@ const useListenForChatMessages = ({
       console.log('cleanup');
     };
   }, [setupListeners]);
-
-  useEffect(() => {
-    if (chatId && currentUser) {
-      setLoading(true);
-    } else {
-      setLoading(false);
-    }
-  }, [chatId, currentUser, setLoading]);
 
   return {
     loadingOlder,

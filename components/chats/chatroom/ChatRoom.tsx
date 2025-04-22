@@ -42,7 +42,7 @@ const ChatRoom = () => {
   const { id: chatId } = useLocalSearchParams<{ id: string }>();
   const [messages, setMessages] = useState<FirebaseMessage[]>([]);
   const [processedMessages, setProcessedMessages] = useState<ProcessedMessage[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [inputFocus, setInputFocus] = useState(false);
   const currentUser = auth.currentUser;
