@@ -1,22 +1,28 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ['./app/**/*.{js,ts,tsx}', './components/**/*.{js,ts,tsx}'],
-
+  darkMode: 'class',
   presets: [require('nativewind/preset')],
   theme: {
     extend: {
       colors: {
-        // Add your custom colors here
         primary: '#FFB0FE',
         lighterPrimary: '#FFDBFF',
-        body: '#FFFFFF',
+        body: {
+          light: '#f9f9f9',
+          dark: '#121212',
+        },
+        inputDark: '#1F1F1F',
+        title: {
+          light: '#1f2937',
+          dark: '#ffff',
+        },
+        greyText: {
+          light: '#666666',
+          dark: '#AAAAAA',
+        },
         grey: '#8A8CA9',
-        mint: '#7ED3B2'
-        // 'accent': '#F59E0B',
-        // 'danger': '#EF4444',
-        // // You can also add variants
-        // 'primary-light': '#93C5FD',
-        // 'primary-dark': '#1E40AF',
+        mint: '#7ED3B2',
       },
     },
   },

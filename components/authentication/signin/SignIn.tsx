@@ -2,8 +2,11 @@ import { useMutation } from '@tanstack/react-query';
 import { useSession } from 'context/authContext';
 import { router, Link } from 'expo-router';
 import { useState } from 'react';
-import { Text, TextInput, View, Pressable, Alert } from 'react-native';
-import Toast, { } from 'react-native-toast-message';
+import { Text, View, Pressable } from 'react-native';
+import Toast from 'react-native-toast-message';
+
+import BaseTextInput from '~/components/ui/input/BaseTextInput';
+
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
@@ -45,35 +48,35 @@ export default function SignIn() {
   };
 
   return (
-    <View className="flex-1 items-center justify-center bg-body p-4">
+    <View className="bg-body-light dark:bg-body-dark flex-1 items-center justify-center p-4">
       <View className="mb-8 items-center">
-        <Text className="mb-2 text-2xl font-bold text-gray-800">Welcome Back</Text>
-        <Text className="text-sm text-gray-500">Please sign in to continue</Text>
+        <Text className="text-title-light dark:text-title-dark text-2xl font-bold">
+          Welcome Back
+        </Text>
+        <Text className=" text-greyText-light dark:text-greyText-dark text-base">
+          Please sign in to continue
+        </Text>
       </View>
 
       <View className="mb-8 w-full max-w-[300px] space-y-4">
         <View>
-          <Text className="mb-1 ml-1 text-sm font-medium text-gray-700">Email</Text>
-          <TextInput
-            placeholder="name@mail.com"
+          <BaseTextInput
+            label="Your email"
+            placeholder="Your email"
             value={email}
             onChangeText={setEmail}
             textContentType="emailAddress"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            className="w-full rounded-lg border border-gray-300 bg-white p-3 text-base"
           />
         </View>
 
         <View>
-          <Text className="mb-1 ml-1 text-sm font-medium text-gray-700">Password</Text>
-          <TextInput
+          <BaseTextInput
             placeholder="Your password"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
             textContentType="password"
-            className="w-full rounded-lg border border-gray-300 bg-white p-3 text-base"
+            label="Your password"
           />
         </View>
       </View>
@@ -87,7 +90,7 @@ export default function SignIn() {
       </Pressable>
 
       <View className="mt-6 flex-row items-center">
-        <Text className="text-gray-600">Don't have an account?</Text>
+        <Text className="text-greyText-light dark:text-greyText-dark">Don't have an account?</Text>
         <Link href="/sign-up" asChild>
           <Pressable className="ml-2">
             <Text className="font-semibold text-primary">Sign Up</Text>

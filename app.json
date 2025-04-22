@@ -26,7 +26,7 @@
     },
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -38,6 +38,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.funmiamusan.quickchat",
+      "userInterfaceStyle":"automatic"
     },
     "android": {
       "adaptiveIcon": {
@@ -45,7 +46,9 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.funmiamusan.quickchat",
-       "googleServicesFile": "./google-services.json"
+       "googleServicesFile": "./google-services.json",
+       "userInterfaceStyle": "automatic"
+       
     },
     "extra": {
       "router": {

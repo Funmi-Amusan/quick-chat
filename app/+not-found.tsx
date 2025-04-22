@@ -4,7 +4,7 @@ import { Pressable, SafeAreaView, Text, View } from 'react-native';
 export default function NotFoundScreen() {
   return (
     <>
-      <SafeAreaView className=" flex-1 bg-body">
+      <SafeAreaView className=" bg-body-light dark:bg-body-dark flexflex-1">
         <Stack.Screen options={{ title: 'Oops!' }} />
         <View className=" flex-1 items-center justify-center bg-white">
           <Text className="">This screen doesn't exist.</Text>

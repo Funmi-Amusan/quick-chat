@@ -27,7 +27,7 @@ import ChatTextInput from '../textInput/TextInput';
 import ChatHeader from './chatHeader/ChatHeader';
 
 import ImageMessagePreviewModal from '~/components/modals/ImageMessagePreviewModal';
-import DateHeader from '~/components/ui/input/DateHeader';
+import DateHeader from '~/components/ui/DateHeader';
 import useChatPresence from '~/hooks/useChatRoomPresence';
 import useListenForChatMessages from '~/hooks/useListenForMessages';
 import useMarkMessagesAsRead from '~/hooks/useMarkMessagesAsRead';
