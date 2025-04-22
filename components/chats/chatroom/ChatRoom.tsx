@@ -43,8 +43,10 @@ import {
   ProcessedMessage,
   ReplyMessageInfo,
 } from '~/lib/types';
+import { useTheme } from '@react-navigation/native';
 
 const ChatRoom = () => {
+   const { dark } = useTheme();
   const { id: chatId } = useLocalSearchParams<{ id: string }>();
   const [messages, setMessages] = useState<FirebaseMessage[]>([]);
   const [processedMessages, setProcessedMessages] = useState<ProcessedMessage[]>([]);
@@ -245,17 +247,17 @@ const ChatRoom = () => {
 
   return (
     <ChatRoomLayout>
-      <View className="border-b border-gray-300 bg-white px-4 py-2">
-        <View className="flex-row items-center">
+      <View className="bg-body-light dark:bg-body-dark border-b border-white/30 px-4 py-2">
+        <View className="flex-row items-center gap-2">
           <TouchableOpacity className="px-2" onPress={() => router.back()}>
-            <FontAwesome name="chevron-left" size={14} color="#000" />
+            <FontAwesome name="chevron-left" size={14} color={dark ? '#ffffff': '#000000'} />
           </TouchableOpacity>
           <ChatHeader chatPartner={chatPartner} isLoading={chatPartnerLoading} />
         </View>
       </View>
 
       {loading ? (
-        <View className="flex-1 items-center justify-center bg-slate-200 p-4">
+        <View className="bg-body-light dark:bg-body-dark flex-1 items-center justify-center p-4">
           <ActivityIndicator size="large" color="#007AFF" />
           <Text className="mt-2 text-gray-600">Loading chat...</Text>
         </View>
@@ -266,14 +268,14 @@ const ChatRoom = () => {
       ) : (
         <KeyboardAvoidingView className="relative flex-grow" behavior="padding">
           {loadingOlder && (
-            <View className="absolute left-0 right-0 top-0 z-10 flex-row items-center justify-center bg-white py-2">
+            <View className="bg-body-light dark:bg-body-dark absolute left-0 right-0 top-0 z-10 flex-row items-center justify-center py-2">
               <ActivityIndicator size="small" color="#007AFF" />
               <Text className="ml-2 text-gray-600">Loading older messages...</Text>
             </View>
           )}
           <Animated.FlatList
             ref={flatListRef}
-            className="flex-1 bg-slate-100"
+            className="bg-body-light dark:bg-body-dark flex-1"
             contentContainerStyle={{ paddingVertical: 10, paddingHorizontal: 8 }}
             data={processedMessages}
             renderItem={renderItem}

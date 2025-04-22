@@ -18,9 +18,9 @@ const ProfileScreen = () => {
     router.replace('/sign-in');
   };
   return (
-    <View className="flex-1 items-center justify-center p-4">
-      <TouchableOpacity className=" rounded-xl bg-violet-700 p-4" onPress={() => handleSignOut()}>
-        <Text className="text-white">Logout</Text>
+    <View className="flex-1 items-center justify-center p-4 bg-body-light dark:bg-body-dark">
+      <TouchableOpacity className=" rounded-xl bg-primary p-4" onPress={() => handleSignOut()}>
+        <Text className="text-title-light dark:text-title-dark">Logout</Text>
       </TouchableOpacity>
     </View>
   );

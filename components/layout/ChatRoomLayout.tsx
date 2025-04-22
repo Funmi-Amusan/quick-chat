@@ -7,7 +7,10 @@ type ChatRoomLayoutProp = {
 };
 const ChatRoomLayout: React.FC<ChatRoomLayoutProp> = ({ children, style, ...rest }) => {
   return (
-    <SafeAreaView style={[styles.container, style]} {...rest}>
+    <SafeAreaView
+      style={[styles.container, style]}
+      {...rest}
+      className=" bg-body-light dark:bg-body-dark">
       {children}
     </SafeAreaView>
   );
@@ -17,7 +20,6 @@ const styles = StyleSheet.create({
   container: {
     paddingTop: Constants.statusBarHeight,
     flex: 1,
-    backgroundColor: '#ffff',
   },
   view: {
     flex: 1,

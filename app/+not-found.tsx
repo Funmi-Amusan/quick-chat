@@ -6,7 +6,7 @@ export default function NotFoundScreen() {
     <>
       <SafeAreaView className=" bg-body-light dark:bg-body-dark flexflex-1">
         <Stack.Screen options={{ title: 'Oops!' }} />
-        <View className=" flex-1 items-center justify-center bg-white">
+        <View className=" flex-1 items-center justify-center">
           <Text className="">This screen doesn't exist.</Text>
           <Pressable
             style={{

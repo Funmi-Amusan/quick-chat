@@ -13,7 +13,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#6d28d9',
+        tabBarActiveTintColor: '#FFB0FE',
       }}
       initialRouteName="chats">
       <Tabs.Screen

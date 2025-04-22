@@ -1,4 +1,5 @@
 import AntDesign from '@expo/vector-icons/AntDesign';
+import { useTheme } from '@react-navigation/native';
 import { router } from 'expo-router';
 import { User } from 'firebase/auth';
 import {
@@ -26,7 +27,6 @@ interface UserListModalProps {
   error: Error | null;
   currentUser: User | null;
   refreshAllUsers: () => void;
-
 }
 
 const UserListModal = ({
@@ -39,6 +39,8 @@ const UserListModal = ({
   currentUser,
   refreshAllUsers,
 }: UserListModalProps) => {
+  const { dark } = useTheme();
+
   const chatsToList = allUsers.filter(
     (user) => user.id !== 'undefined' && !userChats.some((chat) => chat.id.includes(user.id))
   );
@@ -66,11 +68,13 @@ const UserListModal = ({
 
   return (
     <Modal animationType="slide" transparent={false} visible={isVisible} onRequestClose={onClose}>
-      <View className=" mt-12 flex-1 ">
-        <View className=" flex-row items-center justify-between border-b border-gray-300 p-4">
-          <Text className=" text-xl font-bold ">Start New Chat</Text>
+      <View className=" bg-body-light dark:bg-body-dark flex-1 pt-12 ">
+        <View className=" flex-row items-center justify-between border-b border-white/30 p-4">
+          <Text className=" text-title-light dark:text-title-dark text-xl font-bold ">
+            Start New Chat
+          </Text>
           <Pressable onPress={onClose}>
-          <AntDesign name="closecircle" size={24} color="black" />
+            <AntDesign name="closecircle" size={24} color={dark ? '#ffffff' : '#000000'} />
           </Pressable>
         </View>
         {loading && (
@@ -86,17 +90,19 @@ const UserListModal = ({
         )}
         {!loading && !error && (
           <FlatList
-          onRefresh={refreshAllUsers}
+            onRefresh={refreshAllUsers}
             refreshing={loading}
             data={chatsToList}
             keyExtractor={(item: FormattedUser) => item.id}
             renderItem={({ item }: { item: FormattedUser }) => (
               <TouchableOpacity
-                className=" border-b border-gray-300 px-4 py-2 "
+                className=" border-b border-white/30 p-4  "
                 onPress={() => createChatWithUser(item)}>
                 <View className=" flex-row items-center gap-2 ">
-                  <Image source={ImageAssets.avatar} className=" h-8 w-8 " />
-                  <Text className=" text-xl font-medium">{item.username}</Text>
+                  <Image source={ImageAssets.avatar} className=" h-10 w-10 " />
+                  <Text className=" text-title-light dark:text-title-dark text-xl font-medium">
+                    {item.username}
+                  </Text>
                 </View>
                 {/* Add more user details later */}
               </TouchableOpacity>

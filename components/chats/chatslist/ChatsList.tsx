@@ -1,4 +1,5 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { useTheme } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 import AppLayout from 'components/layout/AppLayout';
 import { Unsubscribe } from 'firebase/database';
@@ -18,6 +19,7 @@ const ChatsList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const { dark } = useTheme();
 
   const currentUser = auth.currentUser;
   const currentUserId = currentUser?.uid;
@@ -36,7 +38,7 @@ const ChatsList = () => {
       }
       return fetchAllUsers(currentUserId);
     },
-    enabled: isModalVisible && !!currentUserId, 
+    enabled: isModalVisible && !!currentUserId,
     staleTime: 5 * 60 * 1000,
   });
 
@@ -105,12 +107,14 @@ const ChatsList = () => {
     <AppLayout>
       <View className="flex-row items-center gap-2">
         <Image source={ImageAssets.shaz} className="h-12 w-12 rounded-full" />
-        <Text className=" text-xl font-bold ">Welcome {currentUser?.displayName}</Text>
+        <Text className=" text-title-light dark:text-title-dark text-xl font-bold ">
+          Welcome {currentUser?.displayName}
+        </Text>
       </View>
       <View className=" flex-row items-center justify-between pb-3 ">
-        <Text className=" text-3xl font-bold "> Chats</Text>
+        <Text className=" text-title-light dark:text-title-dark text-3xl font-bold  "> Chats</Text>
         <TouchableOpacity onPress={openUserListModal} className="flex-row items-center gap-2 p-2">
-          <FontAwesome name="plus-circle" size={30} color="primary" />
+          <FontAwesome name="plus-circle" size={30} color={dark ? '#ffffff' : '#333333'} />
         </TouchableOpacity>
       </View>
 
