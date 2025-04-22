@@ -2,6 +2,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useTheme } from '@react-navigation/native';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ImageAssets } from 'assets';
 import ChatRoomLayout from 'components/layout/ChatRoomLayout';
@@ -22,6 +23,7 @@ import {
 import Animated from 'react-native-reanimated';
 
 import ActiveTypingBubble from '../ActiveTypingBubble';
+import ReplyPreview from './ReplyPreview';
 import MessageBubble from '../messageBubble/MessageBubble';
 import ChatTextInput from '../textInput/TextInput';
 import ChatHeader from './chatHeader/ChatHeader';
@@ -43,10 +45,9 @@ import {
   ProcessedMessage,
   ReplyMessageInfo,
 } from '~/lib/types';
-import { useTheme } from '@react-navigation/native';
 
 const ChatRoom = () => {
-   const { dark } = useTheme();
+  const { dark } = useTheme();
   const { id: chatId } = useLocalSearchParams<{ id: string }>();
   const [messages, setMessages] = useState<FirebaseMessage[]>([]);
   const [processedMessages, setProcessedMessages] = useState<ProcessedMessage[]>([]);
@@ -250,7 +251,7 @@ const ChatRoom = () => {
       <View className="bg-body-light dark:bg-body-dark border-b border-white/30 px-4 py-2">
         <View className="flex-row items-center gap-2">
           <TouchableOpacity className="px-2" onPress={() => router.back()}>
-            <FontAwesome name="chevron-left" size={14} color={dark ? '#ffffff': '#000000'} />
+            <FontAwesome name="chevron-left" size={14} color={dark ? '#ffffff' : '#000000'} />
           </TouchableOpacity>
           <ChatHeader chatPartner={chatPartner} isLoading={chatPartnerLoading} />
         </View>
@@ -290,34 +291,7 @@ const ChatRoom = () => {
           />
           <View>
             {replyMessage && (
-              <View className="h-12 flex-row items-center gap-2 border-l-4 border-mint bg-black/20 ">
-                <View className="flex-grow flex-row items-start gap-2 px-2">
-                  {replyMessage.imageUrl && (
-                    <MaterialCommunityIcons name="camera" size={20} color="grey" />
-                  )}
-                  <Text className="text-grey-700 line-clamp-1 text-sm">
-                    {replyMessage.content
-                      ? replyMessage.content
-                      : replyMessage.imageUrl
-                        ? 'Photo'
-                        : ''}
-                  </Text>
-                </View>
-                <View className=" my-1 flex-row items-center justify-center">
-                  <Image
-                    source={{ uri: replyMessage.imageUrl || '' }}
-                    className="aspect-square h-full rounded-md"
-                    resizeMode="cover"
-                  />
-                  <Ionicons
-                    name="close-circle-outline"
-                    size={24}
-                    color="white"
-                    className="mx-2"
-                    onPress={() => setReplyMessage(null)}
-                  />
-                </View>
-              </View>
+              <ReplyPreview replyMessage={replyMessage} setReplyMessage={setReplyMessage} />
             )}
             <ChatTextInput
               value={inputText}
