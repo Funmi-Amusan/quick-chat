@@ -23,6 +23,7 @@ import {
 import Animated from 'react-native-reanimated';
 
 import ActiveTypingBubble from '../ActiveTypingBubble';
+import MessageList from './MessageList';
 import ReplyPreview from './ReplyPreview';
 import MessageBubble from '../messageBubble/MessageBubble';
 import ChatTextInput from '../textInput/TextInput';
@@ -59,7 +60,6 @@ const ChatRoom = () => {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const flatListRef = useRef<FlatList>(null);
   const currentUser = auth.currentUser;
   const currentUserId = currentUser?.uid;
   const swipeableRowRef = useRef<Animated.View>(null);
@@ -190,8 +190,6 @@ const ChatRoom = () => {
     [setReplyMessage]
   );
 
-  const keyExtractor = useCallback((item: ProcessedMessage) => item.id, []);
-
   useMemo(() => {
     if (!messages || messages.length === 0) {
       setProcessedMessages([]);
@@ -222,30 +220,6 @@ const ChatRoom = () => {
     setProcessedMessages(transformedData);
   }, [messages]);
 
-  const renderMessage = useCallback(
-    ({ item }: { item: FirebaseMessage }) => (
-      <View className="my-1">
-        <MessageBubble
-          onReply={(replyInfo) => handleReply(replyInfo)}
-          chatId={chatId}
-          isFromSelf={item.senderId === currentUser?.uid}
-          {...item}
-          updateRef={swipeableRowRef}
-        />
-      </View>
-    ),
-    [currentUser?.uid]
-  );
-
-  const renderItem = ({ item }: { item: ProcessedMessage }) => {
-    if (item.type === 'header') {
-      return <DateHeader date={item.date} />;
-    } else if (item.type === 'message') {
-      return renderMessage({ item: item as ActualMessage });
-    }
-    return null;
-  };
-
   return (
     <ChatRoomLayout>
       <View className="bg-body-light dark:bg-body-dark border-b border-white/30 px-4 py-2">
@@ -274,20 +248,15 @@ const ChatRoom = () => {
               <Text className="ml-2 text-gray-600">Loading older messages...</Text>
             </View>
           )}
-          <Animated.FlatList
-            ref={flatListRef}
-            className="bg-body-light dark:bg-body-dark flex-1"
-            contentContainerStyle={{ paddingVertical: 10, paddingHorizontal: 8 }}
-            data={processedMessages}
-            renderItem={renderItem}
-            keyExtractor={keyExtractor}
-            ListFooterComponent={chatPartner?.isTyping.isTyping ? <ActiveTypingBubble /> : null}
-            onStartReached={() => {
-              if (hasMoreMessages) {
-                loadOlderMessages();
-              }
-            }}
-            onStartReachedThreshold={0.3}
+          <MessageList
+            processedMessages={processedMessages}
+            currentUser={currentUser}
+            chatId={chatId}
+            handleReply={handleReply}
+            loadOlderMessages={loadOlderMessages}
+            hasMoreMessages={hasMoreMessages}
+            loadingOlder={loadingOlder}
+            chatPartner={chatPartner}
           />
           <View>
             {replyMessage && (
