@@ -35,6 +35,7 @@ const MessageList = ({
   chatPartner?: ChatPartner;
 }) => {
   const flatListRef = useRef<FlatList>(null);
+   const swipeableRowRef = useRef<Animated.View>(null);
 
   const renderMessage = useCallback(
     ({ item }: { item: FirebaseMessage }) => (
