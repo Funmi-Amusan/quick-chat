@@ -59,7 +59,7 @@ type BaseTextInputProps = {
     | 'sublocality'
     | 'telephoneNumber'
     | 'username'
-    | 'password'
+    | 'password';
 };
 
 const BaseTextInput: React.FC<BaseTextInputProps> = ({
@@ -91,7 +91,7 @@ const BaseTextInput: React.FC<BaseTextInputProps> = ({
     <View className={` ${containerClassName} relative my-2 w-full`}>
       <View
         testID="input-container"
-        className={`h-16 flex-row items-center justify-between rounded-xl border border-grey bg-white disabled:border-grey disabled:opacity-50 ${
+        className={`dark:border-inputDark dark:bg-inputDark h-16 flex-row items-center justify-between rounded-xl border border-grey bg-white disabled:border-grey disabled:opacity-50 ${
           isFocused && 'border-healthyGreen'
         } ${inputContainer} ${hasError && 'border-red'} `}>
         <TextInput
@@ -99,7 +99,7 @@ const BaseTextInput: React.FC<BaseTextInputProps> = ({
           keyboardType={type}
           value={value}
           onChangeText={onChangeText}
-          className={`text-boldGreen h-full w-full px-4 text-[15px] font-[500] leading-[28px] disabled:text-grey  ${Platform.OS === 'android' ? 'mt-4' : 'mt-2'}`}
+          className={`text-boldGreen text-inputText-light dark:text-inputText-dark h-full w-full px-4 text-[15px] font-[500] leading-[28px] disabled:text-grey  ${Platform.OS === 'android' ? 'mt-4' : 'mt-2'}`}
           maxLength={maxLength}
           editable={editable}
           textContentType={textContentType}
@@ -115,8 +115,8 @@ const BaseTextInput: React.FC<BaseTextInputProps> = ({
           className={`absolute left-4 transition-all duration-200 ${
             value || placeholder
               ? 'top-2 text-[13px] font-[500] text-[#768589]'
-              : 'text-midGrey top-1/2 -translate-y-1/2 text-[15px] font-[500]'
-          } ${disabled ? 'text-midGrey' : ''}`}>
+              : 'text-greyText-dark dark:text-greyText-dark top-1/2 -translate-y-1/2 text-[15px] font-[500]'
+          } ${disabled ? ' text-grey' : ''}`}>
           {label}
         </Text>
       </View>

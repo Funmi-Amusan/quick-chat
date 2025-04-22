@@ -21,6 +21,10 @@ module.exports = {
           light: '#666666',
           dark: '#AAAAAA',
         },
+        inputText: {
+          light: '#000000',
+          dark: '#ffffff'
+        },
         grey: '#8A8CA9',
         mint: '#7ED3B2',
       },
