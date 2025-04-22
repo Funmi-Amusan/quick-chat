@@ -153,24 +153,26 @@ const ChatRoom = () => {
           <Text className="mt-2 text-center text-red-500">{error}</Text>
         </View>
       ) : (
-        <KeyboardAvoidingView className="relative flex-grow" behavior="padding">
-          {loadingOlder && (
-            <View className="bg-body-light dark:bg-body-dark absolute left-0 right-0 top-0 z-10 flex-row items-center justify-center py-2">
-              <ActivityIndicator size="small" color="#007AFF" />
-              <Text className="ml-2 text-gray-600">Loading older messages...</Text>
-            </View>
-          )}
-          <MessageList
-            processedMessages={processedMessages}
-            currentUser={currentUser}
-            chatId={chatId}
-            handleReply={handleReply}
-            loadOlderMessages={loadOlderMessages}
-            hasMoreMessages={hasMoreMessages}
-            loadingOlder={loadingOlder}
-            chatPartner={chatPartner}
-          />
-          <View>
+        <KeyboardAvoidingView className="relative flex-1" behavior="padding">
+          <View className=" flex-1 ">
+            {loadingOlder && (
+              <View className="bg-body-light dark:bg-body-dark absolute left-0 right-0 top-0 z-10 flex-row items-center justify-center py-2">
+                <ActivityIndicator size="small" color="#007AFF" />
+                <Text className="ml-2 text-gray-600">Loading older messages...</Text>
+              </View>
+            )}
+            <MessageList
+              processedMessages={processedMessages}
+              currentUser={currentUser}
+              chatId={chatId}
+              handleReply={handleReply}
+              loadOlderMessages={loadOlderMessages}
+              hasMoreMessages={hasMoreMessages}
+              loadingOlder={loadingOlder}
+              chatPartner={chatPartner}
+            />
+          </View>
+          <View className="">
             {replyMessage && (
               <ReplyPreview replyMessage={replyMessage} setReplyMessage={setReplyMessage} />
             )}

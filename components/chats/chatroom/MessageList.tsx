@@ -1,3 +1,5 @@
+import { LegendList, LegendListRef } from '@legendapp/list';
+import { FlashList } from '@shopify/flash-list';
 import { User } from 'firebase/auth';
 import React, { useCallback, useRef } from 'react';
 import { View, Text, FlatList } from 'react-native';
@@ -34,8 +36,8 @@ const MessageList = ({
   loadingOlder: boolean;
   chatPartner?: ChatPartner;
 }) => {
-  const flatListRef = useRef<FlatList>(null);
-   const swipeableRowRef = useRef<Animated.View>(null);
+  const flatListRef = useRef<LegendListRef>(null);
+  const swipeableRowRef = useRef<LegendListRef>(null);
 
   const renderMessage = useCallback(
     ({ item }: { item: FirebaseMessage }) => (
@@ -64,19 +66,21 @@ const MessageList = ({
   const keyExtractor = useCallback((item: ProcessedMessage) => item.id, []);
 
   return (
-    <Animated.FlatList
+    <LegendList
       ref={flatListRef}
-      className="bg-body-light dark:bg-body-dark flex-1"
+      className="bg-body-light dark:bg-body-dark "
       contentContainerStyle={{ paddingVertical: 10, paddingHorizontal: 8 }}
       data={processedMessages}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
       ListFooterComponent={chatPartner?.isTyping.isTyping ? <ActiveTypingBubble /> : null}
+      estimatedItemSize={50}
       onStartReached={() => {
         if (hasMoreMessages) {
           loadOlderMessages();
         }
       }}
+      onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
       onStartReachedThreshold={0.3}
     />
   );
