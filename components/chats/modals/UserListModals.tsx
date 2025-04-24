@@ -24,7 +24,7 @@ interface UserListModalProps {
   userChats: ChatData[];
   loading: boolean;
   error: Error | null;
-  currentUser: User | null;
+  currentUser: User | undefined;
   refreshAllUsers: () => void;
 }
 

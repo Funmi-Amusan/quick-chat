@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 
 import ChatHeaderSkeleton from './ChatHeaderSkeleton';
-import SearchInput from '../../shared/searchInput';
+import SearchInput from '../../shared/SearchInput';
 
 import { ImageAssets } from '~/assets';
 import { formatMomentAgo } from '~/lib/helpers';

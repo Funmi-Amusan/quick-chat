@@ -7,14 +7,14 @@ import { ImageAssets } from '~/assets';
 const Onboarding = () => {
   return (
     <>
-      <SafeAreaView className=" bg-body-light dark:bg-body-dark flex-1">
+      <SafeAreaView className=" flex-1 bg-body-light dark:bg-body-dark">
         <View className=" flex-1 items-center justify-center gap-5">
           <Image
             source={ImageAssets.onboardingIllustration}
             alt="Chatting Illustration"
             className=" h-64 w-64"
           />
-          <Text className=" text-title-light dark:text-title-dark text-2xl font-semibold ">
+          <Text className=" text-2xl font-semibold text-title-light dark:text-title-dark ">
             Welcome to Quick Chat
           </Text>
         </View>

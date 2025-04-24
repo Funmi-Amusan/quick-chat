@@ -80,21 +80,25 @@ export default function SignIn() {
         </View>
       </View>
 
-      <Pressable
-        onPress={handleSignInPress}
-        className="w-full max-w-[300px] rounded-lg bg-primary py-3 active:bg-lighterPrimary">
-        <Text className="text-center text-base font-semibold text-white">
-          {isPending ? 'Processing' : 'Sign In'}
-        </Text>
-      </Pressable>
+      <View className=" w-full items-center text-center ">
+        <Pressable
+          onPress={handleSignInPress}
+          className=" w-full max-w-[300px] rounded-full bg-primary p-4 active:bg-lighterPrimary ">
+          <Text className="text-center text-base font-semibold text-white">
+            {isPending ? 'Processing' : 'Sign In'}
+          </Text>
+        </Pressable>
 
-      <View className="mt-6 flex-row items-center">
-        <Text className="text-greyText-light dark:text-greyText-dark">Don't have an account?</Text>
-        <Link href="/sign-up" asChild>
-          <Pressable className="ml-2">
-            <Text className="font-semibold text-primary">Sign Up</Text>
-          </Pressable>
-        </Link>
+        <View className="flex-row items-center pt-6">
+          <Text className="text-greyText-light dark:text-greyText-dark">
+            Don't have an account?
+          </Text>
+          <Link href="/sign-up" asChild>
+            <Pressable className="ml-2">
+              <Text className="font-semibold text-primary ">Sign Up</Text>
+            </Pressable>
+          </Link>
+        </View>
       </View>
     </View>
   );

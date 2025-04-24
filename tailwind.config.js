@@ -1,6 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ['./app/**/*.{js,ts,tsx}', './components/**/*.{js,ts,tsx}'],
+  content: [
+    './app/**/*.{js,ts,tsx}',
+    './components/**/*.{js,ts,tsx}',
+    './screens/**/*.{js,ts,tsx}',
+  ],
   darkMode: 'class',
   presets: [require('nativewind/preset')],
   theme: {
@@ -27,11 +31,11 @@ module.exports = {
         },
         inputText: {
           light: '#000000',
-          dark: '#ffffff'
+          dark: '#ffffff',
         },
         card: {
           light: '',
-          dark: '#19191B'
+          dark: '#19191B',
         },
         grey: '#8A8CA9',
         mint: '#7ED3B2',

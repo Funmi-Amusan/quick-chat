@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import AppLayout from 'components/layout/AppLayout';
 import { Unsubscribe } from 'firebase/database';
 import { useState, useEffect, useRef, useMemo } from 'react';
@@ -8,9 +7,10 @@ import ChatItem from '../components/chats/chatslist/chatsItem/ChatItem';
 import UserListModal from '../components/chats/modals/UserListModals';
 
 import ChatsListHeader from '~/components/chats/chatslist/chatsListHeader/chatsListHeader';
-import SearchInput from '~/components/chats/shared/searchInput';
-import { auth } from '~/lib/firebase-config';
-import { fetchAllUsers, listenToUserChats } from '~/lib/firebase-sevice';
+import SearchInput from '~/components/chats/shared/SearchInput';
+import { listenToUserChats } from '~/lib/firebase-sevice';
+import { useAllUsers } from '~/lib/queries/useAllUsers';
+import { useCurrentUser } from '~/lib/queries/useCurrentUser';
 import { ChatData } from '~/lib/types';
 
 const ChatsList = () => {
@@ -21,7 +21,9 @@ const ChatsList = () => {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchString, setSearchString] = useState('');
 
-  const currentUser = auth.currentUser;
+  const { data: currentUser, isLoading: userLoading, error: userError } = useCurrentUser();
+  //? full screen loader is userLoading
+  //? navigate to sign in page is userError
   const currentUserId = currentUser?.uid;
   const unsubscribeRef = useRef<Unsubscribe | null>(null);
 
@@ -30,20 +32,10 @@ const ChatsList = () => {
     isLoading: modalLoading,
     error: modalError,
     refetch: refetchAllUsers,
-  } = useQuery({
-    queryKey: ['allUsers', currentUserId],
-    queryFn: () => {
-      if (!currentUserId) {
-        throw new Error('User not authenticated for fetching users.');
-      }
-      return fetchAllUsers(currentUserId);
-    },
-    enabled: isModalVisible && !!currentUserId,
-    staleTime: 5 * 60 * 1000,
-  });
+  } = useAllUsers(currentUserId, { enabled: isModalVisible });
 
   useEffect(() => {
-    if (!currentUser) {
+    if (!currentUserId) {
       setError('User not authenticated.');
       setLoading(false);
       return;
@@ -52,20 +44,17 @@ const ChatsList = () => {
     setLoading(true);
     setError(null);
 
-    unsubscribeRef.current = listenToUserChats(
-      currentUser.uid,
-      (chatsFromService, serviceError) => {
-        if (serviceError) {
-          console.error('Error from chat listener service:', serviceError);
-          setError(serviceError.message || 'Failed to load chats.');
-          setAllUserChats([]);
-        } else {
-          setAllUserChats(chatsFromService);
-          setError(null);
-        }
-        setLoading(false);
+    unsubscribeRef.current = listenToUserChats(currentUserId, (chatsFromService, serviceError) => {
+      if (serviceError) {
+        console.error('Error from chat listener service:', serviceError);
+        setError(serviceError.message || 'Failed to load chats.');
+        setAllUserChats([]);
+      } else {
+        setAllUserChats(chatsFromService);
+        setError(null);
       }
-    );
+      setLoading(false);
+    });
     return () => {};
   }, [currentUser]);
 

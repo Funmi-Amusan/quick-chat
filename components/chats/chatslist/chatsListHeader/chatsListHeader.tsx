@@ -3,7 +3,7 @@ import { useTheme } from '@react-navigation/native';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 
 import { ImageAssets } from '~/assets';
-import { auth } from '~/lib/firebase-config';
+import { useCurrentUser } from '~/lib/queries/useCurrentUser';
 
 const ChatsListHeader = ({
   setIsSearchActive,
@@ -13,8 +13,8 @@ const ChatsListHeader = ({
   openUserListModal: () => void;
 }) => {
   const { dark } = useTheme();
+  const { data: currentUser } = useCurrentUser();
 
-  const currentUser = auth.currentUser;
 
   return (
     <View className="flex-row items-center justify-between gap-2">

@@ -1,15 +1,14 @@
-import { useQuery } from '@tanstack/react-query';
 import ChatRoomLayout from 'components/layout/ChatRoomLayout';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { View, Text, KeyboardAvoidingView, ActivityIndicator, FlatList } from 'react-native';
 
 import MessageList from '../components/chats/chatRoom/MessageList';
-import ReplyPreview from '../components/chats/chatRoom/ReplyPreview';
 import ChatHeader from '../components/chats/chatRoom/chatHeader/ChatHeader';
-import ChatTextInput from '../components/chats/chatRoom/chatTextInput/ChatTextInput';
 import ImageMessagePreviewModal from '../components/chats/modals/ImageMessagePreviewModal';
 
+import ReplyPreview from '~/components/chats/chatRoom/ReplyPreview';
+import ChatTextInput from '~/components/chats/chatRoom/chatTextInput/ChatTextInput';
 import useChatPresence from '~/hooks/useChatRoomPresence';
 import useImagePicker from '~/hooks/useImagePicker';
 import useListenForChatMessages from '~/hooks/useListenForMessages';
@@ -17,11 +16,10 @@ import useMarkMessagesAsRead from '~/hooks/useMarkMessagesAsRead';
 import useSendMessage from '~/hooks/useSendMessage';
 import useTypingStatus from '~/hooks/useTypingStatus';
 import { auth } from '~/lib/firebase-config';
-import * as Database from '~/lib/firebase-sevice';
 import { formatTimestamp, isSameDay } from '~/lib/helpers';
+import { useChatPartner } from '~/lib/queries/useChatPartner';
 import {
   ActualMessage,
-  ChatPartner,
   DateHeaderMessage,
   FirebaseMessage,
   ProcessedMessage,
@@ -47,24 +45,7 @@ const ChatRoom = () => {
     data: chatPartner,
     isLoading: chatPartnerLoading,
     error: chatPartnerError,
-  } = useQuery<ChatPartner, Error>({
-    queryKey: ['chatPartner', chatId, currentUserId],
-    queryFn: async () => {
-      if (!chatId || !currentUserId) {
-        router.back();
-        throw new Error('Chat ID or User ID is missing.');
-      }
-      const partnerInfo = await Database.fetchChatPartnerInfo(chatId, currentUserId);
-      if (!partnerInfo) {
-        router.back();
-        throw new Error('Chat partner not found.');
-      }
-      return partnerInfo;
-    },
-    enabled: !!chatId && !!currentUserId,
-    staleTime: Infinity,
-    refetchInterval: 1000 * 60 * 12,
-  });
+  } = useChatPartner(currentUserId, chatId);
 
   useChatPresence(currentUser, chatId);
   useMarkMessagesAsRead(currentUser, chatId, messages);

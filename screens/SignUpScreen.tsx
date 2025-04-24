@@ -2,8 +2,9 @@ import { useMutation } from '@tanstack/react-query';
 import { useSession } from 'context/authContext';
 import { router, Link } from 'expo-router';
 import { useState } from 'react';
-import { Text, TextInput, View, Pressable } from 'react-native';
+import { Text, View, Pressable } from 'react-native';
 import Toast from 'react-native-toast-message';
+
 import { BaseTextInput } from '~/components/ui';
 
 export default function SignUp() {
@@ -48,9 +49,9 @@ export default function SignUp() {
   };
 
   return (
-    <View className="dark:bg-bodyDark flex-1 items-center justify-center bg-body-light p-4 dark:bg-body-dark">
-      <View className="mb-8 items-center">
-        <Text className="text-2xl font-bold text-title-light dark:text-title-dark">
+    <View className="dark:bg-bodyDark flex-1 flex-col items-center justify-center gap-4 bg-body-light p-4 dark:bg-body-dark">
+      <View className="items-center">
+        <Text className="text-3xl font-bold text-title-light dark:text-title-dark">
           Create Account
         </Text>
         <Text className="text-base text-greyText-light dark:text-greyText-dark ">
@@ -58,7 +59,7 @@ export default function SignUp() {
         </Text>
       </View>
 
-      <View className="mb-8 w-full max-w-[300px] space-y-4">
+      <View className=" w-full max-w-[300px] space-y-4">
         <View>
           <BaseTextInput
             label="Your username"
@@ -86,22 +87,24 @@ export default function SignUp() {
           />
         </View>
       </View>
-      <Pressable
-        onPress={handleRegisterPress}
-        className="w-full max-w-[300px] rounded-lg bg-primary py-3 active:bg-lighterPrimary">
-        <Text className="text-center text-base font-semibold text-white">
-          {isPending ? 'Processing' : 'Sign up'}
-        </Text>
-      </Pressable>
-      <View className="mt-6 flex-row items-center">
-        <Text className="text-greyText-light dark:text-greyText-dark ">
-          Already have an account?
-        </Text>
-        <Link href="/sign-in" asChild>
-          <Pressable className="ml-2">
-            <Text className="font-semibold text-primary">Sign In</Text>
-          </Pressable>
-        </Link>
+      <View className="w-full flex-col items-center gap-4 text-center">
+        <Pressable
+          onPress={handleRegisterPress}
+          className="w-full max-w-[300px] rounded-full bg-primary p-4 active:bg-lighterPrimary">
+          <Text className="text-center text-base font-semibold text-white">
+            {isPending ? 'Processing' : 'Sign up'}
+          </Text>
+        </Pressable>
+        <View className="  flex-row items-center">
+          <Text className="text-greyText-light dark:text-greyText-dark ">
+            Already have an account?
+          </Text>
+          <Link href="/sign-in" asChild>
+            <Pressable className="ml-2">
+              <Text className="font-semibold text-primary">Sign In</Text>
+            </Pressable>
+          </Link>
+        </View>
       </View>
     </View>
   );
