@@ -17,13 +17,14 @@ import { fetchAllUsers, listenToUserChats } from '~/lib/firebase-sevice';
 import { ChatData } from '~/lib/types';
 
 const ChatsList = () => {
+  const { dark } = useTheme();
+  
   const [allUserChats, setAllUserChats] = useState<ChatData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchString, setSearchString] = useState('');
-  const { dark } = useTheme();
 
   const currentUser = auth.currentUser;
   const currentUserId = currentUser?.uid;

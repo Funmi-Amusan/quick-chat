@@ -12,6 +12,10 @@ module.exports = {
           light: '#f9f9f9',
           dark: '#121212',
         },
+        greyBg: {
+          light: '#242934',
+          dark: '#666666',
+        },
         inputDark: '#1F1F1F',
         title: {
           light: '#1f2937',

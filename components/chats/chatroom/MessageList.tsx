@@ -1,19 +1,12 @@
-import { LegendList, LegendListRef } from '@legendapp/list';
 import { User } from 'firebase/auth';
 import { useCallback, useRef } from 'react';
-import { View } from 'react-native';
+import { FlatList, View } from 'react-native';
 
 import ActiveTypingBubble from '../ActiveTypingBubble';
 import MessageBubble from '../messageBubble/MessageBubble';
 
 import DateHeader from '~/components/ui/DateHeader';
-import {
-  ActualMessage,
-  ChatPartner,
-  FirebaseMessage,
-  ProcessedMessage,
-  ReplyMessageInfo,
-} from '~/lib/types';
+import { ActualMessage, ChatPartner, ProcessedMessage, ReplyMessageInfo } from '~/lib/types';
 
 const MessageList = ({
   processedMessages,
@@ -24,6 +17,8 @@ const MessageList = ({
   hasMoreMessages,
   loadingOlder,
   chatPartner,
+  flatListRef,
+  highlightedIndex,
 }: {
   processedMessages: ProcessedMessage[];
   currentUser: User | null;
@@ -33,38 +28,58 @@ const MessageList = ({
   hasMoreMessages: boolean;
   loadingOlder: boolean;
   chatPartner?: ChatPartner;
+  flatListRef: React.RefObject<FlatList>;
+  highlightedIndex: number;
 }) => {
-  const flatListRef = useRef<LegendListRef>(null);
-  const swipeableRowRef = useRef<LegendListRef>(null);
+  const swipeableRowRef = useRef<FlatList>(null);
 
-  const renderMessage = useCallback(
-    ({ item }: { item: FirebaseMessage }) => (
-      <View className="my-1">
-        <MessageBubble
-          onReply={(replyInfo) => handleReply(replyInfo)}
-          chatId={chatId}
-          isFromSelf={item.senderId === currentUser?.uid}
-          {...item}
-          updateRef={swipeableRowRef}
-        />
-      </View>
-    ),
-    [currentUser?.uid]
-  );
-
-  const renderItem = ({ item }: { item: ProcessedMessage }) => {
+  const renderItem = ({ item, index }: { item: ProcessedMessage; index: number }) => {
     if (item.type === 'header') {
       return <DateHeader date={item.date} />;
-    } else if (item.type === 'message') {
-      return renderMessage({ item: item as ActualMessage });
+    }
+
+    if (item.type === 'message') {
+      const isHighlighted = index === highlightedIndex;
+      return (
+        <View className="my-1">
+          <MessageBubble
+            onReply={handleReply}
+            chatId={chatId}
+            {...(item as ActualMessage)}
+            isHighlighted={isHighlighted}
+            updateRef={swipeableRowRef}
+            currentUser={currentUser}
+          />
+        </View>
+      );
     }
     return null;
   };
+  const handleScrollToIndexFailed = useCallback(
+    (info: { index: number; highestMeasuredFrameIndex: number; averageItemLength: number }) => {
+      console.warn('Scroll to index failed:', info);
+      const { index, highestMeasuredFrameIndex, averageItemLength } = info;
+
+      if (highestMeasuredFrameIndex !== -1) {
+        flatListRef.current?.scrollToIndex({
+          index: highestMeasuredFrameIndex,
+          animated: false,
+        });
+      } else {
+        const offset = index * averageItemLength;
+        flatListRef.current?.scrollToOffset({
+          offset,
+          animated: false,
+        });
+      }
+    },
+    [flatListRef]
+  );
 
   const keyExtractor = useCallback((item: ProcessedMessage) => item.id, []);
 
   return (
-    <LegendList
+    <FlatList
       ref={flatListRef}
       className="bg-body-light dark:bg-body-dark "
       contentContainerStyle={{ paddingVertical: 10, paddingHorizontal: 8 }}
@@ -72,7 +87,7 @@ const MessageList = ({
       renderItem={renderItem}
       keyExtractor={keyExtractor}
       ListFooterComponent={chatPartner?.isTyping.isTyping ? <ActiveTypingBubble /> : null}
-      estimatedItemSize={50}
+      onScrollToIndexFailed={handleScrollToIndexFailed}
       onStartReached={() => {
         if (hasMoreMessages) {
           loadOlderMessages();

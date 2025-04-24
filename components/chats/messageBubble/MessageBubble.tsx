@@ -2,6 +2,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { BlurView } from 'expo-blur';
+import { User } from 'firebase/auth';
 import React, { useState, useRef, useCallback } from 'react';
 import {
   View,
@@ -29,7 +30,6 @@ const EMOJI_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '😡', '🥳
 
 const MessageBubble = ({
   content,
-  isFromSelf,
   timestamp,
   read = false,
   id,
@@ -40,9 +40,10 @@ const MessageBubble = ({
   onReply,
   replyMessage,
   imageUrl,
+  isHighlighted,
+  currentUser
 }: {
   content: string;
-  isFromSelf: boolean;
   timestamp?: number;
   read: boolean;
   id: string;
@@ -53,12 +54,15 @@ const MessageBubble = ({
   onReply: (replyInfo: ReplyMessageInfo) => void;
   replyMessage?: ReplyMessageInfo | null;
   imageUrl?: string | null;
+  isHighlighted: boolean;
+  currentUser: User
 }) => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [pickerPosition, setPickerPosition] = useState<{ top: number; left: number } | null>(null);
   const bubbleRef = useRef<React.RefObject<typeof TouchableOpacity>>(null);
   const swipeableRef = useRef<typeof Swipeable>(null);
+  const isFromSelf = senderId === currentUser.uid
 
   const handleLongPress = useCallback(() => {
     if (id && bubbleRef.current) {
@@ -136,7 +140,6 @@ const MessageBubble = ({
       </Text>
     );
   };
-
   const messageContent = () => {
     return (
       <View
@@ -158,7 +161,12 @@ const MessageBubble = ({
             <Image source={{ uri: imageUrl }} className="h-48 w-48" resizeMode="cover" />
           </TouchableOpacity>
         )}
-        {content && <Text className="mb-1 text-base leading-snug text-gray-800">{content}</Text>}
+        {content && (
+          <Text
+            className={`mb-1 text-base leading-snug text-gray-800 ${isHighlighted ? ' bg-yellow-400' : ''} `}>
+            {content}
+          </Text>
+        )}
         <View className=" flex-row items-center self-end">
           <Text className="text-xs text-gray-500">{formatTimestamp(timestamp ?? 0)}</Text>
           {renderReadStatus()}

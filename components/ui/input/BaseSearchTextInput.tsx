@@ -90,7 +90,7 @@ const BaseSearchTextInput: React.FC<BaseSearchTextInputProps> = ({
     <View className={` ${containerClassName} relative my-2 flex-1`}>
       <View
         testID="input-container"
-        className={` flex-row items-center justify-between gap-2 rounded-lg bg-white px-2 disabled:opacity-50 dark:bg-slate-600 ${
+        className={` flex-row items-center justify-between gap-2 rounded-lg bg-white px-2 disabled:opacity-50 dark:bg-inputDark ${
           isFocused && 'border-healthyGreen'
         } ${inputContainer} ${hasError && 'border-red'} `}>
         <Ionicons name="search-sharp" size={24} color="grey" />
@@ -99,7 +99,7 @@ const BaseSearchTextInput: React.FC<BaseSearchTextInputProps> = ({
           keyboardType={type}
           value={value}
           onChangeText={onChangeText}
-          className={`flex-1 text-[15px] font-[500] text-inputText-light disabled:text-grey dark:text-inputText-dark  `}
+          className={`flex-1 text-[15px] font-[500] placeholder:text-grey text-white disabled:text-grey dark:text-inputText-dark  `}
           maxLength={maxLength}
           editable={editable}
           textContentType={textContentType}

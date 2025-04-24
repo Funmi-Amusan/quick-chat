@@ -5,6 +5,7 @@ type ChatRoomLayoutProp = {
   children: React.ReactNode;
   style?: ViewStyle;
 };
+
 const ChatRoomLayout: React.FC<ChatRoomLayoutProp> = ({ children, style, ...rest }) => {
   return (
     <SafeAreaView
