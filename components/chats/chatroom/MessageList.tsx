@@ -1,9 +1,7 @@
 import { LegendList, LegendListRef } from '@legendapp/list';
-import { FlashList } from '@shopify/flash-list';
 import { User } from 'firebase/auth';
-import React, { useCallback, useRef } from 'react';
-import { View, Text, FlatList } from 'react-native';
-import Animated from 'react-native-reanimated';
+import { useCallback, useRef } from 'react';
+import { View } from 'react-native';
 
 import ActiveTypingBubble from '../ActiveTypingBubble';
 import MessageBubble from '../messageBubble/MessageBubble';

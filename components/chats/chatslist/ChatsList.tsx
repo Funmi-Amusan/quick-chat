@@ -1,24 +1,28 @@
+import { Ionicons } from '@expo/vector-icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useTheme } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 import AppLayout from 'components/layout/AppLayout';
 import { Unsubscribe } from 'firebase/database';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, Image } from 'react-native';
 
 import ChatItem from '../chatItem/ChatItem';
 import UserListModal from '../modals/UserListModals';
 
 import { ImageAssets } from '~/assets';
+import SearchInput from '~/components/modals/searchInput';
 import { auth } from '~/lib/firebase-config';
 import { fetchAllUsers, listenToUserChats } from '~/lib/firebase-sevice';
 import { ChatData } from '~/lib/types';
 
 const ChatsList = () => {
-  const [userChats, setUserChats] = useState<ChatData[]>([]);
+  const [allUserChats, setAllUserChats] = useState<ChatData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  const [searchString, setSearchString] = useState('');
   const { dark } = useTheme();
 
   const currentUser = auth.currentUser;
@@ -58,14 +62,9 @@ const ChatsList = () => {
         if (serviceError) {
           console.error('Error from chat listener service:', serviceError);
           setError(serviceError.message || 'Failed to load chats.');
-          setUserChats([]);
+          setAllUserChats([]);
         } else {
-          const sortedChats = chatsFromService.sort((a, b) => {
-            const dateA = new Date(a.lastMessage?.timestamp || 0);
-            const dateB = new Date(b.lastMessage?.timestamp || 0);
-            return dateB.getTime() - dateA.getTime();
-          });
-          setUserChats(sortedChats);
+          setAllUserChats(chatsFromService);
           setError(null);
         }
         setLoading(false);
@@ -73,6 +72,22 @@ const ChatsList = () => {
     );
     return () => {};
   }, [currentUser]);
+
+  const filteredAndSortedUserChats = useMemo(() => {
+    let filtered = allUserChats;
+    if (searchString) {
+      const lowerCaseSearch = searchString.toLowerCase();
+      filtered = allUserChats.filter((chat) =>
+        chat.partner?.toLowerCase().includes(lowerCaseSearch)
+      );
+    }
+
+    return filtered.sort((a, b) => {
+      const dateA = new Date(a.lastMessage?.timestamp || 0);
+      const dateB = new Date(b.lastMessage?.timestamp || 0);
+      return dateB.getTime() - dateA.getTime();
+    });
+  }, [allUserChats, searchString]);
 
   const openUserListModal = async () => {
     setIsModalVisible(true);
@@ -105,26 +120,45 @@ const ChatsList = () => {
 
   return (
     <AppLayout>
-      <View className="flex-row items-center gap-2">
-        <Image source={ImageAssets.shaz} className="h-12 w-12 rounded-full" />
-        <Text className=" text-title-light dark:text-title-dark text-xl font-bold ">
-          Welcome {currentUser?.displayName}
-        </Text>
-      </View>
-      <View className=" flex-row items-center justify-between pb-3 ">
-        <Text className=" text-title-light dark:text-title-dark text-3xl font-bold  "> Chats</Text>
-        <TouchableOpacity onPress={openUserListModal} className="flex-row items-center gap-2 p-2">
-          <FontAwesome name="plus-circle" size={30} color={dark ? '#ffffff' : '#333333'} />
-        </TouchableOpacity>
+      {isSearchActive ? (
+        <SearchInput
+          setSearchString={setSearchString}
+          searchString={searchString}
+          closeSearchModal={() => setIsSearchActive(false)}
+        />
+      ) : (
+        <View className="flex-row items-center justify-between gap-2">
+          <View className="flex-row items-center gap-2">
+            <Image source={ImageAssets.shaz} className="h-12 w-12 rounded-full" />
+            <Text className=" text-xl font-bold text-title-light dark:text-title-dark ">
+              Welcome {currentUser?.displayName}
+            </Text>
+          </View>
+          <View className=" flex-row">
+            <TouchableOpacity
+              onPress={() => setIsSearchActive(true)}
+              className="flex-row items-center gap-2 p-2">
+              <Ionicons name="search-outline" size={24} color="white" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={openUserListModal}
+              className="flex-row items-center gap-2 p-2">
+              <FontAwesome name="plus-circle" size={30} color={dark ? '#ffffff' : '#333333'} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+      <View className=" flex-row items-center justify-between gap-4 py-3 ">
+        <Text className=" text-3xl font-bold text-title-light dark:text-title-dark  "> Chats</Text>
       </View>
 
-      {userChats.length === 0 ? (
+      {filteredAndSortedUserChats.length === 0 ? (
         <View className="flex-1 items-center justify-center p-4">
           <Text>No chats yet. Tap 'Add Chat' to start!</Text>
         </View>
       ) : (
         <FlatList
-          data={userChats}
+          data={filteredAndSortedUserChats}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <ChatItem {...item} />}
           showsVerticalScrollIndicator={false}
@@ -135,7 +169,7 @@ const ChatsList = () => {
         isVisible={isModalVisible}
         onClose={closeModal}
         allUsers={allUsers}
-        userChats={userChats}
+        userChats={allUserChats}
         loading={modalLoading}
         error={modalError}
         currentUser={currentUser}
