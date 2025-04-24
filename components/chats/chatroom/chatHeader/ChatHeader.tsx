@@ -6,9 +6,9 @@ import { useState } from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 
 import ChatHeaderSkeleton from './ChatHeaderSkeleton';
+import SearchInput from '../../shared/searchInput';
 
 import { ImageAssets } from '~/assets';
-import SearchInput from '~/components/modals/searchInput';
 import { formatMomentAgo } from '~/lib/helpers';
 import { ChatPartner } from '~/lib/types';
 
@@ -33,7 +33,7 @@ const ChatHeader = ({
 
   return (
     <>
-      <View className="border-b border-white/30 bg-body-light/20 px-4 py-2 dark:bg-greyBg-dark/20">
+      <View className="dark:bg-greyBg-dark/20 border-b border-white/30 bg-body-light/20 px-4 py-2">
         {isSearchActive ? (
           <SearchInput
             setSearchString={setSearchString}

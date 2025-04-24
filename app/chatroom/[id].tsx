@@ -1,4 +1,4 @@
-import ChatRoom from 'components/chats/chatroom/ChatRoom';
+import ChatRoom from '~/screens/ChatRoomScreen';
 import React from 'react';
 import { View } from 'react-native';
 

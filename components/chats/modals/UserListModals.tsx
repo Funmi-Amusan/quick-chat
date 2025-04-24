@@ -8,7 +8,6 @@ import {
   Modal,
   FlatList,
   ActivityIndicator,
-  Button,
   TouchableOpacity,
   Image,
   Pressable,
@@ -68,9 +67,9 @@ const UserListModal = ({
 
   return (
     <Modal animationType="slide" transparent={false} visible={isVisible} onRequestClose={onClose}>
-      <View className=" bg-body-light dark:bg-body-dark flex-1 pt-12 ">
+      <View className=" flex-1 bg-body-light pt-12 dark:bg-body-dark ">
         <View className=" flex-row items-center justify-between border-b border-white/30 p-4">
-          <Text className=" text-title-light dark:text-title-dark text-xl font-bold ">
+          <Text className=" text-xl font-bold text-title-light dark:text-title-dark ">
             Start New Chat
           </Text>
           <Pressable onPress={onClose}>
@@ -100,7 +99,7 @@ const UserListModal = ({
                 onPress={() => createChatWithUser(item)}>
                 <View className=" flex-row items-center gap-2 ">
                   <Image source={ImageAssets.avatar} className=" h-10 w-10 " />
-                  <Text className=" text-title-light dark:text-title-dark text-xl font-medium">
+                  <Text className=" text-xl font-medium text-title-light dark:text-title-dark">
                     {item.username}
                   </Text>
                 </View>

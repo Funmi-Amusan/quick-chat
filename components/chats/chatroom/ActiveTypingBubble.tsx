@@ -7,7 +7,12 @@ const ActiveTypingBubble = () => {
   const [dot3Opacity, setDot3Opacity] = useState(0.3);
 
   useEffect(() => {
-    const animateDot = (setOpacity, delay) => {
+    const animateDot = (
+      setOpacity: {
+        (arg0: number): void;
+      },
+      delay: number | undefined
+    ) => {
       setTimeout(() => {
         setOpacity(1);
         setTimeout(() => {

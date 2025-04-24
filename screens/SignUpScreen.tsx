@@ -4,8 +4,7 @@ import { router, Link } from 'expo-router';
 import { useState } from 'react';
 import { Text, TextInput, View, Pressable } from 'react-native';
 import Toast from 'react-native-toast-message';
-
-import BaseTextInput from '~/components/ui/input/BaseTextInput';
+import { BaseTextInput } from '~/components/ui';
 
 export default function SignUp() {
   const [email, setEmail] = useState('');
@@ -49,12 +48,12 @@ export default function SignUp() {
   };
 
   return (
-    <View className="bg-body-light dark:bg-body-dark flex-1 items-center justify-center p-4 dark:bg-bodyDark">
+    <View className="dark:bg-bodyDark flex-1 items-center justify-center bg-body-light p-4 dark:bg-body-dark">
       <View className="mb-8 items-center">
-        <Text className="text-title-light dark:text-title-dark text-2xl font-bold">
+        <Text className="text-2xl font-bold text-title-light dark:text-title-dark">
           Create Account
         </Text>
-        <Text className="text-greyText-light dark:text-greyText-dark text-base ">
+        <Text className="text-base text-greyText-light dark:text-greyText-dark ">
           Sign up to get started
         </Text>
       </View>

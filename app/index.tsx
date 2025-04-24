@@ -1,6 +1,6 @@
 import { Redirect } from 'expo-router';
 
-import Onboarding from '~/components/authentication/onboarding/Onboarding';
+import Onboarding from '~/screens/OnboardingScreen';
 import { auth } from '~/lib/firebase-config';
 
 export default function Home() {

@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import React, { useState } from 'react';
-
 import { View, TextInput, Text, Platform } from 'react-native';
+
 import { ImageAssets } from '~/assets';
 
 type BaseInputProps = {
@@ -56,7 +56,7 @@ const BaseInput: React.FC<BaseInputProps> = ({
     <View className={` ${containerClassName} relative my-2 w-full`}>
       <View
         testID="input-container"
-        className={`border-grey disabled:border-grey h-16 flex-row items-center justify-between rounded-xl border bg-white disabled:opacity-50 ${
+        className={`h-16 flex-row items-center justify-between rounded-xl border border-grey bg-white disabled:border-grey disabled:opacity-50 ${
           isFocused && 'border-healthyGreen'
         } ${inputContainer} ${hasError && 'border-red'} `}>
         <TextInput
@@ -64,11 +64,11 @@ const BaseInput: React.FC<BaseInputProps> = ({
           keyboardType={type}
           value={value}
           onChangeText={onChangeText}
-          className={`text-boldGreen disabled:text-grey h-full w-full px-4 text-[15px] font-[500] leading-[28px]  ${Platform.OS === 'android' ? 'mt-4' : 'mt-2'}`}
+          className={`text-boldGreen h-full w-full px-4 text-[15px] font-[500] leading-[28px] disabled:text-grey  ${Platform.OS === 'android' ? 'mt-4' : 'mt-2'}`}
           maxLength={maxLength}
           editable={editable}
           onFocus={() => setIsFocused(true)}
-          onBlur={(e) => {
+          onBlur={() => {
             setIsFocused(false);
           }}
           autoCapitalize={autoCapitalize}

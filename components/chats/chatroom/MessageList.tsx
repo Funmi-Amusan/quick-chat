@@ -2,10 +2,10 @@ import { User } from 'firebase/auth';
 import { useCallback, useRef } from 'react';
 import { FlatList, View } from 'react-native';
 
-import ActiveTypingBubble from '../ActiveTypingBubble';
-import MessageBubble from '../messageBubble/MessageBubble';
+import ActiveTypingBubble from './ActiveTypingBubble';
+import MessageBubble from './messageBubble/MessageBubble';
 
-import DateHeader from '~/components/ui/DateHeader';
+import { DateHeader } from '~/components/ui';
 import { ActualMessage, ChatPartner, ProcessedMessage, ReplyMessageInfo } from '~/lib/types';
 
 const MessageList = ({

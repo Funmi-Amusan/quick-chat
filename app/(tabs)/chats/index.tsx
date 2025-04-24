@@ -1,4 +1,4 @@
-import ChatsList from 'components/chats/chatslist/ChatsList';
+import ChatsList from '~/screens/ChatsListScreen';
 import React from 'react';
 
 const ChatsScreen = () => {

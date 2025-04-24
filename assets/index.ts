@@ -3,4 +3,5 @@ export const ImageAssets = {
   onboardingIllustration: require('./images/Onboarding-illustration.png'),
   colleen: require('./images/Colleen.png'),
   shaz: require('./images/Shaz.png'),
+  error: require('./images/Shaz.png'),
 };

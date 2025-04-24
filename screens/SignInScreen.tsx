@@ -5,8 +5,7 @@ import { useState } from 'react';
 import { Text, View, Pressable } from 'react-native';
 import Toast from 'react-native-toast-message';
 
-import BaseTextInput from '~/components/ui/input/BaseTextInput';
-
+import { BaseTextInput } from '~/components/ui';
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
@@ -48,12 +47,12 @@ export default function SignIn() {
   };
 
   return (
-    <View className="bg-body-light dark:bg-body-dark flex-1 items-center justify-center p-4">
+    <View className="flex-1 items-center justify-center bg-body-light p-4 dark:bg-body-dark">
       <View className="mb-8 items-center">
-        <Text className="text-title-light dark:text-title-dark text-2xl font-bold">
+        <Text className="text-2xl font-bold text-title-light dark:text-title-dark">
           Welcome Back
         </Text>
-        <Text className=" text-greyText-light dark:text-greyText-dark text-base">
+        <Text className=" text-base text-greyText-light dark:text-greyText-dark">
           Please sign in to continue
         </Text>
       </View>

@@ -1,5 +1,5 @@
 import React from 'react';
-import ProfileScreen from '~/components/profile/Profile';
+import ProfileScreen from '~/screens/ProfileScreen';
 
 const ChatsScreen = () => {
   return <ProfileScreen />;

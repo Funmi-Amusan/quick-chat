@@ -1,7 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import { View, Pressable } from 'react-native';
 
-import BaseSearchTextInput from '../ui/input/BaseSearchTextInput';
+import BaseSearchTextInput from '../../ui/inputs/BaseSearchTextInput';
 
 const SearchInput = ({
   setSearchString,

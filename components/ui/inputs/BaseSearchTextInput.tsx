@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
 import React, { useState } from 'react';
-import { View, TextInput, Text, Platform } from 'react-native';
+import { View, TextInput, Text } from 'react-native';
 
 import { ImageAssets } from '~/assets';
 
@@ -30,7 +30,6 @@ type BaseSearchTextInputProps = {
   secureTextEntry?: boolean;
   textContentType:
     | 'none'
-    | 'name'
     | 'URL'
     | 'addressCity'
     | 'addressCityAndState'
@@ -41,7 +40,11 @@ type BaseSearchTextInputProps = {
     | 'creditCardExpirationMonth'
     | 'creditCardExpirationYear'
     | 'creditCardSecurityCode'
-    | 'date'
+    | 'creditCardType'
+    | 'creditCardName'
+    | 'creditCardGivenName'
+    | 'creditCardMiddleName'
+    | 'creditCardFamilyName'
     | 'emailAddress'
     | 'familyName'
     | 'fullStreetAddress'
@@ -49,6 +52,7 @@ type BaseSearchTextInputProps = {
     | 'jobTitle'
     | 'location'
     | 'middleName'
+    | 'name'
     | 'namePrefix'
     | 'nameSuffix'
     | 'nickname'
@@ -59,7 +63,14 @@ type BaseSearchTextInputProps = {
     | 'sublocality'
     | 'telephoneNumber'
     | 'username'
-    | 'password';
+    | 'password'
+    | 'newPassword'
+    | 'oneTimeCode'
+    | 'birthdate'
+    | 'birthdateDay'
+    | 'birthdateMonth'
+    | 'birthdateYear'
+    | undefined;
 };
 
 const BaseSearchTextInput: React.FC<BaseSearchTextInputProps> = ({
@@ -99,14 +110,14 @@ const BaseSearchTextInput: React.FC<BaseSearchTextInputProps> = ({
           keyboardType={type}
           value={value}
           onChangeText={onChangeText}
-          className={`flex-1 text-[15px] font-[500] placeholder:text-grey text-white disabled:text-grey dark:text-inputText-dark  `}
+          className={`flex-1 text-[15px] font-[500] text-white placeholder:text-grey disabled:text-grey dark:text-inputText-dark  `}
           maxLength={maxLength}
           editable={editable}
           textContentType={textContentType}
           secureTextEntry={secureTextEntry}
           onFocus={() => setIsFocused(true)}
           placeholder={placeholder}
-          onBlur={(e) => {
+          onBlur={() => {
             setIsFocused(false);
           }}
           autoCapitalize={autoCapitalize}

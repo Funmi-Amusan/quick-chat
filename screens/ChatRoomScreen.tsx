@@ -3,14 +3,13 @@ import ChatRoomLayout from 'components/layout/ChatRoomLayout';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { View, Text, KeyboardAvoidingView, ActivityIndicator, FlatList } from 'react-native';
-import Animated from 'react-native-reanimated';
 
-import MessageList from './MessageList';
-import ReplyPreview from './ReplyPreview';
-import ChatTextInput from '../textInput/TextInput';
-import ChatHeader from './chatHeader/ChatHeader';
+import MessageList from '../components/chats/chatRoom/MessageList';
+import ReplyPreview from '../components/chats/chatRoom/ReplyPreview';
+import ChatHeader from '../components/chats/chatRoom/chatHeader/ChatHeader';
+import ChatTextInput from '../components/chats/chatRoom/chatTextInput/ChatTextInput';
+import ImageMessagePreviewModal from '../components/chats/modals/ImageMessagePreviewModal';
 
-import ImageMessagePreviewModal from '~/components/modals/ImageMessagePreviewModal';
 import useChatPresence from '~/hooks/useChatRoomPresence';
 import useImagePicker from '~/hooks/useImagePicker';
 import useListenForChatMessages from '~/hooks/useListenForMessages';
@@ -42,7 +41,6 @@ const ChatRoom = () => {
   const [inputFocus, setInputFocus] = useState(false);
   const currentUser = auth.currentUser;
   const currentUserId = currentUser?.uid;
-  const swipeableRowRef = useRef<Animated.View>(null);
   const flatListRef = useRef<FlatList<ProcessedMessage>>(null);
 
   const {
@@ -83,13 +81,6 @@ const ChatRoom = () => {
     useSendMessage(chatId, currentUser, setImageUri, imageUri);
   useTypingStatus(currentUser, chatId, inputText);
 
-  useEffect(() => {
-    if (replyMessage && swipeableRowRef.current) {
-      swipeableRowRef.current.close();
-      swipeableRowRef.current = null;
-    }
-  }, [replyMessage, swipeableRowRef]);
-
   const handleReply = useCallback(
     (message: ReplyMessageInfo) => {
       setReplyMessage(message);
@@ -116,7 +107,7 @@ const ChatRoom = () => {
       const targetIndexInProcessed = matchingIndices[currentMatchIndex];
       scrollToIndex(targetIndexInProcessed);
     }
-  }, [currentMatchIndex, matchingIndices, scrollToIndex])
+  }, [currentMatchIndex, matchingIndices, scrollToIndex]);
 
   useMemo(() => {
     if (!messages || messages.length === 0) {
@@ -159,20 +150,24 @@ const ChatRoom = () => {
     const indices: number[] = [];
 
     processedMessages.forEach((msg, index) => {
-      if (msg.type === 'message' && msg?.content?.toLowerCase().includes(lowerSearch)) {
-        indices.push(index);
-      }
+      processedMessages.forEach((msg, index) => {
+        if (
+          msg.type === 'message' &&
+          'content' in msg &&
+          msg.content?.toLowerCase().includes(lowerSearch)
+        ) {
+          indices.push(index);
+        }
+      });
     });
 
     setMatchingIndices(indices);
     setCurrentMatchIndex(indices.length > 0 ? 0 : -1);
     console.log(currentMatchIndex);
     if (indices.length > 0) {
-      scrollToIndex(indices[0]); 
+      scrollToIndex(indices[0]);
     }
   }, [searchString, processedMessages]);
-
-  console.log(matchingIndices)
 
   return (
     <ChatRoomLayout>
@@ -211,7 +206,7 @@ const ChatRoom = () => {
               loadingOlder={loadingOlder}
               chatPartner={chatPartner}
               flatListRef={flatListRef}
-              highlightedIndex= {matchingIndices[currentMatchIndex]}
+              highlightedIndex={matchingIndices[currentMatchIndex]}
             />
           </View>
           <View className=" bg-greyBg-light dark:bg-greyBg-dark">

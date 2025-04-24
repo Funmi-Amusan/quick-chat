@@ -15,7 +15,7 @@ import {
   StyleSheet,
   Image,
 } from 'react-native';
-import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import Swipeable, { SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Animated from 'react-native-reanimated';
 
 import { reactToMessage } from '~/lib/firebase-sevice';
@@ -41,7 +41,7 @@ const MessageBubble = ({
   replyMessage,
   imageUrl,
   isHighlighted,
-  currentUser
+  currentUser,
 }: {
   content: string;
   timestamp?: number;
@@ -55,14 +55,15 @@ const MessageBubble = ({
   replyMessage?: ReplyMessageInfo | null;
   imageUrl?: string | null;
   isHighlighted: boolean;
-  currentUser: User
+  currentUser: User | null;
 }) => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [pickerPosition, setPickerPosition] = useState<{ top: number; left: number } | null>(null);
-  const bubbleRef = useRef<React.RefObject<typeof TouchableOpacity>>(null);
-  const swipeableRef = useRef<typeof Swipeable>(null);
-  const isFromSelf = senderId === currentUser.uid
+  const [activeSwipeable, setActiveSwipeable] = useState<SwipeableMethods | null>(null);
+  const bubbleRef = useRef<View>(null);
+  const swipeableRef = useRef<SwipeableMethods>(null);
+  const isFromSelf = senderId === currentUser?.uid;
 
   const handleLongPress = useCallback(() => {
     if (id && bubbleRef.current) {
@@ -211,12 +212,10 @@ const MessageBubble = ({
   };
 
   const handleSwipeableWillOpen = () => {
-    if (updateRef?.current && updateRef.current !== swipeableRef.current) {
-      updateRef.current.close();
+    if (activeSwipeable && activeSwipeable !== swipeableRef.current) {
+      activeSwipeable.close();
     }
-    if (updateRef) {
-      updateRef.current = swipeableRef.current;
-    }
+    setActiveSwipeable(swipeableRef.current);
   };
 
   const replyMessageContent = () => {
