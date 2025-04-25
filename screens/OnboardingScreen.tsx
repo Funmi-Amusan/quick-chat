@@ -1,10 +1,10 @@
 import { Link } from 'expo-router';
-import React from 'react';
 import { View, Text, SafeAreaView, Image } from 'react-native';
 
 import { ImageAssets } from '~/assets';
 
 const Onboarding = () => {
+
   return (
     <>
       <SafeAreaView className=" flex-1 bg-body-light dark:bg-body-dark">
