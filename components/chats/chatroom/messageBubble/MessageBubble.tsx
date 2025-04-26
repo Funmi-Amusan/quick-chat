@@ -164,6 +164,7 @@ const MessageBubble = ({
         )}
         {content && (
           <Text
+          testID={`${isHighlighted ? 'highlighted-message' : 'message-content'}`}
             className={`mb-1 text-base leading-snug text-gray-800 ${isHighlighted ? ' bg-yellow-400' : ''} `}>
             {content}
           </Text>

@@ -33,7 +33,7 @@ const ChatHeader = ({
 
   return (
     <>
-      <View className="dark:bg-greyBg-dark/20 border-b border-white/30 bg-body-light/20 px-4 py-2">
+      <View className="border-b border-white/30 bg-body-light/20 px-4 py-2 dark:bg-greyBg-dark/20">
         {isSearchActive ? (
           <SearchInput
             setSearchString={setSearchString}
@@ -42,7 +42,7 @@ const ChatHeader = ({
           />
         ) : (
           <View className="flex-row items-center gap-2">
-            <TouchableOpacity className="px-2" onPress={() => router.back()}>
+            <TouchableOpacity testID='back-icon' className="px-2" onPress={() => router.back()}>
               <FontAwesome name="chevron-left" size={14} color={dark ? '#ffffff' : '#000000'} />
             </TouchableOpacity>
             <View className=" flex-1 flex-row items-center justify-between ">
@@ -68,7 +68,7 @@ const ChatHeader = ({
                   </View>
                 </View>
               </View>
-              <TouchableOpacity onPress={() => setIsSearchActive(true)} className="">
+              <TouchableOpacity testID='search-icon' onPress={() => setIsSearchActive(true)} className="">
                 <Ionicons name="search-outline" size={24} color="white" />
               </TouchableOpacity>
             </View>
