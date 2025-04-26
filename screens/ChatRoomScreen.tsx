@@ -16,7 +16,7 @@ import useMarkMessagesAsRead from '~/hooks/useMarkMessagesAsRead';
 import useSendMessage from '~/hooks/useSendMessage';
 import useTypingStatus from '~/hooks/useTypingStatus';
 import { auth } from '~/lib/firebase-config';
-import { formatTimestamp, isSameDay } from '~/lib/helpers';
+import { formatTimestampToDay, isSameDay } from '~/lib/helpers';
 import { useChatPartner } from '~/lib/queries/useChatPartner';
 import {
   ActualMessage,
@@ -103,7 +103,7 @@ const ChatRoom = () => {
       if (index === 0 || !isSameDay(message.timestamp, previousMessageTimestamp)) {
         const dateHeader: DateHeaderMessage = {
           type: 'header',
-          date: formatTimestamp(message.timestamp),
+          date: formatTimestampToDay(message.timestamp),
           id: `header_${message.timestamp}_${index}`,
         };
         transformedData.push(dateHeader);

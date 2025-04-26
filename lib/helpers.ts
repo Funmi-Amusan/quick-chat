@@ -1,21 +1,4 @@
-import { FormattedUser, ChatData, UserData, FormattedChat } from './types';
-
-export const formatUserData = (userData: UserData[]): FormattedUser[] => {
-  const formattedData = [];
-
-  for (const userId in userData) {
-    if (userData.hasOwnProperty(userId)) {
-      const user = userData[userId];
-      formattedData.push({
-        id: userId,
-        email: user.email,
-        username: user.username,
-      });
-    }
-  }
-
-  return formattedData;
-};
+import { days, shortDays } from "./data";
 
 export const formatTimestamp = (timestamp: number) => {
   const date = new Date(+timestamp);
@@ -29,53 +12,34 @@ export const formatTimestamp = (timestamp: number) => {
   return `${hours}:${formattedMinutes}${ampm}`;
 };
 
-export const formatMomentAgoTimestamp = (timestamp: number) => {
+export const formatTimestampToDay = (timestamp: number) => {
   const date = new Date(+timestamp);
   const now = new Date();
-  const diffTime = now.getTime() - date.getTime();
+  const diffTime = Math.floor(now.getTime() - date.getTime());
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  const diffWeeks = Math.floor(diffDays / 7);
 
-  // Format time (hours:minutes am/pm)
-  let hours = date.getHours();
-  const minutes = date.getMinutes();
-  const ampm = hours >= 12 ? 'pm' : 'am';
-  hours = hours % 12 || 12;
-  const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
-  const timeString = `${hours}:${formattedMinutes}${ampm}`;
-
-  // Today
+ // Today
   if (diffDays === 0) {
-    return timeString;
+    return 'Today';
   }
 
   // Yesterday
   if (diffDays === 1) {
-    return `Yesterday at ${timeString}`;
+    return 'Yesterday';
   }
 
   // This week (within 7 days)
   if (diffDays < 7) {
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     return `${days[date.getDay()]}`;
-  }
-
-  // Last week
-  if (diffWeeks === 1) {
-    return `Last week`;
-  }
-
-  // More than a week but less than a month
-  if (diffDays < 30) {
-    return `${diffWeeks} week${diffWeeks > 1 ? 's' : ''} ago`;
   }
 
   // Default: show full date
   const month = date.toLocaleString('default', { month: 'short' });
-  const day = date.getDate();
+  const day = shortDays[date.getDay()];
+  const dayOfMonth = date.getDate();
   const year = now.getFullYear() !== date.getFullYear() ? `, ${date.getFullYear()}` : '';
 
-  return `${month} ${day}${year}`;
+  return `${day}, ${month} ${dayOfMonth}${year}`;
 };
 
 export const formatMomentAgo = (timestamp: number | null) => {
@@ -84,7 +48,7 @@ export const formatMomentAgo = (timestamp: number | null) => {
   const date = new Date(timestamp);
   const now = new Date();
   const diffMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-
+  // console.log("diffMinutes", diffMinutes)
   if (diffMinutes < 1) return 'just now';
   if (diffMinutes < 60) return `${diffMinutes}m ago`;
 
@@ -102,6 +66,36 @@ export const formatMomentAgo = (timestamp: number | null) => {
 
   const diffYears = Math.floor(diffDays / 365);
   return `${diffYears}y ago`;
+};
+
+export const formatTimestampToTimeOrDate = (timestamp: number) => {
+  const date = new Date(+timestamp);
+  const now = new Date();
+  const diffTime = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  let hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+
+  hours = hours % 12 || 12;
+  const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+  const timeString = `${hours}:${formattedMinutes}${ampm}`;
+
+  // Today
+  if (diffDays === 0) {
+    return timeString;
+  }
+
+  // Yesterday
+  if (diffDays === 1) {
+    return 'Yesterday';
+  }
+
+  // Default: show full date
+  const formattedDate = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getFullYear()).slice(-2)}`;
+
+  return formattedDate;
 };
 
 export const isSameDay = (timestamp1: number, timestamp2: number | null) => {

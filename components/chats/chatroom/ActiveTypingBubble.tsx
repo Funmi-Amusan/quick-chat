@@ -35,7 +35,7 @@ const ActiveTypingBubble = () => {
   }, []);
 
   return (
-    <View className="my-2 ml-4 flex-row items-center">
+    <View testID='typing-bubble' className="my-2 ml-4 flex-row items-center">
       <View className="my-1 rounded-2xl rounded-bl-sm bg-[#F4EFF4] p-4 shadow-sm">
         <View className="flex-row gap-2">
           <View style={{ opacity: dot1Opacity }} className="h-2 w-2 rounded-full bg-gray-500" />

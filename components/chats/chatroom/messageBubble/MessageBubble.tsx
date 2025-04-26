@@ -137,7 +137,12 @@ const MessageBubble = ({
     if (!isFromSelf) return null;
     return (
       <Text className="ml-1 mt-[-1px] ">
-        <FontAwesome name={read ? 'eye' : 'check'} size={10} color="grey" />
+        <FontAwesome
+          testID={read ? 'readIcon' : 'notReadIcon'}
+          name={read ? 'eye' : 'check'}
+          size={10}
+          color="grey"
+        />
       </Text>
     );
   };
@@ -159,11 +164,17 @@ const MessageBubble = ({
           <TouchableOpacity
             onPress={() => setPreviewImage(imageUrl)}
             className="mb-2 overflow-hidden rounded-2xl">
-            <Image source={{ uri: imageUrl }} className="h-48 w-48" resizeMode="cover" />
+            <Image
+              testID="img"
+              source={{ uri: imageUrl }}
+              className="h-48 w-48"
+              resizeMode="cover"
+            />
           </TouchableOpacity>
         )}
         {content && (
           <Text
+            testID={`${isHighlighted ? 'highlighted-message' : 'message-content'}`}
             className={`mb-1 text-base leading-snug text-gray-800 ${isHighlighted ? ' bg-yellow-400' : ''} `}>
             {content}
           </Text>
@@ -231,6 +242,7 @@ const MessageBubble = ({
         </View>
         {replyMessage?.imageUrl && (
           <Image
+            testID="img"
             source={{ uri: replyMessage?.imageUrl }}
             className="h-16 w-16 rounded-r-2xl "
             resizeMode="cover"
@@ -243,6 +255,7 @@ const MessageBubble = ({
   return (
     <>
       <Swipeable
+        testID="swipeable-container"
         ref={swipeableRef}
         friction={2}
         leftThreshold={40}
@@ -301,7 +314,12 @@ const MessageBubble = ({
         onRequestClose={handleCloseModal}>
         {previewImage && (
           <>
-            <Image source={{ uri: previewImage }} className="h-full w-full" resizeMode="cover" />
+            <Image
+              role="img"
+              source={{ uri: previewImage }}
+              className="h-full w-full"
+              resizeMode="cover"
+            />
             <TouchableOpacity
               className="absolute left-5 top-10 z-50 m-4"
               onPress={() => setPreviewImage(null)}>
