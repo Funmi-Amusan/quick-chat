@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1745658493342" clover="3.2.0">
-  <project timestamp="1745658493342" name="All files">
-    <metrics statements="1292" coveredstatements="66" conditionals="491" coveredconditionals="24" methods="263" coveredmethods="5" elements="2046" coveredelements="95" complexity="0" loc="1292" ncloc="1292" packages="24" files="64" classes="64"/>
+<coverage generated="1745702871093" clover="3.2.0">
+  <project timestamp="1745702871093" name="All files">
+    <metrics statements="1333" coveredstatements="20" conditionals="498" coveredconditionals="7" methods="268" coveredmethods="3" elements="2099" coveredelements="30" complexity="0" loc="1333" ncloc="1333" packages="25" files="67" classes="67"/>
     <package name="quick-chat">
       <metrics statements="9" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
       <file name="app-env.d.ts" path="/Users/apple/quick-chat/app-env.d.ts">
@@ -33,7 +33,7 @@
       </file>
     </package>
     <package name="quick-chat.app">
-      <metrics statements="41" coveredstatements="0" conditionals="5" coveredconditionals="0" methods="7" coveredmethods="0"/>
+      <metrics statements="42" coveredstatements="0" conditionals="5" coveredconditionals="0" methods="7" coveredmethods="0"/>
       <file name="+html.tsx" path="/Users/apple/quick-chat/app/+html.tsx">
         <metrics statements="4" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
@@ -87,17 +87,19 @@
         <line num="7" count="0" type="stmt"/>
       </file>
       <file name="sign-up.tsx" path="/Users/apple/quick-chat/app/sign-up.tsx">
-        <metrics statements="4" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
+        <metrics statements="5" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
+        <line num="2" count="0" type="stmt"/>
         <line num="4" count="0" type="stmt"/>
         <line num="5" count="0" type="stmt"/>
         <line num="8" count="0" type="stmt"/>
       </file>
     </package>
     <package name="quick-chat.app.(tabs)">
-      <metrics statements="7" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="4" coveredmethods="0"/>
+      <metrics statements="8" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="4" coveredmethods="0"/>
       <file name="_layout.tsx" path="/Users/apple/quick-chat/app/(tabs)/_layout.tsx">
-        <metrics statements="7" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="4" coveredmethods="0"/>
+        <metrics statements="8" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="4" coveredmethods="0"/>
+        <line num="1" count="0" type="stmt"/>
         <line num="2" count="0" type="stmt"/>
         <line num="3" count="0" type="stmt"/>
         <line num="9" count="0" type="stmt"/>
@@ -108,7 +110,7 @@
       </file>
     </package>
     <package name="quick-chat.app.(tabs).chats">
-      <metrics statements="8" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="0"/>
+      <metrics statements="9" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="0"/>
       <file name="_layout.tsx" path="/Users/apple/quick-chat/app/(tabs)/chats/_layout.tsx">
         <metrics statements="4" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
@@ -117,15 +119,16 @@
         <line num="5" count="0" type="stmt"/>
       </file>
       <file name="index.tsx" path="/Users/apple/quick-chat/app/(tabs)/chats/index.tsx">
-        <metrics statements="4" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
+        <metrics statements="5" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
+        <line num="2" count="0" type="stmt"/>
         <line num="4" count="0" type="stmt"/>
         <line num="5" count="0" type="stmt"/>
         <line num="8" count="0" type="stmt"/>
       </file>
     </package>
     <package name="quick-chat.app.(tabs).profile">
-      <metrics statements="8" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="0"/>
+      <metrics statements="9" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="0"/>
       <file name="_layout.tsx" path="/Users/apple/quick-chat/app/(tabs)/profile/_layout.tsx">
         <metrics statements="4" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
@@ -134,7 +137,8 @@
         <line num="5" count="0" type="stmt"/>
       </file>
       <file name="index.tsx" path="/Users/apple/quick-chat/app/(tabs)/profile/index.tsx">
-        <metrics statements="4" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
+        <metrics statements="5" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
+        <line num="1" count="0" type="stmt"/>
         <line num="2" count="0" type="stmt"/>
         <line num="4" count="0" type="stmt"/>
         <line num="5" count="0" type="stmt"/>
@@ -142,10 +146,11 @@
       </file>
     </package>
     <package name="quick-chat.app.chatroom">
-      <metrics statements="5" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
+      <metrics statements="6" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
       <file name="[id].tsx" path="/Users/apple/quick-chat/app/chatroom/[id].tsx">
-        <metrics statements="5" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
+        <metrics statements="6" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
+        <line num="2" count="0" type="stmt"/>
         <line num="3" count="0" type="stmt"/>
         <line num="5" count="0" type="stmt"/>
         <line num="6" count="0" type="stmt"/>
@@ -160,7 +165,7 @@
       </file>
     </package>
     <package name="quick-chat.components.chats.chatRoom">
-      <metrics statements="55" coveredstatements="0" conditionals="15" coveredconditionals="0" methods="16" coveredmethods="0"/>
+      <metrics statements="58" coveredstatements="0" conditionals="15" coveredconditionals="0" methods="16" coveredmethods="0"/>
       <file name="ActiveTypingBubble.tsx" path="/Users/apple/quick-chat/components/chats/chatRoom/ActiveTypingBubble.tsx">
         <metrics statements="21" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="8" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
@@ -186,7 +191,7 @@
         <line num="50" count="0" type="stmt"/>
       </file>
       <file name="MessageList.tsx" path="/Users/apple/quick-chat/components/chats/chatRoom/MessageList.tsx">
-        <metrics statements="27" coveredstatements="0" conditionals="7" coveredconditionals="0" methods="6" coveredmethods="0"/>
+        <metrics statements="29" coveredstatements="0" conditionals="7" coveredconditionals="0" methods="6" coveredmethods="0"/>
         <line num="2" count="0" type="stmt"/>
         <line num="3" count="0" type="stmt"/>
         <line num="5" count="0" type="stmt"/>
@@ -210,15 +215,18 @@
         <line num="70" count="0" type="stmt"/>
         <line num="79" count="0" type="stmt"/>
         <line num="81" count="0" type="stmt"/>
-        <line num="92" count="0" type="cond" truecount="0" falsecount="1"/>
-        <line num="93" count="0" type="stmt"/>
-        <line num="96" count="0" type="stmt"/>
-        <line num="102" count="0" type="stmt"/>
+        <line num="93" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="94" count="0" type="stmt"/>
+        <line num="95" count="0" type="stmt"/>
+        <line num="97" count="0" type="stmt"/>
+        <line num="99" count="0" type="stmt"/>
+        <line num="105" count="0" type="stmt"/>
       </file>
       <file name="ReplyPreview.tsx" path="/Users/apple/quick-chat/components/chats/chatRoom/ReplyPreview.tsx">
-        <metrics statements="7" coveredstatements="0" conditionals="8" coveredconditionals="0" methods="2" coveredmethods="0"/>
+        <metrics statements="8" coveredstatements="0" conditionals="8" coveredconditionals="0" methods="2" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
         <line num="2" count="0" type="stmt"/>
+        <line num="3" count="0" type="stmt"/>
         <line num="4" count="0" type="stmt"/>
         <line num="8" count="0" type="stmt"/>
         <line num="15" count="0" type="stmt"/>
@@ -260,39 +268,39 @@
       </file>
     </package>
     <package name="quick-chat.components.chats.chatRoom.chatTextInput">
-      <metrics statements="24" coveredstatements="0" conditionals="8" coveredconditionals="0" methods="5" coveredmethods="0"/>
+      <metrics statements="24" coveredstatements="20" conditionals="8" coveredconditionals="7" methods="5" coveredmethods="3"/>
       <file name="ChatTextInput.tsx" path="/Users/apple/quick-chat/components/chats/chatRoom/chatTextInput/ChatTextInput.tsx">
-        <metrics statements="24" coveredstatements="0" conditionals="8" coveredconditionals="0" methods="5" coveredmethods="0"/>
-        <line num="1" count="0" type="stmt"/>
-        <line num="2" count="0" type="stmt"/>
-        <line num="3" count="0" type="stmt"/>
-        <line num="4" count="0" type="stmt"/>
-        <line num="19" count="0" type="stmt"/>
-        <line num="31" count="0" type="stmt"/>
-        <line num="32" count="0" type="stmt"/>
-        <line num="36" count="0" type="stmt"/>
-        <line num="38" count="0" type="stmt"/>
-        <line num="39" count="0" type="cond" truecount="0" falsecount="1"/>
-        <line num="40" count="0" type="stmt"/>
-        <line num="41" count="0" type="stmt"/>
-        <line num="42" count="0" type="stmt"/>
-        <line num="46" count="0" type="stmt"/>
-        <line num="47" count="0" type="stmt"/>
-        <line num="48" count="0" type="cond" truecount="0" falsecount="1"/>
-        <line num="49" count="0" type="stmt"/>
-        <line num="53" count="0" type="stmt"/>
+        <metrics statements="24" coveredstatements="20" conditionals="8" coveredconditionals="7" methods="5" coveredmethods="3"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="3" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="19" count="1" type="stmt"/>
+        <line num="31" count="10" type="stmt"/>
+        <line num="32" count="10" type="stmt"/>
+        <line num="36" count="10" type="stmt"/>
+        <line num="38" count="10" type="stmt"/>
+        <line num="39" count="8" type="cond" truecount="1" falsecount="0"/>
+        <line num="40" count="1" type="stmt"/>
+        <line num="41" count="1" type="stmt"/>
+        <line num="42" count="1" type="stmt"/>
+        <line num="46" count="10" type="stmt"/>
+        <line num="47" count="2" type="stmt"/>
+        <line num="48" count="2" type="cond" truecount="1" falsecount="0"/>
+        <line num="49" count="1" type="stmt"/>
+        <line num="53" count="10" type="stmt"/>
         <line num="54" count="0" type="stmt"/>
         <line num="55" count="0" type="cond" truecount="0" falsecount="1"/>
         <line num="56" count="0" type="stmt"/>
-        <line num="60" count="0" type="stmt"/>
+        <line num="60" count="10" type="stmt"/>
         <line num="70" count="0" type="stmt"/>
-        <line num="94" count="0" type="stmt"/>
+        <line num="95" count="1" type="stmt"/>
       </file>
     </package>
     <package name="quick-chat.components.chats.chatRoom.messageBubble">
-      <metrics statements="73" coveredstatements="0" conditionals="70" coveredconditionals="0" methods="19" coveredmethods="0"/>
+      <metrics statements="73" coveredstatements="0" conditionals="74" coveredconditionals="0" methods="19" coveredmethods="0"/>
       <file name="MessageBubble.tsx" path="/Users/apple/quick-chat/components/chats/chatRoom/messageBubble/MessageBubble.tsx">
-        <metrics statements="73" coveredstatements="0" conditionals="70" coveredconditionals="0" methods="19" coveredmethods="0"/>
+        <metrics statements="73" coveredstatements="0" conditionals="74" coveredconditionals="0" methods="19" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
         <line num="2" count="0" type="stmt"/>
         <line num="3" count="0" type="stmt"/>
@@ -344,28 +352,28 @@
         <line num="136" count="0" type="stmt"/>
         <line num="137" count="0" type="cond" truecount="0" falsecount="1"/>
         <line num="138" count="0" type="stmt"/>
-        <line num="144" count="0" type="stmt"/>
-        <line num="145" count="0" type="stmt"/>
-        <line num="160" count="0" type="stmt"/>
-        <line num="185" count="0" type="stmt"/>
-        <line num="186" count="0" type="cond" truecount="0" falsecount="1"/>
-        <line num="187" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="189" count="0" type="stmt"/>
-        <line num="190" count="0" type="stmt"/>
-        <line num="194" count="0" type="stmt"/>
-        <line num="195" count="0" type="stmt"/>
-        <line num="204" count="0" type="stmt"/>
+        <line num="149" count="0" type="stmt"/>
+        <line num="150" count="0" type="stmt"/>
+        <line num="165" count="0" type="stmt"/>
+        <line num="196" count="0" type="stmt"/>
+        <line num="197" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="198" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="200" count="0" type="stmt"/>
+        <line num="201" count="0" type="stmt"/>
         <line num="205" count="0" type="stmt"/>
-        <line num="214" count="0" type="stmt"/>
-        <line num="215" count="0" type="cond" truecount="0" falsecount="3"/>
+        <line num="206" count="0" type="stmt"/>
+        <line num="215" count="0" type="stmt"/>
         <line num="216" count="0" type="stmt"/>
-        <line num="218" count="0" type="stmt"/>
-        <line num="221" count="0" type="stmt"/>
-        <line num="222" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="243" count="0" type="stmt"/>
-        <line num="307" count="0" type="stmt"/>
-        <line num="317" count="0" type="stmt"/>
-        <line num="329" count="0" type="stmt"/>
+        <line num="225" count="0" type="stmt"/>
+        <line num="226" count="0" type="cond" truecount="0" falsecount="3"/>
+        <line num="227" count="0" type="stmt"/>
+        <line num="229" count="0" type="stmt"/>
+        <line num="232" count="0" type="stmt"/>
+        <line num="233" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="255" count="0" type="stmt"/>
+        <line num="325" count="0" type="stmt"/>
+        <line num="335" count="0" type="stmt"/>
+        <line num="347" count="0" type="stmt"/>
       </file>
     </package>
     <package name="quick-chat.components.chats.chatslist.chatsItem">
@@ -863,11 +871,11 @@
       </file>
     </package>
     <package name="quick-chat.lib">
-      <metrics statements="376" coveredstatements="66" conditionals="138" coveredconditionals="24" methods="61" coveredmethods="5"/>
+      <metrics statements="377" coveredstatements="0" conditionals="138" coveredconditionals="0" methods="61" coveredmethods="0"/>
       <file name="data.ts" path="/Users/apple/quick-chat/lib/data.ts">
-        <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
-        <line num="1" count="1" type="stmt"/>
-        <line num="2" count="1" type="stmt"/>
+        <metrics statements="2" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="0" type="stmt"/>
+        <line num="2" count="0" type="stmt"/>
       </file>
       <file name="firebase-config.ts" path="/Users/apple/quick-chat/lib/firebase-config.ts">
         <metrics statements="8" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
@@ -1120,71 +1128,71 @@
         <line num="597" count="0" type="stmt"/>
       </file>
       <file name="helpers.ts" path="/Users/apple/quick-chat/lib/helpers.ts">
-        <metrics statements="64" coveredstatements="64" conditionals="32" coveredconditionals="24" methods="5" coveredmethods="5"/>
-        <line num="1" count="1" type="stmt"/>
-        <line num="3" count="1" type="stmt"/>
-        <line num="4" count="1" type="stmt"/>
-        <line num="5" count="1" type="stmt"/>
-        <line num="6" count="1" type="stmt"/>
-        <line num="7" count="1" type="cond" truecount="1" falsecount="1"/>
-        <line num="9" count="1" type="cond" truecount="1" falsecount="1"/>
-        <line num="10" count="1" type="cond" truecount="1" falsecount="1"/>
-        <line num="12" count="1" type="stmt"/>
-        <line num="15" count="1" type="stmt"/>
-        <line num="16" count="7" type="stmt"/>
-        <line num="17" count="7" type="stmt"/>
-        <line num="18" count="7" type="stmt"/>
-        <line num="19" count="7" type="stmt"/>
-        <line num="22" count="7" type="cond" truecount="1" falsecount="0"/>
-        <line num="23" count="2" type="stmt"/>
-        <line num="27" count="5" type="cond" truecount="1" falsecount="0"/>
-        <line num="28" count="1" type="stmt"/>
-        <line num="32" count="4" type="cond" truecount="1" falsecount="0"/>
-        <line num="33" count="1" type="stmt"/>
-        <line num="37" count="3" type="stmt"/>
-        <line num="38" count="3" type="stmt"/>
-        <line num="39" count="3" type="stmt"/>
-        <line num="40" count="3" type="cond" truecount="1" falsecount="1"/>
-        <line num="42" count="3" type="stmt"/>
-        <line num="45" count="1" type="stmt"/>
-        <line num="46" count="9" type="cond" truecount="0" falsecount="1"/>
-        <line num="48" count="9" type="stmt"/>
-        <line num="49" count="9" type="stmt"/>
-        <line num="50" count="9" type="stmt"/>
-        <line num="52" count="9" type="cond" truecount="1" falsecount="0"/>
-        <line num="53" count="8" type="cond" truecount="1" falsecount="0"/>
-        <line num="55" count="7" type="stmt"/>
-        <line num="56" count="7" type="cond" truecount="1" falsecount="0"/>
-        <line num="58" count="6" type="stmt"/>
-        <line num="59" count="6" type="cond" truecount="1" falsecount="0"/>
-        <line num="61" count="5" type="stmt"/>
-        <line num="62" count="5" type="cond" truecount="1" falsecount="0"/>
-        <line num="64" count="3" type="stmt"/>
-        <line num="65" count="3" type="cond" truecount="1" falsecount="0"/>
-        <line num="67" count="1" type="stmt"/>
-        <line num="68" count="1" type="stmt"/>
-        <line num="71" count="1" type="stmt"/>
-        <line num="72" count="7" type="stmt"/>
-        <line num="73" count="7" type="stmt"/>
-        <line num="74" count="7" type="stmt"/>
-        <line num="75" count="7" type="stmt"/>
-        <line num="77" count="7" type="stmt"/>
-        <line num="78" count="7" type="stmt"/>
-        <line num="79" count="7" type="cond" truecount="2" falsecount="0"/>
-        <line num="81" count="7" type="cond" truecount="1" falsecount="1"/>
-        <line num="82" count="7" type="cond" truecount="1" falsecount="1"/>
-        <line num="83" count="7" type="stmt"/>
-        <line num="86" count="7" type="cond" truecount="1" falsecount="0"/>
-        <line num="87" count="2" type="stmt"/>
-        <line num="91" count="5" type="cond" truecount="1" falsecount="0"/>
-        <line num="92" count="1" type="stmt"/>
-        <line num="96" count="4" type="stmt"/>
-        <line num="98" count="4" type="stmt"/>
-        <line num="101" count="1" type="stmt"/>
-        <line num="102" count="2" type="cond" truecount="2" falsecount="1"/>
-        <line num="103" count="2" type="stmt"/>
-        <line num="104" count="2" type="stmt"/>
-        <line num="105" count="2" type="stmt"/>
+        <metrics statements="64" coveredstatements="0" conditionals="32" coveredconditionals="0" methods="5" coveredmethods="0"/>
+        <line num="1" count="0" type="stmt"/>
+        <line num="3" count="0" type="stmt"/>
+        <line num="4" count="0" type="stmt"/>
+        <line num="5" count="0" type="stmt"/>
+        <line num="6" count="0" type="stmt"/>
+        <line num="7" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="9" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="10" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="12" count="0" type="stmt"/>
+        <line num="15" count="0" type="stmt"/>
+        <line num="16" count="0" type="stmt"/>
+        <line num="17" count="0" type="stmt"/>
+        <line num="18" count="0" type="stmt"/>
+        <line num="19" count="0" type="stmt"/>
+        <line num="22" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="23" count="0" type="stmt"/>
+        <line num="27" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="28" count="0" type="stmt"/>
+        <line num="32" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="33" count="0" type="stmt"/>
+        <line num="37" count="0" type="stmt"/>
+        <line num="38" count="0" type="stmt"/>
+        <line num="39" count="0" type="stmt"/>
+        <line num="40" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="42" count="0" type="stmt"/>
+        <line num="45" count="0" type="stmt"/>
+        <line num="46" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="48" count="0" type="stmt"/>
+        <line num="49" count="0" type="stmt"/>
+        <line num="50" count="0" type="stmt"/>
+        <line num="52" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="53" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="55" count="0" type="stmt"/>
+        <line num="56" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="58" count="0" type="stmt"/>
+        <line num="59" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="61" count="0" type="stmt"/>
+        <line num="62" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="64" count="0" type="stmt"/>
+        <line num="65" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="67" count="0" type="stmt"/>
+        <line num="68" count="0" type="stmt"/>
+        <line num="71" count="0" type="stmt"/>
+        <line num="72" count="0" type="stmt"/>
+        <line num="73" count="0" type="stmt"/>
+        <line num="74" count="0" type="stmt"/>
+        <line num="75" count="0" type="stmt"/>
+        <line num="77" count="0" type="stmt"/>
+        <line num="78" count="0" type="stmt"/>
+        <line num="79" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="81" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="82" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="83" count="0" type="stmt"/>
+        <line num="86" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="87" count="0" type="stmt"/>
+        <line num="91" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="92" count="0" type="stmt"/>
+        <line num="96" count="0" type="stmt"/>
+        <line num="98" count="0" type="stmt"/>
+        <line num="101" count="0" type="stmt"/>
+        <line num="102" count="0" type="cond" truecount="0" falsecount="3"/>
+        <line num="103" count="0" type="stmt"/>
+        <line num="104" count="0" type="stmt"/>
+        <line num="105" count="0" type="stmt"/>
       </file>
       <file name="registerForPushNotificationAsync.ts" path="/Users/apple/quick-chat/lib/registerForPushNotificationAsync.ts">
         <metrics statements="27" coveredstatements="0" conditionals="8" coveredconditionals="0" methods="2" coveredmethods="0"/>
@@ -1217,8 +1225,9 @@
         <line num="50" count="0" type="stmt"/>
       </file>
       <file name="toast-config.tsx" path="/Users/apple/quick-chat/lib/toast-config.tsx">
-        <metrics statements="10" coveredstatements="0" conditionals="6" coveredconditionals="0" methods="4" coveredmethods="0"/>
+        <metrics statements="11" coveredstatements="0" conditionals="6" coveredconditionals="0" methods="4" coveredmethods="0"/>
         <line num="2" count="0" type="stmt"/>
+        <line num="3" count="0" type="stmt"/>
         <line num="4" count="0" type="stmt"/>
         <line num="12" count="0" type="stmt"/>
         <line num="14" count="0" type="stmt"/>
@@ -1306,7 +1315,7 @@
       </file>
     </package>
     <package name="quick-chat.screens">
-      <metrics statements="211" coveredstatements="0" conditionals="56" coveredconditionals="0" methods="41" coveredmethods="0"/>
+      <metrics statements="212" coveredstatements="0" conditionals="56" coveredconditionals="0" methods="41" coveredmethods="0"/>
       <file name="ChatRoomScreen.tsx" path="/Users/apple/quick-chat/screens/ChatRoomScreen.tsx">
         <metrics statements="85" coveredstatements="0" conditionals="31" coveredconditionals="0" methods="14" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
@@ -1469,8 +1478,9 @@
         <line num="38" count="0" type="stmt"/>
       </file>
       <file name="ProfileScreen.tsx" path="/Users/apple/quick-chat/screens/ProfileScreen.tsx">
-        <metrics statements="11" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="3" coveredmethods="0"/>
+        <metrics statements="12" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="3" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
+        <line num="2" count="0" type="stmt"/>
         <line num="3" count="0" type="stmt"/>
         <line num="11" count="0" type="stmt"/>
         <line num="13" count="0" type="stmt"/>
@@ -1556,6 +1566,49 @@
         <line num="47" count="0" type="stmt"/>
         <line num="52" count="0" type="stmt"/>
         <line num="53" count="0" type="stmt"/>
+      </file>
+    </package>
+    <package name="quick-chat.store.chat">
+      <metrics statements="31" coveredstatements="0" conditionals="3" coveredconditionals="0" methods="5" coveredmethods="0"/>
+      <file name="actions.ts" path="/Users/apple/quick-chat/store/chat/actions.ts">
+        <metrics statements="23" coveredstatements="0" conditionals="3" coveredconditionals="0" methods="3" coveredmethods="0"/>
+        <line num="1" count="0" type="stmt"/>
+        <line num="2" count="0" type="stmt"/>
+        <line num="6" count="0" type="stmt"/>
+        <line num="9" count="0" type="stmt"/>
+        <line num="10" count="0" type="stmt"/>
+        <line num="11" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="12" count="0" type="stmt"/>
+        <line num="14" count="0" type="stmt"/>
+        <line num="17" count="0" type="stmt"/>
+        <line num="22" count="0" type="stmt"/>
+        <line num="25" count="0" type="stmt"/>
+        <line num="26" count="0" type="stmt"/>
+        <line num="27" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="28" count="0" type="stmt"/>
+        <line num="30" count="0" type="stmt"/>
+        <line num="32" count="0" type="stmt"/>
+        <line num="37" count="0" type="stmt"/>
+        <line num="40" count="0" type="stmt"/>
+        <line num="41" count="0" type="stmt"/>
+        <line num="42" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="43" count="0" type="stmt"/>
+        <line num="45" count="0" type="stmt"/>
+        <line num="47" count="0" type="stmt"/>
+      </file>
+      <file name="index.ts" path="/Users/apple/quick-chat/store/chat/index.ts">
+        <metrics statements="7" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="0"/>
+        <line num="1" count="0" type="stmt"/>
+        <line num="4" count="0" type="stmt"/>
+        <line num="6" count="0" type="stmt"/>
+        <line num="13" count="0" type="stmt"/>
+        <line num="18" count="0" type="stmt"/>
+        <line num="25" count="0" type="stmt"/>
+        <line num="27" count="0" type="stmt"/>
+      </file>
+      <file name="service.ts" path="/Users/apple/quick-chat/store/chat/service.ts">
+        <metrics statements="1" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="8" count="0" type="stmt"/>
       </file>
     </package>
   </project>

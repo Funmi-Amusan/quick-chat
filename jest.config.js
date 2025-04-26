@@ -27,13 +27,13 @@ module.exports = {
       // diagnostics: false,
     },
   },
-  // collectCoverage: true,
-  // collectCoverageFrom: [
-  //   '**/*.{ts,tsx,js,jsx}',
-  //   '!**/coverage/**',
-  //   '!**/node_modules/**',
-  //   '!**/babel.config.js',
-  //   '!**/expo-env.d.ts',
-  //   '!**/.expo/**',
-  // ],
+  collectCoverage: true,
+  collectCoverageFrom: [
+    '**/*.{ts,tsx,js,jsx}',
+    '!**/coverage/**',
+    '!**/node_modules/**',
+    '!**/babel.config.js',
+    '!**/expo-env.d.ts',
+    '!**/.expo/**',
+  ],
 };

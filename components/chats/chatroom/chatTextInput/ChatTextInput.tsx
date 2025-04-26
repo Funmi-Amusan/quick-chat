@@ -71,11 +71,12 @@ const ChatTextInput = ({
         underlineColorAndroid="transparent"
       />
       {showCameraIcon && (
-        <TouchableOpacity className="" onPress={onImagePress} disabled={isUploading}>
+        <TouchableOpacity testID='camera-button' className="" onPress={onImagePress} disabled={isUploading}>
           <MaterialCommunityIcons name="camera" size={20} color="grey" />
         </TouchableOpacity>
       )}
       <TouchableOpacity
+      testID='send-button'
         className=" items-center justify-center px-2  "
         onPress={onSendPress}
         // disabled={!canSend}
