@@ -4,7 +4,7 @@ import {
   formatTimestampToTimeOrDate,
   formatMomentAgo,
   isSameDay,
-} from '../../lib/helpers';
+} from '../helpers';
 
 describe('helpers', () => {
   describe('formatTimestamp', () => {

@@ -1,0 +1,54 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`examples of some things 1`] = `
+<Text
+  href="/chatroom/1"
+  onPress={[Function]}
+  role="link"
+>
+  <View
+    className="flex-row items-center justify-between gap-4 border border-b-white/20 bg-slate-100 p-2 text-black dark:bg-body-dark "
+  >
+    <Image
+      className="h-14 w-14 rounded-full"
+      source={
+        {
+          "testUri": "../../../assets/images/Colleen.png",
+        }
+      }
+    />
+    <View
+      className=" flex-grow gap-1 py-2"
+    >
+      <View
+        className="flex-row items-center justify-between "
+      >
+        <Text
+          className="  text-xl font-bold  capitalize text-title-light dark:text-title-dark"
+        >
+          Partner
+        </Text>
+        <Text
+          className=" h-5 w-5 items-center rounded-full bg-mint text-center text-sm text-title-dark dark:text-title-light "
+        >
+          5
+        </Text>
+      </View>
+      <View
+        className="flex-row items-center justify-between"
+      >
+        <Text
+          className=" line-clamp-1 font-medium text-grey "
+        >
+          Bye
+        </Text>
+        <Text
+          className=" line-clamp-1 text-grey "
+        >
+          01/01/70
+        </Text>
+      </View>
+    </View>
+  </View>
+</Text>
+`;

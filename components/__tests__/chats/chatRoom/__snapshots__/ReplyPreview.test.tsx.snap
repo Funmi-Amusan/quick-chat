@@ -1,0 +1,53 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`displays ReplyPreview component correctly 1`] = `
+<View
+  className="h-12 flex-row items-center gap-2 border-l-4 border-mint bg-black/20 dark:bg-white/20 "
+>
+  <View
+    className="flex-grow flex-row items-start gap-2 px-2"
+  >
+    <Text
+      className=" line-clamp-1 text-sm text-greyText-light dark:text-greyText-dark"
+    >
+      string
+    </Text>
+  </View>
+  <View
+    className=" my-1 flex-row items-center justify-center"
+  >
+    <Image
+      className="aspect-square h-full rounded-md"
+      resizeMode="cover"
+      source={
+        {
+          "uri": "",
+        }
+      }
+    />
+    <Text
+      allowFontScaling={false}
+      className="mx-2"
+      onPress={[Function]}
+      selectable={false}
+      style={
+        [
+          {
+            "color": "white",
+            "fontSize": 24,
+          },
+          undefined,
+          {
+            "fontFamily": "ionicons",
+            "fontStyle": "normal",
+            "fontWeight": "normal",
+          },
+          {},
+        ]
+      }
+    >
+      
+    </Text>
+  </View>
+</View>
+`;
