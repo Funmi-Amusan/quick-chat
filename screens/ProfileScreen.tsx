@@ -1,12 +1,5 @@
 import { router } from 'expo-router';
-import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import Animated, {
-  useSharedValue,
-  withTiming,
-  useAnimatedStyle,
-  Easing,
-} from 'react-native-reanimated';
 
 import { useSession } from '~/context/authContext';
 
@@ -18,7 +11,9 @@ const ProfileScreen = () => {
     router.replace('/sign-in');
   };
   return (
-    <View className="flex-1 items-center justify-center p-4 bg-body-light dark:bg-body-dark">
+    <View
+      testID="profile-container"
+      className="flex-1 items-center justify-center bg-body-light p-4 dark:bg-body-dark">
       <TouchableOpacity className=" rounded-xl bg-primary p-4" onPress={() => handleSignOut()}>
         <Text className="text-title-light dark:text-title-dark">Logout</Text>
       </TouchableOpacity>

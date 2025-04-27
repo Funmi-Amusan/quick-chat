@@ -17,6 +17,8 @@ module.exports = {
   moduleNameMapper: {
     '^~/(.*)$': '<rootDir>/$1',
     '^assets(.*)$': '<rootDir>/assets$1',
+    '^lib(.*)$': '<rootDir>/lib$1',
+    '^context(.*)$': '<rootDir>/context$1',
   },
   globals: {
     'ts-jest': {
