@@ -130,9 +130,18 @@ jest.mock('firebase/database', () => {
     onValue: jest.fn((ref, callback) => {
       return jest.fn();
     }),
+    query: jest.fn((ref) => {
+      return mockQuery;
+    }),
     serverTimestamp: mockServerTimestamp,
     onDisconnect: mockOnDisconnect,
     off: jest.fn(),
+    orderByChild: jest.fn((child) => {
+      return mockQuery;
+    }),
+    limitToLast: jest.fn((limit) => {
+      return mockQuery;
+    }),
     get: jest.fn((ref) => {
       return Promise.resolve({ exists: jest.fn(() => false), val: jest.fn(() => null) });
     }),
