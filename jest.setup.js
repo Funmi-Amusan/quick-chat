@@ -36,12 +36,6 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   multiMerge: jest.fn(() => Promise.resolve()),
 }));
 
-jest.mock('@firebase/auth', () => ({
-  signInWithEmailAndPassword: jest.fn(),
-  createUserWithEmailAndPassword: jest.fn(),
-  signOut: jest.fn(),
-}));
-
 jest.mock('firebase/database', () => {
   const mockGetDatabase = jest.fn(() => {
     const mockDatabase = {};
@@ -106,6 +100,12 @@ jest.mock('firebase/database', () => {
     limitToLast: jest.fn((limit) => {
       return mockQuery;
     }),
+    endBefore: jest.fn(() => {
+      return mockQuery;
+    }),
+    startAfter: jest.fn(() => {
+      return mockQuery;
+    })
   };
 
   const mockServerTimestamp = jest.fn(() => {
@@ -140,6 +140,12 @@ jest.mock('firebase/database', () => {
       return mockQuery;
     }),
     limitToLast: jest.fn((limit) => {
+      return mockQuery;
+    }),
+    endBefore: jest.fn((value) => {
+      return mockQuery;
+    }),
+    startAfter: jest.fn((value) => {
       return mockQuery;
     }),
     get: jest.fn((ref) => {
@@ -179,7 +185,7 @@ jest.mock('firebase/auth', () => {
   return {
     getReactNativePersistence: mockGetReactNativePersistence,
     initializeAuth: mockInitializeAuth,
-
+    createUserWithEmailAndPassword:  jest.fn(),
     getAuth: mockGetAuth,
     signInWithEmailAndPassword: jest.fn(),
     signOut: jest.fn(),
