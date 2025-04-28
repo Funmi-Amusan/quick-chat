@@ -1,11 +1,9 @@
 import { router } from 'expo-router';
-import { off, ref } from 'firebase/database';
 import React, { useEffect, useState, useCallback } from 'react';
 import Toast from 'react-native-toast-message';
 
 import { NotificationData, useNotification } from '~/context/NotificationContext';
 import { auth } from '~/lib/firebase-config';
-import * as Database from '~/lib/firebase-sevice';
 import {
   fetchInitialMessages,
   fetchOlderMessages,
