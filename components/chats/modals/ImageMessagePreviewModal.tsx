@@ -4,7 +4,6 @@ import { View, Modal, TouchableOpacity, KeyboardAvoidingView, Image } from 'reac
 
 import ChatTextInput from '../chatRoom/chatTextInput/ChatTextInput';
 
-
 const ImageMessagePreviewModal = ({
   setImageUri,
   imageUri,
@@ -54,6 +53,7 @@ const ImageMessagePreviewModal = ({
             onSendPress={handleSendMessage}
             placeholder="Add a caption..."
             showCameraIcon={false}
+            onFilePicked={() => {}}
           />
         </KeyboardAvoidingView>
 

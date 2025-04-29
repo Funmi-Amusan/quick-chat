@@ -56,7 +56,10 @@ export interface FirebaseMessage {
   read: boolean;
   reaction: string;
   replyMessage: ReplyMessageInfo | null;
-  imageUrl?: string | null;
+  imageUrl: string | null;
+  fileUrl: string | null;
+  fileType: string | null;
+  fileName: string | null;
 }
 
 export interface ChatPartner {
@@ -77,6 +80,7 @@ export interface ReplyMessageInfo {
   content: string;
   senderId: string;
   imageUrl: string | null;
+  fileName: any | null;
 }
 
 export type DateHeaderMessage = {

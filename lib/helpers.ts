@@ -108,3 +108,14 @@ export const isSameDay = (timestamp1: number, timestamp2: number | null) => {
     date1.getDate() === date2.getDate()
   );
 };
+
+export const getFileExtension = (fileName: string | undefined | null): string => {
+  if (!fileName) {
+    return 'unknown';
+  }
+  const parts = fileName.split('.');
+  if (parts.length > 1) {
+   return parts.pop()!.toLowerCase();
+  }
+  return 'unknown'; 
+};

@@ -4,4 +4,5 @@ export const ImageAssets = {
   colleen: require('./images/Colleen.png'),
   shaz: require('./images/Shaz.png'),
   error: require('./images/Shaz.png'),
+  pdfFile: require('./images/PDF.png'),
 };
