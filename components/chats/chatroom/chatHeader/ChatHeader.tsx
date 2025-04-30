@@ -46,7 +46,7 @@ const ChatHeader = ({
               <FontAwesome name="chevron-left" size={14} color={dark ? '#ffffff' : '#000000'} />
             </TouchableOpacity>
             <View className=" flex-1 flex-row items-center justify-between ">
-              <View>
+              <View className=' flex-row items-center gap-2'>
                 <Image source={ImageAssets.avatar} className="mr-3 h-10 w-10 rounded-full" />
                 <View>
                   <Text className="text-lg font-semibold text-title-light dark:text-title-dark">
