@@ -444,7 +444,7 @@ export const listenForNewMessages = (
   chatId: string,
   latestTimestamp: number,
   onNewMessage: (message: FirebaseMessage) => void,
-  onError: (error: string | null) => void 
+  onError: (error: string | null) => void
 ) => {
   const messagesRef = ref(db, `chats/${chatId}/messages`);
   const newMessagesQuery = query(
@@ -469,7 +469,7 @@ export const listenForNewMessages = (
             replyMessage: value.replyMessage || null,
           })
         );
-        newMessagesList.sort((a, b) => a.timestamp - b.timestamp);
+        newMessagesList.sort((a, b) => b.timestamp - a.timestamp);
         newMessagesList.forEach((message) => {
           onNewMessage(message);
         });

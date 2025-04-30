@@ -42,11 +42,11 @@ const ChatHeader = ({
           />
         ) : (
           <View className="flex-row items-center gap-2">
-            <TouchableOpacity testID='back-icon' className="px-2" onPress={() => router.back()}>
+            <TouchableOpacity testID="back-icon" className="px-2" onPress={() => router.back()}>
               <FontAwesome name="chevron-left" size={14} color={dark ? '#ffffff' : '#000000'} />
             </TouchableOpacity>
             <View className=" flex-1 flex-row items-center justify-between ">
-              <View>
+              <View className=" flex-row items-center gap-2">
                 <Image source={ImageAssets.avatar} className="mr-3 h-10 w-10 rounded-full" />
                 <View>
                   <Text className="text-lg font-semibold text-title-light dark:text-title-dark">
@@ -68,7 +68,10 @@ const ChatHeader = ({
                   </View>
                 </View>
               </View>
-              <TouchableOpacity testID='search-icon' onPress={() => setIsSearchActive(true)} className="">
+              <TouchableOpacity
+                testID="search-icon"
+                onPress={() => setIsSearchActive(true)}
+                className="">
                 <Ionicons name="search-outline" size={24} color="white" />
               </TouchableOpacity>
             </View>
