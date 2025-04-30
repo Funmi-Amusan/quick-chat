@@ -16,7 +16,7 @@ import useMarkMessagesAsRead from '~/hooks/useMarkMessagesAsRead';
 import useSendMessage from '~/hooks/useSendMessage';
 import useTypingStatus from '~/hooks/useTypingStatus';
 import { auth } from '~/lib/firebase-config';
-import { formatTimestampToDay, isSameDay } from '~/lib/helpers';
+import { formatTimestampToDay } from '~/lib/helpers';
 import { useChatPartner } from '~/lib/queries/useChatPartner';
 import {
   ActualMessage,

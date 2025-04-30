@@ -444,7 +444,7 @@ export const listenForNewMessages = (
   chatId: string,
   latestTimestamp: number,
   onNewMessage: (message: FirebaseMessage) => void,
-  onError: (error: string | null) => void 
+  onError: (error: string | null) => void
 ) => {
   const messagesRef = ref(db, `chats/${chatId}/messages`);
   const newMessagesQuery = query(
