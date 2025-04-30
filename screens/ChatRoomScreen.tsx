@@ -95,28 +95,39 @@ const ChatRoom = () => {
       setProcessedMessages([]);
       return;
     }
-    const transformedData: ProcessedMessage[] = [];
-    let previousMessageTimestamp: number | null = null;
-    const sortedMessages = [...messages].sort((a, b) => a.timestamp - b.timestamp);
 
-    sortedMessages.forEach((message, index) => {
-      if (index === 0 || !isSameDay(message.timestamp, previousMessageTimestamp)) {
-        const dateHeader: DateHeaderMessage = {
-          type: 'header',
-          date: formatTimestampToDay(message.timestamp),
-          id: `header_${message.timestamp}_${index}`,
-        };
-        transformedData.push(dateHeader);
+    const transformedData: ProcessedMessage[] = [];
+    const sortedMessages = [...messages].sort((a, b) => b.timestamp - a.timestamp);
+
+    const messagesByDay: { [date: string]: ActualMessage[] } = {};
+    sortedMessages.forEach((message) => {
+      const dateKey = formatTimestampToDay(message.timestamp);
+      if (!messagesByDay[dateKey]) {
+        messagesByDay[dateKey] = [];
       }
+
       const actualMessage: ActualMessage = {
         ...message,
         type: 'message',
         id: message.id,
       };
-      transformedData.push(actualMessage);
 
-      previousMessageTimestamp = message.timestamp;
+      messagesByDay[dateKey].push(actualMessage);
     });
+
+    Object.entries(messagesByDay).forEach(([dateStr, dayMessages], index) => {
+      dayMessages.forEach((message) => {
+        transformedData.push(message);
+      });
+
+      const dateHeader: DateHeaderMessage = {
+        type: 'header',
+        date: dateStr,
+        id: `header_${dayMessages[0].timestamp}_${index}`,
+      };
+      transformedData.push(dateHeader);
+    });
+
     setProcessedMessages(transformedData);
   }, [messages]);
 

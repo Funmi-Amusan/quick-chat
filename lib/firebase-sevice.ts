@@ -469,7 +469,7 @@ export const listenForNewMessages = (
             replyMessage: value.replyMessage || null,
           })
         );
-        newMessagesList.sort((a, b) => a.timestamp - b.timestamp);
+        newMessagesList.sort((a, b) => b.timestamp - a.timestamp);
         newMessagesList.forEach((message) => {
           onNewMessage(message);
         });

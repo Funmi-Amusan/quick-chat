@@ -80,7 +80,7 @@ const MessageList = ({
 
   return (
     <FlatList
-    testID='flat-list'
+      testID="flat-list"
       ref={flatListRef}
       className="bg-body-light dark:bg-body-dark "
       contentContainerStyle={{ paddingVertical: 10, paddingHorizontal: 8 }}
@@ -92,12 +92,11 @@ const MessageList = ({
       onStartReached={() => {
         if (hasMoreMessages) {
           loadOlderMessages();
-          console.log("testing--- loadOlderMessages")
-        } 
-        console.log("start reached")
+        }
       }}
       onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
-      onStartReachedThreshold={0.3}
+      onStartReachedThreshold={0.2}
+      inverted
     />
   );
 };
