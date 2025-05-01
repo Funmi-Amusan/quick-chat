@@ -88,6 +88,7 @@ const useListenForChatMessages = ({
         }
         const latestTimestamp = initialMessagesList[initialMessagesList.length - 1].timestamp;
         listenForNewMessages(
+          currentUser,
           chatId,
           latestTimestamp,
           (newMessage) => {

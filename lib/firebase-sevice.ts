@@ -44,6 +44,7 @@ import {
   ReplyMessageInfo,
   UserData,
 } from '~/lib/types';
+import { server } from 'typescript';
 
 export interface FirebaseUserResponse {
   user: User;
@@ -448,6 +449,7 @@ export const fetchOlderMessages = async (
 };
 
 export const listenForNewMessages = (
+  currentUser: User,
   chatId: string,
   latestTimestamp: number,
   onNewMessage: (message: FirebaseMessage) => void,
@@ -481,7 +483,9 @@ export const listenForNewMessages = (
         );
         newMessagesList.sort((a, b) => b.timestamp - a.timestamp);
         newMessagesList.forEach((message) => {
+          if (message.senderId !== currentUser.uid) {
           onNewMessage(message);
+          }
         });
       }
     },
@@ -534,7 +538,8 @@ export const sendImageMessage = async (
   senderId: string,
   imageUri: string,
   text: string = '',
-  replyTo: ReplyMessageInfo | null = null
+  replyTo: ReplyMessageInfo | null = null,
+  onProgress?: (progress: number) => void,
 ) => {
   try {
     const storage = getStorage();
@@ -549,7 +554,9 @@ export const sendImageMessage = async (
         'state_changed',
         (snapshot) => {
           const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log('Upload is ' + progress + '% done');
+          if (onProgress) {
+            onProgress(progress);
+          }
         },
         (error) => {
           reject(error);
@@ -561,7 +568,7 @@ export const sendImageMessage = async (
     });
     const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
     const messagesRef = ref(db, `chats/${chatId}/messages`);
-    await push(messagesRef, {
+    const newMessageRef = await push(messagesRef, {
       content: text,
       imageUrl: downloadURL,
       senderId,
@@ -575,6 +582,7 @@ export const sendImageMessage = async (
           }
         : null,
     });
+    const serverMessageId = newMessageRef.key;
     const chatMetaRef = ref(db, `chats/${chatId}`);
     await push(chatMetaRef, {
       lastMessage: {
@@ -585,7 +593,7 @@ export const sendImageMessage = async (
       },
       updatedAt: serverTimestamp(),
     });
-    return true;
+    return serverMessageId;
   } catch (error) {
     console.error('Error uploading image:', error);
     throw error;
@@ -655,7 +663,8 @@ export const sendFileMessage = async (
         : null,
     };
 
-    await push(messagesRef, newMessage);
+    const newMessageRef = await push(messagesRef, newMessage);
+    const serverMessageId = newMessageRef.key;
     const chatMetaRef = ref(db, `chats/${chatId}`);
     await update(chatMetaRef, {
       lastMessage: {
@@ -669,7 +678,7 @@ export const sendFileMessage = async (
       },
       updatedAt: serverTimestamp(),
     });
-    return true;
+    return serverMessageId;
   } catch (error) {
     console.error('Error sending file message:', error);
     throw error;

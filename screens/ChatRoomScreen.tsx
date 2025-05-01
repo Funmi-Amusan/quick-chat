@@ -61,7 +61,7 @@ const ChatRoom = () => {
   });
   const { imageUri, setImageUri, uploading, pickImage } = useImagePicker();
   const { inputText, setInputText, replyMessage, setReplyMessage, handleSendMessage, progress } =
-    useSendMessage(chatId, currentUser, setImageUri, imageUri, setFile, file);
+    useSendMessage(chatId, currentUser, setImageUri, imageUri, setFile, file, setMessages);
   useTypingStatus(currentUser, chatId, inputText);
 
   const handleReply = useCallback(
@@ -97,23 +97,19 @@ const ChatRoom = () => {
       setProcessedMessages([]);
       return;
     }
-
     const transformedData: ProcessedMessage[] = [];
     const sortedMessages = [...messages].sort((a, b) => b.timestamp - a.timestamp);
-
     const messagesByDay: { [date: string]: ActualMessage[] } = {};
     sortedMessages.forEach((message) => {
       const dateKey = formatTimestampToDay(message.timestamp);
       if (!messagesByDay[dateKey]) {
         messagesByDay[dateKey] = [];
       }
-
       const actualMessage: ActualMessage = {
         ...message,
         type: 'message',
         id: message.id,
       };
-
       messagesByDay[dateKey].push(actualMessage);
     });
 
@@ -219,7 +215,6 @@ const ChatRoom = () => {
               onImagePress={pickImage}
               isUploading={uploading}
               onFilePicked={(e) => {
-                console.log('setFile(e)')
                 setFile(e)
               }}
             />

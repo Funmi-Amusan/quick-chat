@@ -14,7 +14,6 @@ import {
   StyleSheet,
   Platform,
 } from 'react-native';
-import * as Progress from 'react-native-progress';
 
 import ChatTextInput from '../chatRoom/chatTextInput/ChatTextInput';
 
@@ -47,7 +46,6 @@ const FilePreviewModal = ({
       <View style={styles.documentPreviewContainer}>
         <MaterialCommunityIcons name="file-document-outline" size={80} color="#ccc" />
         <Text style={styles.documentFileName}>{file?.name}</Text>
-        <Progress.Circle progress={progress} size={50} color="white" />
       </View>
     );
   };

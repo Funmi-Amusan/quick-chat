@@ -17,8 +17,10 @@ import {
   ScrollView,
   StyleSheet,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import Swipeable, { SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
+import * as Progress from 'react-native-progress';
 import Animated from 'react-native-reanimated';
 
 import { ImageAssets } from '~/assets';
@@ -49,6 +51,8 @@ const MessageBubble = ({
   fileUrl,
   fileType,
   fileName,
+  status,
+  uploadProgress,
 }: {
   content: string;
   timestamp?: number;
@@ -66,6 +70,8 @@ const MessageBubble = ({
   fileUrl?: string | null;
   fileType?: string | null;
   fileName?: string | null;
+  status?: 'pending' | 'sent' | 'failed';
+  uploadProgress?: number;
 }) => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -74,6 +80,8 @@ const MessageBubble = ({
   const bubbleRef = useRef<View>(null);
   const swipeableRef = useRef<SwipeableMethods>(null);
   const isFromSelf = senderId === currentUser?.uid;
+
+  console.log('status, uploadProgress', status, uploadProgress, imageUrl);
 
   const handleLongPress = useCallback(() => {
     if (id && bubbleRef.current) {
@@ -175,7 +183,7 @@ const MessageBubble = ({
   const messageContent = () => {
     return (
       <View
-        className={`
+        className={`relative
             min-w-20 max-w-[75%] rounded-2xl shadow-sm
             ${
               isFromSelf
@@ -189,13 +197,18 @@ const MessageBubble = ({
         {imageUrl && (
           <TouchableOpacity
             onPress={() => setPreviewImage(imageUrl)}
-            className="mb-2 overflow-hidden rounded-2xl">
+            className=" mb-2 overflow-hidden rounded-2xl">
             <Image
               testID="img"
               source={{ uri: imageUrl }}
               className="h-48 w-48"
               resizeMode="cover"
             />
+            {status === 'pending' && uploadProgress !== undefined && uploadProgress < 100 && (
+              <View className="absolute inset-0 flex-row items-center justify-center bg-black/50">
+                <Progress.Circle progress={uploadProgress} size={50} color="white" />
+              </View>
+            )}
           </TouchableOpacity>
         )}
         {fileUrl && (
@@ -240,7 +253,6 @@ const MessageBubble = ({
       </View>
     );
   };
-
   const handleSwipeOpen = () => {
     if (onReply) {
       onReply({ id, content, senderId, imageUrl: imageUrl ?? null, fileName: fileName ?? null });

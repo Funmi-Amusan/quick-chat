@@ -60,6 +60,8 @@ export interface FirebaseMessage {
   fileUrl: string | null;
   fileType: string | null;
   fileName: string | null;
+  status?: 'pending' | 'sent' | 'failed';
+  uploadProgress?: number; 
 }
 
 export interface ChatPartner {
