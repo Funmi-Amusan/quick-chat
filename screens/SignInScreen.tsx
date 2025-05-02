@@ -1,20 +1,38 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useSession } from 'context/authContext';
 import { router, Link } from 'expo-router';
-import { useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
 import { Text, View, Pressable } from 'react-native';
 import Toast from 'react-native-toast-message';
+import { z } from 'zod';
 
 import { BaseTextInput } from '~/components/ui';
 
-export default function SignIn() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const { signIn } = useSession();
+const signInSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(1, 'Password cannot be empty'),
+});
 
-  const handleLogin = async () => {
+type SignInFormData = z.infer<typeof signInSchema>;
+
+export default function SignIn() {
+  const { signIn } = useSession();
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<SignInFormData>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  const handleLogin = async (data: SignInFormData) => {
     try {
-      return await signIn(email, password);
+      return await signIn(data.email, data.password);
     } catch (err) {
       throw err;
     }
@@ -42,9 +60,7 @@ export default function SignIn() {
     },
   });
 
-  const handleSignInPress = () => {
-    login();
-  };
+  const handleSignInPress = handleSubmit((data) => login(data));
 
   return (
     <View className="flex-1 items-center justify-center bg-body-light p-4 dark:bg-body-dark">
@@ -59,23 +75,41 @@ export default function SignIn() {
 
       <View className="mb-8 w-full max-w-[300px] space-y-4">
         <View>
-          <BaseTextInput
-            label="Your email"
-            placeholder="Your email"
-            value={email}
-            onChangeText={setEmail}
-            textContentType="emailAddress"
+          <Controller
+            control={control}
+            rules={{ required: 'Email is required' }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <BaseTextInput
+                label="Your email"
+                placeholder="Your email"
+                value={value}
+                onChangeText={onChange}
+                textContentType="emailAddress"
+                hasError={!!errors.email}
+                errorMsg={errors.email?.message}
+              />
+            )}
+            name="email"
           />
         </View>
 
         <View>
-          <BaseTextInput
-            placeholder="Your password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            textContentType="password"
-            label="Your password"
+          <Controller
+            control={control}
+            rules={{ required: 'Password is required' }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <BaseTextInput
+                placeholder="Your password"
+                value={value}
+                onChangeText={onChange}
+                secureTextEntry
+                textContentType="password"
+                label="Your password"
+                hasError={!!errors.password}
+                errorMsg={errors.password?.message}
+              />
+            )}
+            name="password"
           />
         </View>
       </View>
@@ -85,7 +119,7 @@ export default function SignIn() {
           onPress={handleSignInPress}
           className=" w-full max-w-[300px] rounded-full bg-primary p-4 active:bg-lighterPrimary ">
           <Text className="text-center text-base font-semibold text-white">
-            {isPending ? 'Processing' : 'Sign In'}
+            {isSubmitting || isPending ? 'Processing' : 'Sign In'}
           </Text>
         </Pressable>
 

@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
 import React, { useState } from 'react';
 import { View, TextInput, Text, Platform } from 'react-native';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 
 import { ImageAssets } from '~/assets';
 
@@ -132,15 +133,9 @@ const BaseTextInput: React.FC<BaseTextInputProps> = ({
         </Text>
       </View>
       {hasError && (
-        <View className=" mt-2 flex flex-row items-center gap-2 pl-2">
-          <Image
-            source={ImageAssets.error}
-            style={{
-              height: 13,
-              width: 16,
-            }}
-          />
-          <Text className=" text-sm leading-[13px] text-black">{errorMsg}</Text>
+        <View className=" mt-2 flex flex-row items-end gap-2 pl-2">
+         <FontAwesome5 name="exclamation-triangle" size={12} color="red" />
+          <Text className=" text-sm leading-[14px] text-red-400">{errorMsg}</Text>
         </View>
       )}
     </View>

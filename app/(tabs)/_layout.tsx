@@ -22,7 +22,6 @@ export default function TabLayout() {
         tabBarActiveTintColor: '#FFFFFF',
         tabBarStyle: {
           position: 'absolute',
-          bottom: 20,
           elevation: 10,
           borderRadius: 30,
           backgroundColor: 'rgba(0, 0, 0, 0.65)',
