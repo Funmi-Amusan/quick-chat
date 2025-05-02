@@ -16,17 +16,25 @@ export const generatePreviewMessageContent = (
     return (
       <View className="flex-row items-center gap-2">
         <Feather name="camera" size={16} color="grey" />
-        <Text className="font-medium text-grey">Image</Text>
+        {lastMessage?.content && lastMessage?.content.length > 1 ? (
+          <Text className="font-medium text-grey">{lastMessage?.content}</Text>
+        ) : (
+          <Text className="font-medium text-grey">Image</Text>
+        )}
       </View>
     );
   } else if (lastMessage?.messageType === 'file') {
     return (
       <View className="flex-row items-center gap-2">
         <Feather name="file" size={16} color="grey" />
-        <Text className="font-medium text-grey">File</Text>
+        {lastMessage?.content && lastMessage?.content.length > 1 ? (
+          <Text className="font-medium text-grey">{lastMessage?.content}</Text>
+        ) : (
+          <Text className="font-medium text-grey">File</Text>
+        )}
       </View>
     );
   } else {
-    return 'Be the first to send a message';
+    return '';
   }
 };
