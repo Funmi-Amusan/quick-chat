@@ -27,6 +27,8 @@ export interface LastMessageData {
   content: string;
   senderId: string;
   timestamp: number;
+  messageType: string;
+  read: boolean;
 }
 
 export interface UserData {

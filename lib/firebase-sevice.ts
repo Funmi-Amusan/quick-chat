@@ -44,7 +44,6 @@ import {
   ReplyMessageInfo,
   UserData,
 } from '~/lib/types';
-import { server } from 'typescript';
 
 export interface FirebaseUserResponse {
   user: User;
@@ -484,7 +483,7 @@ export const listenForNewMessages = (
         newMessagesList.sort((a, b) => b.timestamp - a.timestamp);
         newMessagesList.forEach((message) => {
           if (message.senderId !== currentUser.uid) {
-          onNewMessage(message);
+            onNewMessage(message);
           }
         });
       }
@@ -505,7 +504,6 @@ export const sendMessage = async (
   replyMessage: ReplyMessageInfo | null = null
 ) => {
   const messagesRef = ref(db, `chats/${chatId}/messages`);
-  const chatMetaRef = ref(db, `chats/${chatId}`);
   const chatSummaryRef = ref(db, `chatsSummary/${chatId}`);
   const newMessageData = {
     content: content.trim(),
@@ -522,11 +520,11 @@ export const sendMessage = async (
         timestamp: serverTimestamp(),
         senderId: userId,
         read: false,
+        messageType: 'text',
       },
       updatedAt: serverTimestamp(),
     };
     await update(chatSummaryRef, lastMessageUpdate);
-    await update(chatMetaRef, lastMessageUpdate);
   } catch (err: any) {
     console.error('Error sending message:', err);
     throw new Error('Failed to send message.');
@@ -539,7 +537,7 @@ export const sendImageMessage = async (
   imageUri: string,
   text: string = '',
   replyTo: ReplyMessageInfo | null = null,
-  onProgress?: (progress: number) => void,
+  onProgress?: (progress: number) => void
 ) => {
   try {
     const storage = getStorage();
@@ -568,6 +566,7 @@ export const sendImageMessage = async (
     });
     const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
     const messagesRef = ref(db, `chats/${chatId}/messages`);
+    const chatSummaryRef = ref(db, `chatsSummary/${chatId}`);
     const newMessageRef = await push(messagesRef, {
       content: text,
       imageUrl: downloadURL,
@@ -583,16 +582,19 @@ export const sendImageMessage = async (
         : null,
     });
     const serverMessageId = newMessageRef.key;
-    const chatMetaRef = ref(db, `chats/${chatId}`);
-    await push(chatMetaRef, {
+
+    const lastMessageUpdate = {
       lastMessage: {
-        content: text ? text : imageUri,
+        content: text ? text : '',
         senderId,
         timestamp: serverTimestamp(),
-        hasImage: true,
+        read: false,
+        messageType: 'image',
       },
       updatedAt: serverTimestamp(),
-    });
+    };
+    await update(chatSummaryRef, lastMessageUpdate);
+
     return serverMessageId;
   } catch (error) {
     console.error('Error uploading image:', error);
@@ -617,8 +619,6 @@ export const sendFileMessage = async (
     const storage = getStorage();
     const filename = file?.name || `file_${Date.now()}`;
     const storageReference = storageRef(storage, `chat_files/${chatId}/${Date.now()}_${filename}`);
-    console.log('storageReference', storageReference);
-
     const response = await fetch(file.uri);
     const blob = await response.blob();
 
@@ -665,19 +665,18 @@ export const sendFileMessage = async (
 
     const newMessageRef = await push(messagesRef, newMessage);
     const serverMessageId = newMessageRef.key;
-    const chatMetaRef = ref(db, `chats/${chatId}`);
-    await update(chatMetaRef, {
+    const chatSummaryRef = ref(db, `chatsSummary/${chatId}`);
+    const lastMessageUpdate = {
       lastMessage: {
-        content: text ? text : `Sent a file: ${file?.name || 'Unknown File'}`,
+        content: text ? text : '',
         senderId,
         timestamp: serverTimestamp(),
-        hasFile: true,
-        fileName: file?.name,
-        fileSize: file?.size,
-        fileType: file.mimeType,
+        read: false,
+        messageType: 'file',
       },
       updatedAt: serverTimestamp(),
-    });
+    };
+    await update(chatSummaryRef, lastMessageUpdate);
     return serverMessageId;
   } catch (error) {
     console.error('Error sending file message:', error);

@@ -215,7 +215,12 @@ const MessageBubble = ({
           <TouchableOpacity
             onPress={() => downloadAndOpenFile(fileUrl, fileName)}
             className="mb-2 overflow-hidden rounded-2xl p-1">
-            <View className="flex-row items-center gap-2">
+            <View className="relative flex-row items-center gap-2">
+              {status === 'pending' && uploadProgress !== undefined && uploadProgress < 100 && (
+                <View className=" flex-row items-center justify-center ">
+                  <Progress.Circle progress={uploadProgress} size={20} color="grey" />
+                </View>
+              )}
               <Image
                 testID="img"
                 source={ImageAssets.pdfFile}
