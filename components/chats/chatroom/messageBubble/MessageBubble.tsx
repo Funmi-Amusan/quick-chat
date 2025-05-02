@@ -1,7 +1,10 @@
+import Entypo from '@expo/vector-icons/Entypo';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { BlurView } from 'expo-blur';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 import { User } from 'firebase/auth';
 import React, { useState, useRef, useCallback } from 'react';
 import {
@@ -14,10 +17,14 @@ import {
   ScrollView,
   StyleSheet,
   Image,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import Swipeable, { SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
+import * as Progress from 'react-native-progress';
 import Animated from 'react-native-reanimated';
 
+import { ImageAssets } from '~/assets';
 import { reactToMessage } from '~/lib/firebase-sevice';
 import { formatTimestamp } from '~/lib/helpers';
 import { ReplyMessageInfo } from '~/lib/types';
@@ -42,6 +49,11 @@ const MessageBubble = ({
   imageUrl,
   isHighlighted,
   currentUser,
+  fileUrl,
+  fileType,
+  fileName,
+  status = 'sent',
+  uploadProgress,
 }: {
   content: string;
   timestamp?: number;
@@ -56,6 +68,11 @@ const MessageBubble = ({
   imageUrl?: string | null;
   isHighlighted: boolean;
   currentUser: User | null;
+  fileUrl?: string | null;
+  fileType?: string | null;
+  fileName?: string | null;
+  status?: 'pending' | 'sent' | 'failed';
+  uploadProgress?: number;
 }) => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -94,6 +111,21 @@ const MessageBubble = ({
       );
     }
   }, [id]);
+
+  const downloadAndOpenFile = async (fileUrl: string, fileName: string) => {
+    const fileUri = FileSystem.documentDirectory + fileName;
+
+    try {
+      const { uri } = await FileSystem.downloadAsync(fileUrl, fileUri);
+      if (!(await Sharing.isAvailableAsync())) {
+        Alert.alert('Sharing is not available on this platform');
+        return;
+      }
+      await Sharing.shareAsync(uri);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to download or open the file.');
+    }
+  };
 
   const handleCloseModal = () => {
     setShowEmojiPicker(false);
@@ -149,7 +181,7 @@ const MessageBubble = ({
   const messageContent = () => {
     return (
       <View
-        className={`
+        className={`relative
             min-w-20 max-w-[75%] rounded-2xl shadow-sm
             ${
               isFromSelf
@@ -163,13 +195,45 @@ const MessageBubble = ({
         {imageUrl && (
           <TouchableOpacity
             onPress={() => setPreviewImage(imageUrl)}
-            className="mb-2 overflow-hidden rounded-2xl">
+            className=" mb-2 overflow-hidden rounded-2xl">
             <Image
               testID="img"
               source={{ uri: imageUrl }}
               className="h-48 w-48"
               resizeMode="cover"
             />
+            {status === 'pending' && uploadProgress !== undefined && uploadProgress < 100 && (
+              <View className="absolute inset-0 flex-row items-center justify-center bg-black/50">
+                <Progress.Circle progress={uploadProgress} size={50} color="white" />
+              </View>
+            )}
+          </TouchableOpacity>
+        )}
+        {fileUrl && (
+          <TouchableOpacity
+            onPress={() => downloadAndOpenFile(fileUrl, fileName)}
+            className="mb-2 overflow-hidden rounded-2xl p-1">
+            <View className="relative flex-row items-center gap-2">
+              {status === 'pending' && uploadProgress !== undefined && uploadProgress < 100 && (
+                <View className=" flex-row items-center justify-center ">
+                  <Progress.Circle progress={uploadProgress} size={20} color="grey" />
+                </View>
+              )}
+              <Image
+                testID="img"
+                source={ImageAssets.pdfFile}
+                className="h-10 w-8"
+                resizeMode="cover"
+              />
+              <View>
+                <Text className="">{fileName}</Text>
+                <View className="flex-row gap-1">
+                  <Text className="text-sm">543 KB</Text>
+                  <Entypo name="dot-single" size={14} color="grey" />
+                  <Text className="text-sm">{fileType}</Text>
+                </View>
+              </View>
+            </View>
           </TouchableOpacity>
         )}
         {content && (
@@ -192,10 +256,9 @@ const MessageBubble = ({
       </View>
     );
   };
-
   const handleSwipeOpen = () => {
     if (onReply) {
-      onReply({ id, content, senderId, imageUrl: imageUrl ?? null });
+      onReply({ id, content, senderId, imageUrl: imageUrl ?? null, fileName: fileName ?? null });
     }
     setTimeout(() => {
       swipeableRef.current?.close();
@@ -236,8 +299,15 @@ const MessageBubble = ({
           {replyMessage?.imageUrl && (
             <MaterialCommunityIcons name="camera" size={20} color="grey" />
           )}
+          {replyMessage?.fileName && <MaterialCommunityIcons name="file" size={20} color="grey" />}
           <Text className="text-grey-700 line-clamp-1 text-sm">
-            {replyMessage?.content ? replyMessage.content : replyMessage?.imageUrl ? 'Photo' : ''}
+            {replyMessage?.content
+              ? replyMessage.content
+              : replyMessage?.imageUrl
+                ? 'Photo'
+                : replyMessage?.fileName
+                  ? replyMessage.fileName
+                  : ''}
           </Text>
         </View>
         {replyMessage?.imageUrl && (

@@ -27,6 +27,8 @@ export interface LastMessageData {
   content: string;
   senderId: string;
   timestamp: number;
+  messageType: string;
+  read: boolean;
 }
 
 export interface UserData {
@@ -56,7 +58,12 @@ export interface FirebaseMessage {
   read: boolean;
   reaction: string;
   replyMessage: ReplyMessageInfo | null;
-  imageUrl?: string | null;
+  imageUrl: string | null;
+  fileUrl: string | null;
+  fileType: string | null;
+  fileName: string | null;
+  status?: 'pending' | 'sent' | 'failed';
+  uploadProgress?: number; 
 }
 
 export interface ChatPartner {
@@ -77,6 +84,7 @@ export interface ReplyMessageInfo {
   content: string;
   senderId: string;
   imageUrl: string | null;
+  fileName: any | null;
 }
 
 export type DateHeaderMessage = {

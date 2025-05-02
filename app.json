@@ -38,7 +38,10 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.funmiamusan.quickchat",
-      "userInterfaceStyle":"automatic"
+      "userInterfaceStyle": "automatic",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -46,9 +49,11 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.funmiamusan.quickchat",
-       "googleServicesFile": "./google-services.json",
-       "userInterfaceStyle": "automatic"
-       
+      "googleServicesFile": "./google-services.json",
+      "userInterfaceStyle": "automatic",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "extra": {
       "router": {

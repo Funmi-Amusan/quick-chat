@@ -16,8 +16,15 @@ const ReplyPreview = ({
     <View className="h-12 flex-row items-center gap-2 border-l-4 border-mint bg-black/20 dark:bg-white/20 ">
       <View className="flex-grow flex-row items-start gap-2 px-2">
         {replyMessage.imageUrl && <MaterialCommunityIcons name="camera" size={20} color="grey" />}
+        {replyMessage.fileName && <MaterialCommunityIcons name="file" size={20} color="black" />}
         <Text className=" line-clamp-1 text-sm text-greyText-light dark:text-greyText-dark">
-          {replyMessage.content ? replyMessage.content : replyMessage.imageUrl ? 'Photo' : ''}
+          {replyMessage.content
+            ? replyMessage.content
+            : replyMessage.imageUrl
+              ? 'Photo'
+              : replyMessage.fileName
+                ? replyMessage.fileName
+                : ''}
         </Text>
       </View>
       <View className=" my-1 flex-row items-center justify-center">

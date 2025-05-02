@@ -29,12 +29,13 @@ import {
   uploadBytesResumable,
   getDownloadURL,
 } from 'firebase/storage';
-import React from 'react';
 import { Alert } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 import { auth } from './firebase-config';
+import { getFileExtension } from './helpers';
 
+import { PickedFile } from '~/components/chats/modals/FilePreviewModal';
 import {
   ChatData,
   ChatPartner,
@@ -389,6 +390,9 @@ export const fetchInitialMessages = async (
           read: value.read || false,
           reaction: value.reactions || undefined,
           replyMessage: value.replyMessage || null,
+          fileUrl: value.fileUrl || null,
+          fileName: value.fileName || null,
+          fileType: value.fileType || null,
         })
       );
       return messagesList;
@@ -428,6 +432,9 @@ export const fetchOlderMessages = async (
           read: value.read || false,
           reaction: value.reactions || undefined,
           replyMessage: value.replyMessage || null,
+          fileUrl: value.fileUrl || null,
+          fileName: value.fileName || null,
+          fileType: value.fileType || null,
         })
       );
       return messagesList;
@@ -441,6 +448,7 @@ export const fetchOlderMessages = async (
 };
 
 export const listenForNewMessages = (
+  currentUser: User,
   chatId: string,
   latestTimestamp: number,
   onNewMessage: (message: FirebaseMessage) => void,
@@ -467,11 +475,16 @@ export const listenForNewMessages = (
             read: value.read || false,
             reaction: value.reactions || undefined,
             replyMessage: value.replyMessage || null,
+            fileUrl: value.fileUrl || null,
+            fileName: value.fileName || null,
+            fileType: value.fileType || null,
           })
         );
         newMessagesList.sort((a, b) => b.timestamp - a.timestamp);
         newMessagesList.forEach((message) => {
-          onNewMessage(message);
+          if (message.senderId !== currentUser.uid) {
+            onNewMessage(message);
+          }
         });
       }
     },
@@ -491,7 +504,6 @@ export const sendMessage = async (
   replyMessage: ReplyMessageInfo | null = null
 ) => {
   const messagesRef = ref(db, `chats/${chatId}/messages`);
-  const chatMetaRef = ref(db, `chats/${chatId}`);
   const chatSummaryRef = ref(db, `chatsSummary/${chatId}`);
   const newMessageData = {
     content: content.trim(),
@@ -508,11 +520,11 @@ export const sendMessage = async (
         timestamp: serverTimestamp(),
         senderId: userId,
         read: false,
+        messageType: 'text',
       },
       updatedAt: serverTimestamp(),
     };
     await update(chatSummaryRef, lastMessageUpdate);
-    await update(chatMetaRef, lastMessageUpdate);
   } catch (err: any) {
     console.error('Error sending message:', err);
     throw new Error('Failed to send message.');
@@ -524,7 +536,8 @@ export const sendImageMessage = async (
   senderId: string,
   imageUri: string,
   text: string = '',
-  replyTo: ReplyMessageInfo | null = null
+  replyTo: ReplyMessageInfo | null = null,
+  onProgress?: (progress: number) => void
 ) => {
   try {
     const storage = getStorage();
@@ -539,7 +552,9 @@ export const sendImageMessage = async (
         'state_changed',
         (snapshot) => {
           const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log('Upload is ' + progress + '% done');
+          if (onProgress) {
+            onProgress(progress);
+          }
         },
         (error) => {
           reject(error);
@@ -551,7 +566,8 @@ export const sendImageMessage = async (
     });
     const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
     const messagesRef = ref(db, `chats/${chatId}/messages`);
-    await push(messagesRef, {
+    const chatSummaryRef = ref(db, `chatsSummary/${chatId}`);
+    const newMessageRef = await push(messagesRef, {
       content: text,
       imageUrl: downloadURL,
       senderId,
@@ -565,19 +581,103 @@ export const sendImageMessage = async (
           }
         : null,
     });
-    const chatMetaRef = ref(db, `chats/${chatId}`);
-    await push(chatMetaRef, {
+    const serverMessageId = newMessageRef.key;
+
+    const lastMessageUpdate = {
       lastMessage: {
-        content: text ? text : imageUri,
+        content: text ? text : '',
         senderId,
         timestamp: serverTimestamp(),
-        hasImage: true,
+        read: false,
+        messageType: 'image',
       },
       updatedAt: serverTimestamp(),
-    });
-    return true;
+    };
+    await update(chatSummaryRef, lastMessageUpdate);
+
+    return serverMessageId;
   } catch (error) {
     console.error('Error uploading image:', error);
+    throw error;
+  }
+};
+
+export const sendFileMessage = async (
+  chatId: string,
+  senderId: string,
+  file: PickedFile,
+  text: string = '',
+  replyTo: ReplyMessageInfo | null = null,
+  handleUploadProgress: (progress: number) => void
+) => {
+  if (!file || !file.uri) {
+    console.error('No file selected or file URI is missing.');
+    throw new Error('No file selected or file URI is missing.');
+  }
+
+  try {
+    const storage = getStorage();
+    const filename = file?.name || `file_${Date.now()}`;
+    const storageReference = storageRef(storage, `chat_files/${chatId}/${Date.now()}_${filename}`);
+    const response = await fetch(file.uri);
+    const blob = await response.blob();
+
+    const uploadTask = uploadBytesResumable(storageReference, blob);
+
+    await new Promise<void>((resolve, reject) => {
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          handleUploadProgress(progress);
+        },
+        (error) => {
+          console.error('File upload failed:', error);
+          reject(error);
+        },
+        () => {
+          resolve();
+        }
+      );
+    });
+
+    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+    const simplifiedFileType = getFileExtension(file?.name);
+    const messagesRef = ref(db, `chats/${chatId}/messages`);
+    const newMessage = {
+      content: text,
+      fileUrl: downloadURL,
+      fileName: simplifiedFileType,
+      fileType: file.mimeType,
+      senderId,
+      timestamp: serverTimestamp(),
+      read: {},
+      replyTo: replyTo
+        ? {
+            id: replyTo.id,
+            content: replyTo.content,
+            senderId: replyTo.senderId,
+          }
+        : null,
+    };
+
+    const newMessageRef = await push(messagesRef, newMessage);
+    const serverMessageId = newMessageRef.key;
+    const chatSummaryRef = ref(db, `chatsSummary/${chatId}`);
+    const lastMessageUpdate = {
+      lastMessage: {
+        content: text ? text : '',
+        senderId,
+        timestamp: serverTimestamp(),
+        read: false,
+        messageType: 'file',
+      },
+      updatedAt: serverTimestamp(),
+    };
+    await update(chatSummaryRef, lastMessageUpdate);
+    return serverMessageId;
+  } catch (error) {
+    console.error('Error sending file message:', error);
     throw error;
   }
 };

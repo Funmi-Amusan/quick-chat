@@ -48,7 +48,6 @@ export const formatMomentAgo = (timestamp: number | null) => {
   const date = new Date(timestamp);
   const now = new Date();
   const diffMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-  // console.log("diffMinutes", diffMinutes)
   if (diffMinutes < 1) return 'just now';
   if (diffMinutes < 60) return `${diffMinutes}m ago`;
 
@@ -107,4 +106,15 @@ export const isSameDay = (timestamp1: number, timestamp2: number | null) => {
     date1.getMonth() === date2.getMonth() &&
     date1.getDate() === date2.getDate()
   );
+};
+
+export const getFileExtension = (fileName: string | undefined | null): string => {
+  if (!fileName) {
+    return 'unknown';
+  }
+  const parts = fileName.split('.');
+  if (parts.length > 1) {
+   return parts.pop()!.toLowerCase();
+  }
+  return 'unknown'; 
 };

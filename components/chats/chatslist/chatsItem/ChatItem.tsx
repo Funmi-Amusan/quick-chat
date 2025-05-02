@@ -2,11 +2,13 @@ import { ImageAssets } from 'assets';
 import { Link } from 'expo-router';
 import { View, Text, Image } from 'react-native';
 
+import { generatePreviewMessageContent } from '~/lib/componenentHelpers';
 import { formatTimestampToTimeOrDate } from '~/lib/helpers';
 import { ChatData } from '~/lib/types';
 
 const ChatItem = ({ lastMessage, id, partner }: ChatData) => {
-  const previewMessageContent = lastMessage?.content ?? 'Be the first to say hello';
+  const previewMessageContent = generatePreviewMessageContent(lastMessage);
+
   return (
     <Link href={`/chatroom/${id}`}>
       <View className="flex-row items-center justify-between gap-4 border border-b-white/20 bg-slate-100 p-2 text-black dark:bg-body-dark ">

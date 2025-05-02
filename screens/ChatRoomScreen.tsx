@@ -9,6 +9,7 @@ import ImageMessagePreviewModal from '../components/chats/modals/ImageMessagePre
 
 import ReplyPreview from '~/components/chats/chatRoom/ReplyPreview';
 import ChatTextInput from '~/components/chats/chatRoom/chatTextInput/ChatTextInput';
+import FilePreviewModal, { PickedFile } from '~/components/chats/modals/FilePreviewModal';
 import useChatPresence from '~/hooks/useChatRoomPresence';
 import useImagePicker from '~/hooks/useImagePicker';
 import useListenForChatMessages from '~/hooks/useListenForMessages';
@@ -32,6 +33,7 @@ const ChatRoom = () => {
   const [messages, setMessages] = useState<FirebaseMessage[]>([]);
   const [processedMessages, setProcessedMessages] = useState<ProcessedMessage[]>([]);
   const [searchString, setSearchString] = useState('');
+  const [file, setFile] = useState<PickedFile | null>(null);
   const [matchingIndices, setMatchingIndices] = useState<number[]>([]);
   const [currentMatchIndex, setCurrentMatchIndex] = useState<number>(-1);
   const [loading, setLoading] = useState(true);
@@ -58,8 +60,8 @@ const ChatRoom = () => {
     chatPartner,
   });
   const { imageUri, setImageUri, uploading, pickImage } = useImagePicker();
-  const { inputText, setInputText, replyMessage, setReplyMessage, handleSendMessage } =
-    useSendMessage(chatId, currentUser, setImageUri, imageUri);
+  const { inputText, setInputText, replyMessage, setReplyMessage, handleSendMessage, progress } =
+    useSendMessage(chatId, currentUser, setImageUri, imageUri, setFile, file, setMessages);
   useTypingStatus(currentUser, chatId, inputText);
 
   const handleReply = useCallback(
@@ -95,23 +97,19 @@ const ChatRoom = () => {
       setProcessedMessages([]);
       return;
     }
-
     const transformedData: ProcessedMessage[] = [];
     const sortedMessages = [...messages].sort((a, b) => b.timestamp - a.timestamp);
-
     const messagesByDay: { [date: string]: ActualMessage[] } = {};
     sortedMessages.forEach((message) => {
       const dateKey = formatTimestampToDay(message.timestamp);
       if (!messagesByDay[dateKey]) {
         messagesByDay[dateKey] = [];
       }
-
       const actualMessage: ActualMessage = {
         ...message,
         type: 'message',
         id: message.id,
       };
-
       messagesByDay[dateKey].push(actualMessage);
     });
 
@@ -155,7 +153,6 @@ const ChatRoom = () => {
 
     setMatchingIndices(indices);
     setCurrentMatchIndex(indices.length > 0 ? 0 : -1);
-    console.log(currentMatchIndex);
     if (indices.length > 0) {
       scrollToIndex(indices[0]);
     }
@@ -216,16 +213,27 @@ const ChatRoom = () => {
               }}
               onImagePress={pickImage}
               isUploading={uploading}
+              onFilePicked={(e) => {
+                setFile(e)
+              }}
             />
           </View>
         </KeyboardAvoidingView>
       )}
       <ImageMessagePreviewModal
-        setImageUri={(e) => setImageUri(e)}
+        setImageUri={setImageUri}
         imageUri={imageUri}
+        setInputText={setInputText}
+        inputText={inputText}
+        handleSendMessage={handleSendMessage}
+      />
+      <FilePreviewModal
+        file={file}
+        onClose={() => setFile(null)}
         setInputText={(e) => setInputText(e)}
         inputText={inputText}
         handleSendMessage={handleSendMessage}
+        progress= {progress}
       />
     </ChatRoomLayout>
   );
