@@ -75,11 +75,8 @@ const ChatTextInput = ({
 
       if (result.canceled === false) {
         const file = result.assets[0];
-        console.log('Picked document:', file);
         onFilePicked(file);
         setShowFileOptions(false);
-      } else {
-        console.log('Document picking cancelled');
       }
     } catch (error) {
       console.error('Error picking document:', error);

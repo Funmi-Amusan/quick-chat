@@ -630,14 +630,12 @@ export const sendFileMessage = async (
         (snapshot) => {
           const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
           handleUploadProgress(progress);
-          console.log('Upload is ' + progress.toFixed(2) + '% done');
         },
         (error) => {
           console.error('File upload failed:', error);
           reject(error);
         },
         () => {
-          console.log('File upload complete');
           resolve();
         }
       );

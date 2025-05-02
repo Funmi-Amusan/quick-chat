@@ -12,7 +12,6 @@ const ReplyPreview = ({
   replyMessage: ReplyMessageInfo;
   setReplyMessage: (arg0: ReplyMessageInfo | null) => void;
 }) => {
-  console.log('replyMessage', replyMessage);
   return (
     <View className="h-12 flex-row items-center gap-2 border-l-4 border-mint bg-black/20 dark:bg-white/20 ">
       <View className="flex-grow flex-row items-start gap-2 px-2">

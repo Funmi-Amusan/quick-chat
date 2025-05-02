@@ -48,7 +48,6 @@ export const formatMomentAgo = (timestamp: number | null) => {
   const date = new Date(timestamp);
   const now = new Date();
   const diffMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-  // console.log("diffMinutes", diffMinutes)
   if (diffMinutes < 1) return 'just now';
   if (diffMinutes < 60) return `${diffMinutes}m ago`;
 

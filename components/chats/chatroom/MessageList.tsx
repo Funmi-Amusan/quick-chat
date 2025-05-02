@@ -78,8 +78,6 @@ const MessageList = ({
 
   const keyExtractor = useCallback((item: ProcessedMessage) => item.id, []);
 
-  console.log('processedMessages', processedMessages)
-
   return (
     <FlatList
       testID="flat-list"

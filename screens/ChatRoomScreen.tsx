@@ -153,7 +153,6 @@ const ChatRoom = () => {
 
     setMatchingIndices(indices);
     setCurrentMatchIndex(indices.length > 0 ? 0 : -1);
-    console.log(currentMatchIndex);
     if (indices.length > 0) {
       scrollToIndex(indices[0]);
     }

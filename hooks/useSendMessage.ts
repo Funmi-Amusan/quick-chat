@@ -21,8 +21,6 @@ export default function useSendMessage(
   const [replyMessage, setReplyMessage] = useState<ReplyMessageInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  console.log('error----', error)
-
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastSentTimestampRef = useRef<number | null>(null);
 
@@ -38,31 +36,6 @@ export default function useSendMessage(
     };
   }, [currentUser, chatId]);
 
-  const handleUploadProgress = useCallback(
-    (progress: number) => {
-      setUploading(true);
-      setProgress(Math.max(0, Math.min(100, progress)));
-      if (lastSentTimestampRef.current) {
-        setMessages((prevMessages) =>
-          prevMessages.map((msg) =>
-            msg.tempId === lastSentTimestampRef.current?.toString()
-              ? { ...msg, uploadProgress: progress, status: progress < 100 ? 'uploading' : 'sent' }
-              : msg
-          )
-        );
-      }
-
-      // When upload completes
-      if (progress >= 100) {
-        setTimeout(() => setUploading(false), 500); // Give UI time to show 100% before resetting
-      }
-    },
-    [setMessages]
-  );
-
-  /**
-   * Creates an optimistic message object
-   */
   const createOptimisticMessage = useCallback(
     (text: string): FirebaseMessage => {
       if (!currentUser || !chatId) {
@@ -74,7 +47,8 @@ export default function useSendMessage(
       const tempId = timestamp.toString();
 
       return {
-        id: tempId,
+        id: tempId, 
+        tempId, 
         senderId: currentUser.uid,
         content: text.trim(),
         timestamp,
@@ -89,13 +63,33 @@ export default function useSendMessage(
         uploadProgress: progress,
       };
     },
-    [chatId, currentUser, file, imageUri, replyMessage]
+    [chatId, currentUser, file, imageUri, replyMessage, progress]
   );
 
   const updateMessageStatus = useCallback(
     (tempId: string, status: 'pending' | 'sent' | 'error', errorMessage?: string) => {
+     
       setMessages((prevMessages) =>
-        prevMessages.map((msg) => (msg.tempId === tempId ? { ...msg, status, errorMessage } : msg))
+        prevMessages.map((msg) => {
+          if (msg.id === tempId) {
+            return {
+              ...msg,
+              status,
+              errorMessage,
+              uploadProgress: status === 'sent' ? 100 : msg.uploadProgress,
+            };
+          }
+          return msg;
+        })
+      );
+    },
+    [setMessages]
+  );
+
+  const updateMessageProgress = useCallback(
+    (tempId: string, uploadProgress: number) => {
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) => (msg.id === tempId ? { ...msg, uploadProgress } : msg))
       );
     },
     [setMessages]
@@ -111,14 +105,11 @@ export default function useSendMessage(
 
       if (text.trim()) {
         Database.setTypingStatus(currentUser.uid, chatId, true);
-
-        // Auto-reset after 5 seconds of inactivity
         typingTimeoutRef.current = setTimeout(() => {
           Database.resetTypingStatus(currentUser.uid, chatId);
           typingTimeoutRef.current = null;
         }, 5000);
       } else {
-        // Reset immediately if text is cleared
         Database.resetTypingStatus(currentUser.uid, chatId);
         typingTimeoutRef.current = null;
       }
@@ -165,11 +156,8 @@ export default function useSendMessage(
             text,
             replyMessage,
             (uploadProgress) => {
-              setMessages((prevMessages) =>
-                prevMessages.map((msg) =>
-                  msg.tempId === tempId ? { ...msg, status: 'pending', uploadProgress } : msg
-                )
-              );
+              updateMessageProgress(tempId, uploadProgress);
+              setUploading(uploadProgress < 100);
             }
           );
         } else if (imageUriToSend) {
@@ -181,42 +169,36 @@ export default function useSendMessage(
             text,
             replyMessage,
             (uploadProgress) => {
-              setMessages((prevMessages) =>
-                prevMessages.map((msg) =>
-                  msg.tempId === tempId ? { ...msg, status: 'pending', uploadProgress } : msg
-                )
-              );
+              updateMessageProgress(tempId, uploadProgress);
+              setUploading(uploadProgress < 100);
             }
           );
         } else if (text) {
-          await Database.sendMessage(chatId, currentUser.uid, text, replyMessage);
+          messageId = await Database.sendMessage(chatId, currentUser.uid, text, replyMessage);
         } else {
           throw new Error('Cannot send empty message.');
         }
 
-        if (messageId) {
-          setMessages((prevMessages) => 
-            prevMessages.map((msg) =>
-              msg.id === tempId
-                ? { ...msg, id: messageId, status: 'sent', uploadProgress: 100 }
-                : msg
-            )
-          );
-        }
-
-        return messageId;
-      } catch (error) {
-        // Update the optimistic message with error status
+        return { tempId, messageId };
+      } catch (error: any) {
         updateMessageStatus(
           tempId,
           'error',
           error instanceof Error ? error.message : 'Failed to send message'
         );
+        error.tempId = tempId;
         throw error;
       }
     },
-    onSuccess: () => {
-      // Reset states after successful send
+    onSuccess: (data) => {
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg.id === data.tempId
+            ? { ...msg, id: data.messageId, status: 'sent', uploadProgress: 100 }
+            : msg
+        )
+      );
+
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
         typingTimeoutRef.current = null;
@@ -233,19 +215,18 @@ export default function useSendMessage(
     onError: (error: any) => {
       console.error('Error sending message:', error);
       setError(error instanceof Error ? error.message : 'Failed to send message');
-
-      // Keep the input text if sending failed
-      setInputText((prevText) => prevText || params.text);
+      if (error.tempId) {
+        updateMessageStatus(
+          error.tempId,
+          'error',
+          error instanceof Error ? error.message : 'Failed to send message'
+        );
+      }
     },
   });
 
-  /**
-   * Handle message sending with retry capability
-   */
   const handleSendMessage = useCallback(async () => {
     const trimmedInput = inputText.trim();
-
-    // Validate required data
     if ((!trimmedInput && !imageUri && !file) || !currentUser || !chatId) {
       setError(
         !currentUser || !chatId ? 'Missing user or chat information' : 'Cannot send empty message'
@@ -254,26 +235,20 @@ export default function useSendMessage(
     }
 
     try {
-      // Create optimistic message
       const optimisticMessage = createOptimisticMessage(trimmedInput);
       setMessages((prevMessages) => [...prevMessages, optimisticMessage]);
-
-      // Clear input field
       setInputText('');
-
-      // Reset typing status
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
         typingTimeoutRef.current = null;
       }
       Database.resetTypingStatus(currentUser.uid, chatId);
 
-      // Send the actual message
       sendMessageMutate({
         text: trimmedInput,
         imageUriToSend: imageUri,
         fileToSend: file,
-        tempId: optimisticMessage.tempId,
+        tempId: optimisticMessage.id,
       });
     } catch (error) {
       console.error('Error preparing message:', error);
@@ -292,20 +267,15 @@ export default function useSendMessage(
 
   const retryMessage = useCallback(
     (failedMessage: FirebaseMessage) => {
-      // Reset error state first
       setError(null);
       resetMutation();
-
-      // Update message status back to pending
       updateMessageStatus(failedMessage.tempId, 'pending');
-
-      // Retry the send operation
       sendMessageMutate({
         text: failedMessage.content,
         imageUriToSend: failedMessage.imageUrl,
-        fileToSend: failedMessage.fileUri
+        fileToSend: failedMessage.fileUrl
           ? {
-              uri: failedMessage.fileUri,
+              uri: failedMessage.fileUrl,
               type: failedMessage.fileType || '',
               name: failedMessage.fileName || '',
             }

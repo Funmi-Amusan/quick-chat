@@ -18,6 +18,7 @@ import {
   StyleSheet,
   Image,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import Swipeable, { SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import * as Progress from 'react-native-progress';
@@ -51,7 +52,7 @@ const MessageBubble = ({
   fileUrl,
   fileType,
   fileName,
-  status,
+  status = 'sent',
   uploadProgress,
 }: {
   content: string;
@@ -80,8 +81,6 @@ const MessageBubble = ({
   const bubbleRef = useRef<View>(null);
   const swipeableRef = useRef<SwipeableMethods>(null);
   const isFromSelf = senderId === currentUser?.uid;
-
-  console.log('status, uploadProgress', status, uploadProgress, imageUrl);
 
   const handleLongPress = useCallback(() => {
     if (id && bubbleRef.current) {
@@ -119,13 +118,12 @@ const MessageBubble = ({
     try {
       const { uri } = await FileSystem.downloadAsync(fileUrl, fileUri);
       if (!(await Sharing.isAvailableAsync())) {
-        console.log('Sharing is not available on this platform');
+        Alert.alert('Sharing is not available on this platform');
         return;
       }
       await Sharing.shareAsync(uri);
-      console.log('Sharing dialog presented for file:', uri);
     } catch (error) {
-      console.error('Download or open failed:', error);
+      Alert.alert('Error', 'Failed to download or open the file.');
     }
   };
 
