@@ -94,7 +94,7 @@ const ChatTextInput = ({
           disabled={isUploading}>
           <MaterialCommunityIcons
             name={showFileOptions ? 'keyboard' : 'plus'}
-            size={20}
+            size={24}
             color="grey"
           />
         </TouchableOpacity>

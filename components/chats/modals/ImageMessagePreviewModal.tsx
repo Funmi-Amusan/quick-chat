@@ -40,13 +40,13 @@ const ImageMessagePreviewModal = ({
           intensity={90}
         />
 
-        <TouchableOpacity className="absolute left-10 top-12 z-20" onPress={handleCloseModal}>
-          <AntDesign name="closecircle" size={36} color="grey" />
+        <TouchableOpacity className="absolute left-6 top-16 z-20" onPress={handleCloseModal}>
+          <AntDesign name="closecircle" size={30} color="grey" />
         </TouchableOpacity>
 
         <KeyboardAvoidingView
           behavior="padding"
-          className="absolute bottom-10 left-0 right-0 z-10 flex-row items-center justify-between">
+          className="absolute bottom-10  z-10 w-full flex-row items-center justify-center">
           <ChatTextInput
             value={inputText}
             onChangeText={(e) => setInputText(e)}

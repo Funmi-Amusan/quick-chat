@@ -54,13 +54,13 @@ const FilePreviewModal = ({
     <Modal animationType="fade" transparent visible={isVisible} onRequestClose={onClose}>
       <View style={styles.modalContainer}>
         <BlurView style={StyleSheet.absoluteFill} tint="dark" intensity={90} />
-        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-          <AntDesign name="closecircle" size={36} color="grey" />
+        <TouchableOpacity className="absolute left-6 top-16 z-20" onPress={onClose}>
+          <AntDesign name="closecircle" size={30} color="grey" />
         </TouchableOpacity>
         {renderPreviewContent()}
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.chatInputContainer}>
+          className="absolute bottom-10  z-10 w-full flex-row items-center justify-center">
           <ChatTextInput
             value={inputText}
             onChangeText={(e) => setInputText(e)}
