@@ -11,7 +11,7 @@ const ChatItem = ({ lastMessage, id, partner }: ChatData) => {
 
   return (
     <Link href={`/chatroom/${id}`}>
-      <View className="flex-row items-center justify-between gap-4 border border-b-white/20 bg-slate-100 p-2 text-black dark:bg-body-dark ">
+      <View className="flex-row items-center justify-between gap-4 border-b-white/20 bg-slate-100 p-2 text-black dark:bg-body-dark ">
         <Image source={ImageAssets.colleen} className="h-14 w-14 rounded-full" />
         <View className=" flex-grow gap-1 py-2">
           <View className="flex-row items-center justify-between ">

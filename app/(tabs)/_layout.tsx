@@ -1,4 +1,5 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { useTheme } from '@react-navigation/native';
 import { BlurView } from 'expo-blur';
 import { Tabs } from 'expo-router';
 import React from 'react';
@@ -15,16 +16,19 @@ function CenterTabButton({ children, color }: { children: React.ReactNode; color
   return <View style={[styles.centerButtonContainer, { backgroundColor: color }]}>{children}</View>;
 }
 
+
 export default function TabLayout() {
+  const { dark } = useTheme();
+
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#FFFFFF',
+        tabBarActiveTintColor: dark ? '#FFFFFF' : '#000000',
         tabBarStyle: {
           position: 'absolute',
           elevation: 10,
           borderRadius: 30,
-          backgroundColor: 'rgba(0, 0, 0, 0.65)',
+          backgroundColor: 'rgba(0, 0, 0, 0.05)',
         },
         tabBarBackground: () => (
           <BlurView tint="systemMaterial" intensity={60} style={StyleSheet.absoluteFill} />

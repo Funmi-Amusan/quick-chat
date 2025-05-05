@@ -1,12 +1,23 @@
 import ChatRoomLayout from 'components/layout/ChatRoomLayout';
 import { useLocalSearchParams } from 'expo-router';
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
-import { View, Text, KeyboardAvoidingView, ActivityIndicator, FlatList } from 'react-native';
+import {
+  View,
+  Text,
+  KeyboardAvoidingView,
+  ActivityIndicator,
+  FlatList,
+  Image,
+  ImageBackground,
+  StyleSheet,
+  Platform,
+} from 'react-native';
 
 import MessageList from '../components/chats/chatRoom/MessageList';
 import ChatHeader from '../components/chats/chatRoom/chatHeader/ChatHeader';
 import ImageMessagePreviewModal from '../components/chats/modals/ImageMessagePreviewModal';
 
+import { ImageAssets } from '~/assets';
 import ReplyPreview from '~/components/chats/chatRoom/ReplyPreview';
 import ChatTextInput from '~/components/chats/chatRoom/chatTextInput/ChatTextInput';
 import FilePreviewModal, { PickedFile } from '~/components/chats/modals/FilePreviewModal';
@@ -26,9 +37,22 @@ import {
   ProcessedMessage,
   ReplyMessageInfo,
 } from '~/lib/types';
+import { useTheme } from '@react-navigation/native';
+
+const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  container: {
+    flex: 1,
+  },
+});
 
 const ChatRoom = () => {
   const { id: chatId } = useLocalSearchParams<{ id: string }>();
+  const { dark } = useTheme();
 
   const [messages, setMessages] = useState<FirebaseMessage[]>([]);
   const [processedMessages, setProcessedMessages] = useState<ProcessedMessage[]>([]);
@@ -39,9 +63,13 @@ const ChatRoom = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [inputFocus, setInputFocus] = useState(false);
+  const [backgroundLoaded, setBackgroundLoaded] = useState(false);
   const currentUser = auth.currentUser;
   const currentUserId = currentUser?.uid;
   const flatListRef = useRef<FlatList<ProcessedMessage>>(null);
+
+  // Select background image based on theme
+  const backgroundImage = dark ? ImageAssets.darkBackGround : ImageAssets.backGround;
 
   const {
     data: chatPartner,
@@ -140,15 +168,13 @@ const ChatRoom = () => {
     const indices: number[] = [];
 
     processedMessages.forEach((msg, index) => {
-      processedMessages.forEach((msg, index) => {
-        if (
-          msg.type === 'message' &&
-          'content' in msg &&
-          msg.content?.toLowerCase().includes(lowerSearch)
-        ) {
-          indices.push(index);
-        }
-      });
+      if (
+        msg.type === 'message' &&
+        'content' in msg &&
+        msg.content?.toLowerCase().includes(lowerSearch)
+      ) {
+        indices.push(index);
+      }
     });
 
     setMatchingIndices(indices);
@@ -156,7 +182,27 @@ const ChatRoom = () => {
     if (indices.length > 0) {
       scrollToIndex(indices[0]);
     }
-  }, [searchString, processedMessages]);
+  }, [searchString, processedMessages, scrollToIndex]);
+
+  // Preload the background image when theme changes
+  useEffect(() => {
+    setBackgroundLoaded(false); // Reset loaded state when theme changes
+    
+    if (Platform.OS !== 'web') {
+      const imageSource = Image.resolveAssetSource(backgroundImage);
+      if (imageSource && imageSource.uri) {
+        Image.prefetch(imageSource.uri)
+          .then(() => setBackgroundLoaded(true))
+          .catch(err => console.error("Failed to preload background image:", err));
+      } else {
+        // If direct resolution fails, just mark as loaded
+        setBackgroundLoaded(true);
+      }
+    } else {
+      // On web, just mark as loaded
+      setBackgroundLoaded(true);
+    }
+  }, [dark, backgroundImage]);
 
   return (
     <ChatRoomLayout>
@@ -166,60 +212,69 @@ const ChatRoom = () => {
         searchString={searchString}
         isLoading={chatPartnerLoading}
       />
+      <View style={styles.container}>
+        <ImageBackground
+          source={backgroundImage}
+          resizeMode="cover"
+          style={styles.backgroundImage}
+          onLoadEnd={() => setBackgroundLoaded(true)}
+        >
+          {loading ? (
+            <View className="flex-1 items-center justify-center p-4">
+              <ActivityIndicator size="large" color="#007AFF" />
+              <Text className="mt-2 text-gray-600 dark:text-gray-400">Loading chat...</Text>
+            </View>
+          ) : error ? (
+            <View className="flex-1 items-center justify-center p-4">
+              <Text className="mt-2 text-center text-red-500">{error}</Text>
+            </View>
+          ) : (
+            <KeyboardAvoidingView className="relative flex-1" behavior="padding">
+              <View className="flex-1">
+                {loadingOlder && (
+                  <View className="absolute left-0 right-0 top-0 z-10 flex-row items-center justify-center bg-white/30 dark:bg-black/30 py-1">
+                    <ActivityIndicator size="small" color="#007AFF" />
+                    <Text className="ml-2 text-gray-700 dark:text-gray-300">Loading older messages...</Text>
+                  </View>
+                )}
 
-      {loading ? (
-        <View className="flex-1 items-center justify-center bg-body-light p-4 dark:bg-body-dark">
-          <ActivityIndicator size="large" color="#007AFF" />
-          <Text className="mt-2 text-gray-600">Loading chat...</Text>
-        </View>
-      ) : error ? (
-        <View className="flex-1 items-center justify-center p-4">
-          <Text className="mt-2 text-center text-red-500">{error}</Text>
-        </View>
-      ) : (
-        <KeyboardAvoidingView className="relative flex-1" behavior="padding">
-          <View className=" flex-1 ">
-            {loadingOlder && (
-              <View className="absolute left-0 right-0 top-0 z-10 flex-row items-center justify-center bg-body-light py-2 dark:bg-body-dark">
-                <ActivityIndicator size="small" color="#007AFF" />
-                <Text className="ml-2 text-gray-600">Loading older messages...</Text>
+                <MessageList
+                  processedMessages={processedMessages}
+                  currentUser={currentUser}
+                  chatId={chatId}
+                  handleReply={handleReply}
+                  loadOlderMessages={loadOlderMessages}
+                  hasMoreMessages={hasMoreMessages}
+                  loadingOlder={loadingOlder}
+                  chatPartner={chatPartner}
+                  flatListRef={flatListRef}
+                  highlightedIndex={matchingIndices[currentMatchIndex]}
+                />
               </View>
-            )}
-            <MessageList
-              processedMessages={processedMessages}
-              currentUser={currentUser}
-              chatId={chatId}
-              handleReply={handleReply}
-              loadOlderMessages={loadOlderMessages}
-              hasMoreMessages={hasMoreMessages}
-              loadingOlder={loadingOlder}
-              chatPartner={chatPartner}
-              flatListRef={flatListRef}
-              highlightedIndex={matchingIndices[currentMatchIndex]}
-            />
-          </View>
-          <View className=" bg-greyBg-light dark:bg-greyBg-dark">
-            {replyMessage && (
-              <ReplyPreview replyMessage={replyMessage} setReplyMessage={setReplyMessage} />
-            )}
-            <ChatTextInput
-              value={inputText}
-              onChangeText={setInputText}
-              onSendPress={handleSendMessage}
-              placeholder="Type something..."
-              setFocus={() => setInputFocus(true)}
-              onFocus={() => {
-                setInputFocus(true);
-              }}
-              onImagePress={pickImage}
-              isUploading={uploading}
-              onFilePicked={(e) => {
-                setFile(e)
-              }}
-            />
-          </View>
-        </KeyboardAvoidingView>
-      )}
+              <View className="bg-greyBg-light dark:bg-greyBg-dark">
+                {replyMessage && (
+                  <ReplyPreview replyMessage={replyMessage} setReplyMessage={setReplyMessage} />
+                )}
+                <ChatTextInput
+                  value={inputText}
+                  onChangeText={setInputText}
+                  onSendPress={handleSendMessage}
+                  placeholder="Type something..."
+                  setFocus={() => setInputFocus(true)}
+                  onFocus={() => {
+                    setInputFocus(true);
+                  }}
+                  onImagePress={pickImage}
+                  isUploading={uploading}
+                  onFilePicked={(e) => {
+                    setFile(e);
+                  }}
+                />
+              </View>
+            </KeyboardAvoidingView>
+          )}
+        </ImageBackground>
+      </View>
       <ImageMessagePreviewModal
         setImageUri={setImageUri}
         imageUri={imageUri}
@@ -233,7 +288,7 @@ const ChatRoom = () => {
         setInputText={(e) => setInputText(e)}
         inputText={inputText}
         handleSendMessage={handleSendMessage}
-        progress= {progress}
+        progress={progress}
       />
     </ChatRoomLayout>
   );

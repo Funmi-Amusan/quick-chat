@@ -6,7 +6,7 @@ import { BlurView } from 'expo-blur';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { User } from 'firebase/auth';
-import React, { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,

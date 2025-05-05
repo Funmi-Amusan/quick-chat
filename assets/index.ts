@@ -5,4 +5,6 @@ export const ImageAssets = {
   shaz: require('./images/Shaz.png'),
   error: require('./images/Shaz.png'),
   pdfFile: require('./images/PDF.png'),
+  backGround: require('./images/darkBackground.jpg'),
+  darkBackGround: require('./images/darkBackground.jpg'),
 };
