@@ -1,3 +1,4 @@
+import { useTheme } from '@react-navigation/native';
 import ChatRoomLayout from 'components/layout/ChatRoomLayout';
 import { useLocalSearchParams } from 'expo-router';
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
@@ -37,7 +38,6 @@ import {
   ProcessedMessage,
   ReplyMessageInfo,
 } from '~/lib/types';
-import { useTheme } from '@react-navigation/native';
 
 const styles = StyleSheet.create({
   backgroundImage: {
@@ -68,7 +68,6 @@ const ChatRoom = () => {
   const currentUserId = currentUser?.uid;
   const flatListRef = useRef<FlatList<ProcessedMessage>>(null);
 
-  // Select background image based on theme
   const backgroundImage = dark ? ImageAssets.darkBackGround : ImageAssets.backGround;
 
   const {
@@ -184,22 +183,19 @@ const ChatRoom = () => {
     }
   }, [searchString, processedMessages, scrollToIndex]);
 
-  // Preload the background image when theme changes
   useEffect(() => {
-    setBackgroundLoaded(false); // Reset loaded state when theme changes
-    
+    setBackgroundLoaded(false);
+
     if (Platform.OS !== 'web') {
       const imageSource = Image.resolveAssetSource(backgroundImage);
       if (imageSource && imageSource.uri) {
         Image.prefetch(imageSource.uri)
           .then(() => setBackgroundLoaded(true))
-          .catch(err => console.error("Failed to preload background image:", err));
+          .catch((err) => console.error('Failed to preload background image:', err));
       } else {
-        // If direct resolution fails, just mark as loaded
         setBackgroundLoaded(true);
       }
     } else {
-      // On web, just mark as loaded
       setBackgroundLoaded(true);
     }
   }, [dark, backgroundImage]);
@@ -217,8 +213,7 @@ const ChatRoom = () => {
           source={backgroundImage}
           resizeMode="cover"
           style={styles.backgroundImage}
-          onLoadEnd={() => setBackgroundLoaded(true)}
-        >
+          onLoadEnd={() => setBackgroundLoaded(true)}>
           {loading ? (
             <View className="flex-1 items-center justify-center p-4">
               <ActivityIndicator size="large" color="#007AFF" />
@@ -232,9 +227,11 @@ const ChatRoom = () => {
             <KeyboardAvoidingView className="relative flex-1" behavior="padding">
               <View className="flex-1">
                 {loadingOlder && (
-                  <View className="absolute left-0 right-0 top-0 z-10 flex-row items-center justify-center bg-white/30 dark:bg-black/30 py-1">
+                  <View className="absolute left-0 right-0 top-0 z-10 flex-row items-center justify-center bg-white/30 py-1 dark:bg-black/30">
                     <ActivityIndicator size="small" color="#007AFF" />
-                    <Text className="ml-2 text-gray-700 dark:text-gray-300">Loading older messages...</Text>
+                    <Text className="ml-2 text-gray-700 dark:text-gray-300">
+                      Loading older messages...
+                    </Text>
                   </View>
                 )}
 
