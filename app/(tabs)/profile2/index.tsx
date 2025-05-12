@@ -1,8 +1,7 @@
-import React from 'react';
-import ProfileScreen from '~/screens/ProfileScreen';
+import EmotionsScreen from '~/screens/EmotionsScreen';
 
 const ChatsScreen = () => {
-  return <ProfileScreen />;
+  return <EmotionsScreen />;
 };
 
 export default ChatsScreen;

@@ -15,7 +15,7 @@ import { ChatData } from '~/lib/types';
 
 const ChatsList = () => {
   const [allUserChats, setAllUserChats] = useState<ChatData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
@@ -46,6 +46,7 @@ const ChatsList = () => {
 
     unsubscribeRef.current = listenToUserChats(currentUserId, (chatsFromService, serviceError) => {
       if (serviceError) {
+        console.log(serviceError)
         console.error('Error from chat listener service:', serviceError);
         setError(serviceError.message || 'Failed to load chats.');
         setAllUserChats([]);
