@@ -1,5 +1,5 @@
 import { Redirect } from 'expo-router';
-
+import React from 'react';
 import Onboarding from '~/screens/OnboardingScreen';
 import { auth } from '~/lib/firebase-config';
 

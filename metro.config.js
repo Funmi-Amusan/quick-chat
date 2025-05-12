@@ -8,6 +8,7 @@ config.resolver.sourceExts = [...config.resolver.sourceExts, 'mjs', 'cjs'];
 config.resolver.extraNodeModules = {
   ...config.resolver.extraNodeModules,
 };
+config.resolver.unstable_enablePackageExports = false;
 
 // Export with NativeWind configuration
 module.exports = withNativeWind(config, { input: './global.css' });

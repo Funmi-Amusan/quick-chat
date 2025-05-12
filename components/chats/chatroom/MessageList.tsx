@@ -82,7 +82,6 @@ const MessageList = ({
     <FlatList
       testID="flat-list"
       ref={flatListRef}
-      className="bg-body-light dark:bg-body-dark "
       contentContainerStyle={{ paddingVertical: 10, paddingHorizontal: 8 }}
       data={processedMessages}
       renderItem={renderItem}
