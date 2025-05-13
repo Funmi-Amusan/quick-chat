@@ -2,6 +2,7 @@ import Entypo from '@expo/vector-icons/Entypo';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { useTheme } from '@react-navigation/native';
 import { BlurView } from 'expo-blur';
 import * as FileSystem from 'expo-file-system';
 import * as Haptics from 'expo-haptics';
@@ -79,6 +80,7 @@ const MessageBubble = ({
   status?: 'pending' | 'sent' | 'failed';
   uploadProgress?: number;
 }) => {
+  const { dark } = useTheme();
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [pickerPosition, setPickerPosition] = useState<{ top: number; left: number } | null>(null);
@@ -278,7 +280,7 @@ const MessageBubble = ({
   const renderLeftActions = (progress: any, dragX: any) => {
     console.log('progress', progress, dragX);
     return (
-      <Animated.View  style={[styles.leftAction, animatedStyles]}>
+      <Animated.View style={[styles.leftAction, animatedStyles]}>
         <View className="flex h-full items-center justify-center bg-transparent pr-2">
           <MaterialCommunityIcons name="reply" size={24} color="grey" />
         </View>
@@ -395,19 +397,19 @@ const MessageBubble = ({
         visible={previewImage !== null}
         onRequestClose={handleCloseModal}>
         {previewImage && (
-          <>
+          <View className="bg-body-light dark:bg-body-dark">
             <Image
               role="img"
               source={{ uri: previewImage }}
-              className="h-full w-full"
-              resizeMode="cover"
+              className="h-full"
+              resizeMode="center"
             />
             <TouchableOpacity
-              className="absolute left-5 top-10 z-50 m-4"
+              className="absolute left-2 top-16 z-50 m-4"
               onPress={() => setPreviewImage(null)}>
-              <MaterialIcons name="arrow-back-ios-new" size={24} color="black" />
+              <MaterialIcons name="arrow-back-ios-new" size={24} color={dark ? 'white' : 'black'} />
             </TouchableOpacity>
-          </>
+          </View>
         )}
       </Modal>
     </>

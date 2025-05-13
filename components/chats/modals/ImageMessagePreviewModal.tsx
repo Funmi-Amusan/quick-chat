@@ -57,7 +57,7 @@ const ImageMessagePreviewModal = ({
           />
         </KeyboardAvoidingView>
 
-        <Image source={{ uri: imageUri || '' }} className="h-full w-full" resizeMode="contain" />
+        <Image source={{ uri: imageUri || '' }} className="h-36" resizeMode="contain" />
       </View>
     </Modal>
   );
