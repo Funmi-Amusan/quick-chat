@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { User, onAuthStateChanged,  } from 'firebase/auth';
 import { getDatabase, ref, set, update } from 'firebase/database';
 import { auth } from 'lib/firebase-config';
@@ -32,6 +33,7 @@ export function SessionProvider(props: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   const db = getDatabase();
   const userRef = ref(db, `users/${user?.uid}`);
@@ -114,6 +116,7 @@ export function SessionProvider(props: { children: React.ReactNode }) {
       await logout();
       setIsAuthenticated(false);
       setUser(null);
+      queryClient.clear()
     } catch (error) {
       console.error('[handleSignOut error] ==>', error);
     }
