@@ -86,7 +86,7 @@ const ChatTextInput = ({
   return (
     <View>
       <View
-        className={` flex-row items-end justify-between gap-4 bg-slate-50 p-4 dark:bg-body-dark/70`}>
+        className={` flex-row items-end justify-between gap-4 bg-slate-50 p-4 dark:bg-neutral-700`}>
         <TouchableOpacity
           testID="plus-button"
           className=""

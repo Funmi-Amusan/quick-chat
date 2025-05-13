@@ -197,28 +197,46 @@ const ChatRoom = () => {
         searchString={searchString}
         isLoading={chatPartnerLoading}
       />
-      <View style={styles.container}>
-        <ImageBackground
-          source={backgroundImage}
-          resizeMode="cover"
-          style={styles.backgroundImage}
-          onLoadEnd={() => setBackgroundLoaded(true)}>
-          {loading ? (
-            <View className="flex-1 items-center justify-center p-4">
-              <ActivityIndicator size="large" color="#007AFF" />
-              <Text className="mt-2 text-gray-600 dark:text-gray-400">Loading chat...</Text>
-            </View>
-          ) : error ? (
-            <View className="flex-1 items-center justify-center p-4">
-              <Text className="mt-2 text-center text-red-500">{error}</Text>
-            </View>
-          ) : (
-            <KeyboardAvoidingView className="relative flex-1" behavior="padding">
-              <View className="flex-1">
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <View style={styles.container}>
+          <ImageBackground
+            source={backgroundImage}
+            resizeMode="cover"
+            style={styles.backgroundImage}
+            onLoadEnd={() => setBackgroundLoaded(true)}>
+            {loading ? (
+              <View
+                style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+                <ActivityIndicator size="large" color="#007AFF" />
+                <Text style={{ marginTop: 8, color: dark ? '#a0a0a0' : '#666666' }}>
+                  Loading chat...
+                </Text>
+              </View>
+            ) : error ? (
+              <View
+                style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+                <Text style={{ marginTop: 8, textAlign: 'center', color: '#ef4444' }}>{error}</Text>
+              </View>
+            ) : (
+              <View style={{ flex: 1 }}>
                 {loadingOlder && (
-                  <View className="absolute left-0 right-0 top-0 z-10 flex-row items-center justify-center bg-white/30 py-1 dark:bg-black/30">
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      zIndex: 10,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: dark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)',
+                      paddingVertical: 4,
+                    }}>
                     <ActivityIndicator size="small" color="#007AFF" />
-                    <Text className="ml-2 text-gray-700 dark:text-gray-300">
+                    <Text style={{ marginLeft: 8, color: dark ? '#d1d1d1' : '#333333' }}>
                       Loading older messages...
                     </Text>
                   </View>
@@ -237,30 +255,30 @@ const ChatRoom = () => {
                   highlightedIndex={matchingIndices[currentMatchIndex]}
                 />
               </View>
-              <View className="bg-greyBg-light dark:bg-greyBg-dark">
-                {replyMessage && (
-                  <ReplyPreview replyMessage={replyMessage} setReplyMessage={setReplyMessage} />
-                )}
-                <ChatTextInput
-                  value={inputText}
-                  onChangeText={setInputText}
-                  onSendPress={handleSendMessage}
-                  placeholder="Type something..."
-                  setFocus={() => setInputFocus(true)}
-                  onFocus={() => {
-                    setInputFocus(true);
-                  }}
-                  onImagePress={pickImage}
-                  isUploading={uploading}
-                  onFilePicked={(e) => {
-                    setFile(e);
-                  }}
-                />
-              </View>
-            </KeyboardAvoidingView>
+            )}
+          </ImageBackground>
+        </View>
+        <View style={{ backgroundColor: dark ? '#1e1e1e' : '#f0f0f0' }}>
+          {replyMessage && (
+            <ReplyPreview replyMessage={replyMessage} setReplyMessage={setReplyMessage} />
           )}
-        </ImageBackground>
-      </View>
+          <ChatTextInput
+            value={inputText}
+            onChangeText={setInputText}
+            onSendPress={handleSendMessage}
+            placeholder="Type something..."
+            setFocus={() => setInputFocus(true)}
+            onFocus={() => {
+              setInputFocus(true);
+            }}
+            onImagePress={pickImage}
+            isUploading={uploading}
+            onFilePicked={(e) => {
+              setFile(e);
+            }}
+          />
+        </View>
+      </KeyboardAvoidingView>
       <ImageMessagePreviewModal
         setImageUri={setImageUri}
         imageUri={imageUri}
