@@ -1,7 +1,7 @@
 import AppLayout from 'components/layout/AppLayout';
 import { Unsubscribe } from 'firebase/database';
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { View, Text, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
 
 import ChatItem from '../components/chats/chatslist/chatsItem/ChatItem';
 import UserListModal from '../components/chats/modals/UserListModals';
@@ -12,6 +12,7 @@ import { listenToUserChats } from '~/lib/firebase-sevice';
 import { useAllUsers } from '~/lib/queries/useAllUsers';
 import { useCurrentUser } from '~/lib/queries/useCurrentUser';
 import { ChatData } from '~/lib/types';
+import CustomRefreshControl from '~/components/chats/chatslist/RefreshControl';
 
 const ChatsList = () => {
   const [allUserChats, setAllUserChats] = useState<ChatData[]>([]);
@@ -46,7 +47,7 @@ const ChatsList = () => {
 
     unsubscribeRef.current = listenToUserChats(currentUserId, (chatsFromService, serviceError) => {
       if (serviceError) {
-        console.log(serviceError)
+        console.log(serviceError);
         console.error('Error from chat listener service:', serviceError);
         setError(serviceError.message || 'Failed to load chats.');
         setAllUserChats([]);
@@ -118,21 +119,30 @@ const ChatsList = () => {
           openUserListModal={openUserListModal}
         />
       )}
-      <View className=" flex-row items-center justify-between gap-4 py-3 ">
-        <Text className=" text-3xl font-bold text-title-light dark:text-title-dark  "> Chats</Text>
-      </View>
 
       {filteredAndSortedUserChats.length === 0 ? (
-        <View className="flex-1 items-center justify-center p-4">
+        <View className="flex-1 items-center justify-center">
           <Text>No chats yet. Tap 'Add Chat' to start!</Text>
         </View>
       ) : (
+        <View className="flex-1 bg-primary">
+             <CustomRefreshControl refreshing={loading} onRefresh={()=> console.log('first')}>
         <FlatList
           data={filteredAndSortedUserChats}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <ChatItem {...item} />}
           showsVerticalScrollIndicator={false}
+          ListHeaderComponent={() => (
+            <View className="flex-row items-center justify-between gap-4 bg-body-light py-3 dark:bg-body-dark">
+              <Text className="text-3xl font-bold text-title-light dark:text-title-dark">
+                Chats
+              </Text>
+            </View>
+          )}
+          className="flex-grow bg-body-light dark:bg-body-dark"
         />
+      </CustomRefreshControl>
+        </View>
       )}
 
       <UserListModal

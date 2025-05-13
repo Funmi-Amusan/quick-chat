@@ -7,4 +7,5 @@ export const ImageAssets = {
   pdfFile: require('./images/PDF.png'),
   backGround: require('./images/darkBackground.jpg'),
   darkBackGround: require('./images/darkBackground.jpg'),
+  chatBg: require('./images/chatBg.svg'),
 };

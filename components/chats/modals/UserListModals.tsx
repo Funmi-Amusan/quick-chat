@@ -43,7 +43,7 @@ const UserListModal = ({
   const chatsToList = allUsers.filter(
     (user) => user.id !== 'undefined' && !userChats.some((chat) => chat.id.includes(user.id))
   );
-
+  
   const createChatWithUser = async (otherUser: FormattedUser) => {
     if (!currentUser) {
       console.error('Create chat failed: User not authenticated.');

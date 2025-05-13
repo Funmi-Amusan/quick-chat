@@ -39,17 +39,6 @@ import {
   ReplyMessageInfo,
 } from '~/lib/types';
 
-const styles = StyleSheet.create({
-  backgroundImage: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-  },
-  container: {
-    flex: 1,
-  },
-});
-
 const ChatRoom = () => {
   const { id: chatId } = useLocalSearchParams<{ id: string }>();
   const { dark } = useTheme();
@@ -98,6 +87,8 @@ const ChatRoom = () => {
     },
     [setReplyMessage]
   );
+
+  console.log('----', currentUser);
 
   const scrollToIndex = useCallback(
     (index: number) => {
@@ -290,5 +281,16 @@ const ChatRoom = () => {
     </ChatRoomLayout>
   );
 };
+
+const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  container: {
+    flex: 1,
+  },
+});
 
 export default ChatRoom;
