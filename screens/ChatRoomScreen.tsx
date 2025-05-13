@@ -88,8 +88,6 @@ const ChatRoom = () => {
     [setReplyMessage]
   );
 
-  console.log('----', currentUser);
-
   const scrollToIndex = useCallback(
     (index: number) => {
       if (index >= 0 && index < processedMessages.length) {

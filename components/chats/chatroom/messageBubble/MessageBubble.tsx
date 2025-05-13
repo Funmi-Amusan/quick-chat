@@ -4,6 +4,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { BlurView } from 'expo-blur';
 import * as FileSystem from 'expo-file-system';
+import * as Haptics from 'expo-haptics';
 import * as Sharing from 'expo-sharing';
 import { User } from 'firebase/auth';
 import { useState, useRef, useCallback } from 'react';
@@ -17,12 +18,16 @@ import {
   ScrollView,
   StyleSheet,
   Image,
-  ActivityIndicator,
   Alert,
 } from 'react-native';
 import Swipeable, { SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import * as Progress from 'react-native-progress';
-import Animated from 'react-native-reanimated';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 
 import { ImageAssets } from '~/assets';
 import { reactToMessage } from '~/lib/firebase-sevice';
@@ -81,6 +86,8 @@ const MessageBubble = ({
   const bubbleRef = useRef<View>(null);
   const swipeableRef = useRef<SwipeableMethods>(null);
   const isFromSelf = senderId === currentUser?.uid;
+  const hasTriggeredHaptic = useRef(false);
+  const offset = useSharedValue<number>(0);
 
   const handleLongPress = useCallback(() => {
     if (id && bubbleRef.current) {
@@ -111,6 +118,10 @@ const MessageBubble = ({
       );
     }
   }, [id]);
+
+  const animatedStyles = useAnimatedStyle(() => ({
+    transform: [{ translateX: withSpring(offset.value) }],
+  }));
 
   const downloadAndOpenFile = async (fileUrl: string, fileName: string) => {
     const fileUri = FileSystem.documentDirectory + fileName;
@@ -266,8 +277,9 @@ const MessageBubble = ({
   };
 
   const renderLeftActions = (progress: any, dragX: any) => {
+    console.log('progress', progress, dragX);
     return (
-      <Animated.View style={[styles.leftAction]}>
+      <Animated.View  style={[styles.leftAction, animatedStyles]}>
         <View className="flex h-full items-center justify-center bg-transparent pr-2">
           <MaterialCommunityIcons name="reply" size={24} color="grey" />
         </View>
@@ -279,7 +291,7 @@ const MessageBubble = ({
     return (
       <Animated.View style={[styles.rightAction]}>
         <View className="flex h-full items-center justify-center bg-transparent pl-2">
-          <MaterialCommunityIcons name="reply" size={24} color="grey" />
+          <MaterialCommunityIcons name="abacus" size={24} color="grey" />
         </View>
       </Animated.View>
     );
@@ -289,6 +301,7 @@ const MessageBubble = ({
     if (activeSwipeable && activeSwipeable !== swipeableRef.current) {
       activeSwipeable.close();
     }
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setActiveSwipeable(swipeableRef.current);
   };
 
@@ -327,11 +340,11 @@ const MessageBubble = ({
       <Swipeable
         testID="swipeable-container"
         ref={swipeableRef}
-        friction={2}
-        leftThreshold={40}
-        rightThreshold={40}
-        renderLeftActions={!isFromSelf ? renderLeftActions : undefined}
-        renderRightActions={isFromSelf ? renderRightActions : undefined}
+        friction={1}
+        leftThreshold={20}
+        rightThreshold={20}
+        renderLeftActions={renderLeftActions}
+        // renderRightActions={isFromSelf ? renderRightActions : undefined}
         onSwipeableOpen={handleSwipeOpen}
         onSwipeableWillOpen={handleSwipeableWillOpen}
         overshootLeft={false}
