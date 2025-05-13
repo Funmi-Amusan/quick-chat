@@ -93,7 +93,7 @@ const MessageList = ({
           loadOlderMessages();
         }
       }}
-      onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
+      // onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
       onStartReachedThreshold={0.2}
       inverted
     />

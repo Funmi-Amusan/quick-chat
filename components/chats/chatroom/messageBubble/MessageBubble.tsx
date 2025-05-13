@@ -86,7 +86,6 @@ const MessageBubble = ({
   const bubbleRef = useRef<View>(null);
   const swipeableRef = useRef<SwipeableMethods>(null);
   const isFromSelf = senderId === currentUser?.uid;
-  const hasTriggeredHaptic = useRef(false);
   const offset = useSharedValue<number>(0);
 
   const handleLongPress = useCallback(() => {
@@ -170,7 +169,7 @@ const MessageBubble = ({
         <TouchableOpacity
           className="absolute  right-0 flex h-full items-center justify-center rounded-full bg-white px-2 "
           onPress={handleCloseModal}>
-          <FontAwesome name="plus-circle" size={30} color="grey" />
+          <FontAwesome name="chevron-circle-right" size={30} color="grey" />
         </TouchableOpacity>
       </View>
     </View>
@@ -340,7 +339,7 @@ const MessageBubble = ({
       <Swipeable
         testID="swipeable-container"
         ref={swipeableRef}
-        friction={1}
+        friction={2}
         leftThreshold={20}
         rightThreshold={20}
         renderLeftActions={renderLeftActions}
@@ -418,12 +417,10 @@ const MessageBubble = ({
 const styles = StyleSheet.create({
   swipeableContainer: {},
   leftAction: {
-    width: 80,
-    // backgroundColor: 'lightblue',
+    width: 40,
   },
   rightAction: {
     width: 80,
-    // backgroundColor: 'lightcoral',
   },
 });
 
