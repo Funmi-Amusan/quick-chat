@@ -111,10 +111,6 @@ export const listenToUserChats = (
   const unsubscribe = onValue(
     userChatsRef,
     async (snapshot) => {
-      console.log(
-        `[------******] Top-level listener fired for user ${userId}. Data:`,
-        snapshot.val()
-      ); // DEBUG LOG
       const chatIdsData = snapshot.val();
       if (chatIdsData) {
         const chatIds = Object.keys(chatIdsData);

@@ -5,7 +5,7 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-import { ChatProvider, useChatContext } from '~/context/ChatContext';
+import { useChatContext } from '~/context/ChatContext';
 import { useCurrentUser } from '~/lib/queries/useCurrentUser';
 
 function TabBarIcon(props: {
@@ -35,7 +35,7 @@ function CenterTabButton({ children, color }: { children: React.ReactNode; color
   return <View style={[styles.centerButtonContainer, { backgroundColor: color }]}>{children}</View>;
 }
 
-function AppTabs() {
+export default function AppTabs() {
   const { dark } = useTheme();
   const { userChats } = useChatContext();
 
@@ -43,7 +43,7 @@ function AppTabs() {
     ? userChats.reduce((sum, chat) => sum + (chat.unreadCount || 0), 0)
     : 0;
 
-  console.log('totalUnreadCount', totalUnreadCount);
+    console.log('totalUnreadCount', totalUnreadCount);
 
   return (
     <Tabs
@@ -98,16 +98,6 @@ function AppTabs() {
         }}
       />
     </Tabs>
-  );
-}
-
-export default function TabLayout() {
-  const { data: currentUser } = useCurrentUser();
-
-  return (
-    <ChatProvider currentUser={currentUser}>
-      <AppTabs />
-    </ChatProvider>
   );
 }
 
