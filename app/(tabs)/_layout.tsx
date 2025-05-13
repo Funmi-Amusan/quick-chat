@@ -5,6 +5,9 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 
+import { ChatProvider } from '~/context/ChatContext';
+import { useCurrentUser } from '~/lib/queries/useCurrentUser';
+
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>['name'];
   color: string;
@@ -16,58 +19,60 @@ function CenterTabButton({ children, color }: { children: React.ReactNode; color
   return <View style={[styles.centerButtonContainer, { backgroundColor: color }]}>{children}</View>;
 }
 
-
 export default function TabLayout() {
   const { dark } = useTheme();
+  const { data: currentUser } = useCurrentUser();
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: dark ? '#FFFFFF' : '#000000',
-        tabBarStyle: {
-          position: 'absolute',
-          elevation: 10,
-          borderRadius: 30,
-          backgroundColor: 'rgba(0, 0, 0, 0.05)',
-        },
-        tabBarBackground: () => (
-          <BlurView tint="systemMaterial" intensity={60} style={StyleSheet.absoluteFill} />
-        ),
-      }}
-      initialRouteName="chats">
-      <Tabs.Screen
-        name="chats"
-        options={{
-          title: 'Chats',
-          headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'comments' : 'comments-o'} color={color} />
+    <ChatProvider currentUser={currentUser}>
+      <Tabs
+        screenOptions={{
+          tabBarActiveTintColor: dark ? '#FFFFFF' : '#000000',
+          tabBarStyle: {
+            position: 'absolute',
+            elevation: 10,
+            borderRadius: 30,
+            backgroundColor: 'rgba(0, 0, 0, 0.05)',
+          },
+          tabBarBackground: () => (
+            <BlurView tint="systemMaterial" intensity={60} style={StyleSheet.absoluteFill} />
           ),
         }}
-      />
-      <Tabs.Screen
-        name="profile2"
-        options={{
-          title: 'Exchange',
-          headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
-            <CenterTabButton color="#FFB0FE">
-              <TabBarIcon name="anchor" color="#FFFFFF" />
-            </CenterTabButton>
-          ),
-          tabBarLabel: () => null,
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'user' : 'user-o'} color={color} />
-          ),
-        }}
-      />
-    </Tabs>
+        initialRouteName="chats">
+        <Tabs.Screen
+          name="chats"
+          options={{
+            title: 'Chats',
+            headerShown: false,
+            tabBarIcon: ({ color, focused }) => (
+              <TabBarIcon name={focused ? 'comments' : 'comments-o'} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="profile2"
+          options={{
+            title: 'Exchange',
+            headerShown: false,
+            tabBarIcon: ({ color, focused }) => (
+              <CenterTabButton color="#FFB0FE">
+                <TabBarIcon name="anchor" color="#FFFFFF" />
+              </CenterTabButton>
+            ),
+            tabBarLabel: () => null,
+          }}
+        />
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: 'Profile',
+            tabBarIcon: ({ color, focused }) => (
+              <TabBarIcon name={focused ? 'user' : 'user-o'} color={color} />
+            ),
+          }}
+        />
+      </Tabs>
+    </ChatProvider>
   );
 }
 

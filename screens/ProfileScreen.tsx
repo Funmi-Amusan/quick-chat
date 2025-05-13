@@ -1,5 +1,4 @@
 import { router } from 'expo-router';
-import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 
 import { useSession } from '~/context/authContext';

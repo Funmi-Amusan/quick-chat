@@ -22,6 +22,7 @@ import {
   limitToLast,
   startAfter,
   endBefore,
+  runTransaction,
 } from 'firebase/database';
 import {
   getStorage,
@@ -110,6 +111,10 @@ export const listenToUserChats = (
   const unsubscribe = onValue(
     userChatsRef,
     async (snapshot) => {
+      console.log(
+        `[------******] Top-level listener fired for user ${userId}. Data:`,
+        snapshot.val()
+      ); // DEBUG LOG
       const chatIdsData = snapshot.val();
       if (chatIdsData) {
         const chatIds = Object.keys(chatIdsData);
@@ -127,12 +132,25 @@ export const listenToUserChats = (
               if (partnerKey) {
                 partnerName = participants[partnerKey];
               }
+              let unreadCount = 0;
+              if (chatData.unreadCount && typeof chatData.unreadCount === 'object') {
+                for (const key in chatData.unreadCount) {
+                  if (
+                    Object.prototype.hasOwnProperty.call(chatData.unreadCount, key) &&
+                    key !== partnerKey
+                  ) {
+                    unreadCount = chatData.unreadCount[key];
+                    break;
+                  }
+                }
+              }
               return {
                 id: chatId,
                 lastMessage: chatData.lastMessage,
                 partner: partnerName,
                 partnerId,
                 updatedAt: chatData.updatedAt,
+                unreadCount,
               };
             }
             console.warn(`Chat data for ID ${chatId} not found.`);
@@ -142,7 +160,6 @@ export const listenToUserChats = (
             return null;
           }
         });
-
         try {
           const chats = await Promise.all(chatPromises);
           const validChats = chats.filter((chat): chat is ChatData => chat !== null);
@@ -219,6 +236,10 @@ export const createChat = async (
     [currentUserId]: currentUserName,
     [otherUserId]: otherUserName,
   };
+  const initialUnreadCount = {
+    [currentUserId]: 0,
+    [otherUserId]: 0,
+  };
 
   const newChatData = {
     participants: participantsData,
@@ -234,6 +255,7 @@ export const createChat = async (
     updatedAt: serverTimestamp(),
     lastMessage: null,
     participantNames,
+    unreadCount: initialUnreadCount,
   };
   updates[`/users/${currentUserId}/chatsSummary/${chatId}`] = true;
   updates[`/users/${otherUserId}/chatsSummary/${chatId}`] = true;
@@ -304,11 +326,32 @@ export const markMessagesAsRead = (
 ) => {
   const unreadMessages = messages.filter((msg) => msg.senderId !== currentUserId && !msg.read);
   if (unreadMessages.length) {
-    const updates: Record<string, boolean> = {};
+    const updates: Record<string, any> = {};
     unreadMessages.forEach((msg) => {
       updates[`chats/${chatId}/messages/${msg.id}/read`] = true;
     });
-    update(ref(db), updates);
+    updates[`chatsSummary/${chatId}/unreadCount/${currentUserId}`] = 0;
+
+    update(ref(db), updates).catch((err) => {
+      console.error('Error marking messages as read and resetting unread count:', err);
+    });
+  } else {
+    const unreadCountRef = ref(db, `chatsSummary/${chatId}/unreadCount/${currentUserId}`);
+    get(unreadCountRef)
+      .then((snapshot) => {
+        if (snapshot.exists() && snapshot.val() > 0) {
+          set(unreadCountRef, 0).catch((err) => {
+            console.error('Error resetting unread count for current user:', err);
+          });
+        } else if (!snapshot.exists()) {
+          set(unreadCountRef, 0).catch((err) => {
+            console.error('Error initializing unread count for current user:', err);
+          });
+        }
+      })
+      .catch((err) => {
+        console.error('Error checking unread count existence:', err);
+      });
   }
 };
 
@@ -512,21 +555,57 @@ export const sendMessage = async (
     read: false,
     replyMessage: replyMessage ?? null,
   };
+
   try {
-    await push(messagesRef, newMessageData);
-    const lastMessageUpdate = {
-      lastMessage: {
-        content: content.trim(),
-        timestamp: serverTimestamp(),
-        senderId: userId,
-        read: false,
-        messageType: 'text',
-      },
-      updatedAt: serverTimestamp(),
-    };
-    await update(chatSummaryRef, lastMessageUpdate);
+    const newMessagePushResult = await push(messagesRef, newMessageData);
+    const newMessageId = newMessagePushResult.key;
+    const chatSummarySnapshot = await get(chatSummaryRef);
+
+    if (chatSummarySnapshot.exists()) {
+      const chatData = chatSummarySnapshot.val();
+
+      const participantUserIds = Object.keys(chatData.participantNames || {});
+      const recipientUserId = participantUserIds.find((id) => id !== userId);
+      if (recipientUserId) {
+        if (!chatData.unreadCount) {
+          chatData.unreadCount = {};
+        }
+        if (typeof chatData.unreadCount[recipientUserId] !== 'number') {
+          chatData.unreadCount[recipientUserId] = 0;
+        }
+        chatData.unreadCount[recipientUserId]++;
+        chatData.lastMessage = {
+          content: content.trim(),
+          timestamp: serverTimestamp(),
+          senderId: userId,
+          read: false,
+          messageType: 'text',
+          id: newMessageId,
+        };
+        console.log(chatData);
+      }
+      if (participantUserIds.length > 0) {
+        const userSpecificUpdates: { [path: string]: any } = {};
+        const currentTime = serverTimestamp();
+
+        for (const participantId of participantUserIds) {
+          const userChatEntryPath = `users/${participantId}/chatsSummary/${chatId}/updatedAt`;
+          userSpecificUpdates[userChatEntryPath] = currentTime;
+        }
+
+        if (Object.keys(userSpecificUpdates).length > 0) {
+          await update(ref(db), userSpecificUpdates);
+          console.log('Successfully updated user-specific chat summaries to trigger listeners.');
+        }
+      } else {
+        console.warn(
+          `Participant IDs not available for chat ${chatId}, cannot update user-specific summaries. This might happen if the global summary didn't exist or the transaction was aborted.`
+        );
+      }
+      await update(chatSummaryRef, chatData);
+    }
   } catch (err: any) {
-    console.error('Error sending message:', err);
+    console.error('Error sending message or updating summary:', err);
     throw new Error('Failed to send message.');
   }
 };

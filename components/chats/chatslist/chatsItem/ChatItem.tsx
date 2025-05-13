@@ -6,7 +6,7 @@ import { generatePreviewMessageContent } from '~/lib/componenentHelpers';
 import { formatTimestampToTimeOrDate } from '~/lib/helpers';
 import { ChatData } from '~/lib/types';
 
-const ChatItem = ({ lastMessage, id, partner }: ChatData) => {
+const ChatItem = ({ lastMessage, id, partner, unreadCount }: ChatData) => {
   const previewMessageContent = generatePreviewMessageContent(lastMessage);
 
   return (
@@ -18,9 +18,11 @@ const ChatItem = ({ lastMessage, id, partner }: ChatData) => {
             <Text className="  text-xl font-bold  capitalize text-title-light dark:text-title-dark">
               {partner}
             </Text>
-            <Text className=" h-5 w-5 items-center rounded-full bg-mint text-center text-sm text-title-dark dark:text-title-light ">
-              5
-            </Text>
+            {unreadCount > 0 && (
+              <Text className=" h-5 w-5 items-center rounded-full bg-mint text-center text-sm text-title-dark dark:text-title-light ">
+                {unreadCount}
+              </Text>
+            )}
           </View>
           <View className="flex-row items-center justify-between">
             <Text className=" line-clamp-1 font-medium text-grey ">{previewMessageContent}</Text>

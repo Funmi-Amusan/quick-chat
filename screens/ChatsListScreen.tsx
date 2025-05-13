@@ -1,21 +1,23 @@
 import AppLayout from 'components/layout/AppLayout';
-import { Unsubscribe } from 'firebase/database';
-import { useState, useEffect, useRef, useMemo } from 'react';
-import { View, Text, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
+import { useState, useMemo } from 'react';
+import { View, Text, FlatList, ActivityIndicator } from 'react-native';
 
 import ChatItem from '../components/chats/chatslist/chatsItem/ChatItem';
 import UserListModal from '../components/chats/modals/UserListModals';
 
+import CustomRefreshControl from '~/components/chats/chatslist/RefreshControl';
 import ChatsListHeader from '~/components/chats/chatslist/chatsListHeader/chatsListHeader';
 import SearchInput from '~/components/chats/shared/SearchInput';
-import { listenToUserChats } from '~/lib/firebase-sevice';
+import { useChatContext } from '~/context/ChatContext';
 import { useAllUsers } from '~/lib/queries/useAllUsers';
 import { useCurrentUser } from '~/lib/queries/useCurrentUser';
-import { ChatData } from '~/lib/types';
-import CustomRefreshControl from '~/components/chats/chatslist/RefreshControl';
 
 const ChatsList = () => {
-  const [allUserChats, setAllUserChats] = useState<ChatData[]>([]);
+  const {
+    userChats: allUserChats,
+    loading: userChatsLoading,
+    error: userChatError,
+  } = useChatContext();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -26,7 +28,6 @@ const ChatsList = () => {
   //? full screen loader is userLoading
   //? navigate to sign in page is userError
   const currentUserId = currentUser?.uid;
-  const unsubscribeRef = useRef<Unsubscribe | null>(null);
 
   const {
     data: allUsers = [],
@@ -34,31 +35,6 @@ const ChatsList = () => {
     error: modalError,
     refetch: refetchAllUsers,
   } = useAllUsers(currentUserId, { enabled: isModalVisible });
-
-  useEffect(() => {
-    if (!currentUserId) {
-      setError('User not authenticated.');
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    unsubscribeRef.current = listenToUserChats(currentUserId, (chatsFromService, serviceError) => {
-      if (serviceError) {
-        console.log(serviceError);
-        console.error('Error from chat listener service:', serviceError);
-        setError(serviceError.message || 'Failed to load chats.');
-        setAllUserChats([]);
-      } else {
-        setAllUserChats(chatsFromService);
-        setError(null);
-      }
-      setLoading(false);
-    });
-    return () => {};
-  }, [currentUser]);
 
   const filteredAndSortedUserChats = useMemo(() => {
     let filtered = allUserChats;
@@ -126,22 +102,22 @@ const ChatsList = () => {
         </View>
       ) : (
         <View className="flex-1 bg-primary">
-             <CustomRefreshControl refreshing={loading} onRefresh={()=> console.log('first')}>
-        <FlatList
-          data={filteredAndSortedUserChats}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <ChatItem {...item} />}
-          showsVerticalScrollIndicator={false}
-          ListHeaderComponent={() => (
-            <View className="flex-row items-center justify-between gap-4 bg-body-light py-3 dark:bg-body-dark">
-              <Text className="text-3xl font-bold text-title-light dark:text-title-dark">
-                Chats
-              </Text>
-            </View>
-          )}
-          className="flex-grow bg-body-light dark:bg-body-dark"
-        />
-      </CustomRefreshControl>
+          <CustomRefreshControl refreshing={loading} onRefresh={() => console.log('first')}>
+            <FlatList
+              data={filteredAndSortedUserChats}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => <ChatItem {...item} />}
+              showsVerticalScrollIndicator={false}
+              ListHeaderComponent={() => (
+                <View className="flex-row items-center justify-between gap-4 bg-body-light py-3 dark:bg-body-dark">
+                  <Text className="text-3xl font-bold text-title-light dark:text-title-dark">
+                    Chats
+                  </Text>
+                </View>
+              )}
+              className="flex-grow bg-body-light dark:bg-body-dark"
+            />
+          </CustomRefreshControl>
         </View>
       )}
 

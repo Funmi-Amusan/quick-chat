@@ -21,6 +21,7 @@ export interface ChatData {
   lastMessage: LastMessageData;
   partnerId: string;
   updatedAt: number;
+  unreadCount: number;
 }
 
 export interface LastMessageData {
