@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react-native';
 import React from 'react';
-import ReplyPreview from '~/components/chats/chatRoom/ReplyPreview';
+import ReplyPreview from '~/components/chats/chatroom/ReplyPreview';
 import { ReplyMessageInfo } from '~/lib/types';
 
 test('displays ReplyPreview component correctly', async () => {

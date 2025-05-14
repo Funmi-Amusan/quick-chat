@@ -1,6 +1,6 @@
 import { fireEvent, render } from '@testing-library/react-native';
 
-import ChatTextInput from '~/components/chats/chatRoom/chatTextInput/ChatTextInput';
+import ChatTextInput from '~/components/chats/chatroom/chatTextInput/ChatTextInput';
 
 describe('ChatTextInput', () => {
   const mockOnChangeText = jest.fn();

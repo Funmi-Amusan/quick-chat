@@ -2,7 +2,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import { BlurView } from 'expo-blur';
 import { View, Modal, TouchableOpacity, KeyboardAvoidingView, Image } from 'react-native';
 
-import ChatTextInput from '../chatRoom/chatTextInput/ChatTextInput';
+import ChatTextInput from '../chatroom/chatTextInput/ChatTextInput';
 
 const ImageMessagePreviewModal = ({
   setImageUri,

@@ -3,7 +3,7 @@ import { User } from 'firebase/auth';
 import React from 'react';
 import { FlatList } from 'react-native';
 
-import MessageList from '~/components/chats/chatRoom/MessageList';
+import MessageList from '~/components/chats/chatroom/MessageList';
 import { ProcessedMessage } from '~/lib/types';
 
 const mockCurrentUser: User = {

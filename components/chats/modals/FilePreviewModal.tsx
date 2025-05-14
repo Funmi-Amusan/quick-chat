@@ -15,7 +15,7 @@ import {
   Platform,
 } from 'react-native';
 
-import ChatTextInput from '../chatRoom/chatTextInput/ChatTextInput';
+import ChatTextInput from '../chatroom/chatTextInput/ChatTextInput';
 
 export type PickedFile = DocumentPicker.DocumentPickerAsset | ImagePicker.ImagePickerAsset | null;
 

@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react-native';
 
-import ActiveTypingBubble from '~/components/chats/chatRoom/ActiveTypingBubble';
+import ActiveTypingBubble from '~/components/chats/chatroom/ActiveTypingBubble';
 
 describe('ActiveTypingBubble', () => {
   beforeEach(() => {

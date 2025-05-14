@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
 
-import ChatHeader from '~/components/chats/chatRoom/chatHeader/ChatHeader';
+import ChatHeader from '~/components/chats/chatroom/chatHeader/ChatHeader';
 
 jest.mock('expo-router', () => {
   // --- Re-create the stable mock functions for router methods for this file ---

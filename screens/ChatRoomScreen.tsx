@@ -14,13 +14,13 @@ import {
   Platform,
 } from 'react-native';
 
-import MessageList from '../components/chats/chatRoom/MessageList';
-import ChatHeader from '../components/chats/chatRoom/chatHeader/ChatHeader';
+import MessageList from '../components/chats/chatroom/MessageList';
+import ChatHeader from '../components/chats/chatroom/chatHeader/ChatHeader';
 import ImageMessagePreviewModal from '../components/chats/modals/ImageMessagePreviewModal';
 
 import { ImageAssets } from '~/assets';
-import ReplyPreview from '~/components/chats/chatRoom/ReplyPreview';
-import ChatTextInput from '~/components/chats/chatRoom/chatTextInput/ChatTextInput';
+import ReplyPreview from '~/components/chats/chatroom/ReplyPreview';
+import ChatTextInput from '~/components/chats/chatroom/chatTextInput/ChatTextInput';
 import FilePreviewModal, { PickedFile } from '~/components/chats/modals/FilePreviewModal';
 import useChatPresence from '~/hooks/useChatRoomPresence';
 import useImagePicker from '~/hooks/useImagePicker';

@@ -1,7 +1,7 @@
 import { fireEvent, render } from '@testing-library/react-native';
 import { User } from 'firebase/auth';
 
-import MessageBubble from '~/components/chats/chatRoom/messageBubble/MessageBubble';
+import MessageBubble from '~/components/chats/chatroom/messageBubble/MessageBubble';
 
 describe('MessageBubble', () => {
   const mockMessage = {
